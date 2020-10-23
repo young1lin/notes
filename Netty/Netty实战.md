@@ -1626,3 +1626,82 @@ ChannelHandlerAdapter 提供了实用方法 siSharable()。如果其对应的实
 
 ### 资源管理
 
+每当通过调用 `ChannelInboundHandler#channelRead` 或者 `ChannelOutboundHandler#write` 方法来处理数据时，都需要确保没有任何的资源泄漏。Netty 使用引用计数来处理池化的 ByteBuf ，所以在完全使用完某个 ByteBuf 后，调整其引用计数是很重要的。
+
+为了帮助诊断潜在的（资源泄漏）问题，Netty 提供了 class ResourceLeakDetector，它将对你的 app 的缓冲区做大约 1% 的采样来检测内存泄漏。
+
+Netty 目前定义了 4 种泄漏级别。
+
+| 级别     | 描述                                                         |
+| -------- | ------------------------------------------------------------ |
+| DISABLED | 禁用泄漏检测。在详尽的测试之后才应该设置成这个值             |
+| SIMPLE   | 使用 1% 的默认采样率，报告所发现的任何的泄漏。默认级别，适合绝大部分的情况 |
+| ADVANCED | 使用默认的采样率，报告所发现的任何的泄漏以及对应的消息被访问的位置 |
+| PARANOID | 类似于 ADVANCED，但是每次对消息的访问都会进行采样。对性能影响极大，调试用 |
+
+启动参数带 `java -Dio.netty.leakDetecionLevel=ADVANCED`
+
+或者 `System.setProperty("io.netty.leakDetectionLevel","ADVACED")` 
+
+```java
+package me.young1lin.netty.demo.channel.handler;
+
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
+import io.netty.util.ReferenceCountUtil;
+
+/**
+ * @author young1lin
+ * @version 1.0
+ * @date 2020/10/23 10:01 下午
+ */
+@ChannelHandler.Sharable
+public class DiscardOutBoundHandler extends ChannelOutboundHandlerAdapter {
+
+    @Override
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        ReferenceCountUtil.release(msg);
+        promise.setSuccess();
+    }
+}
+```
+
+不仅要释放资源，还要通知 ChannelPromise 。否者可能会出现 ChannelFutureListener 收不到某个消息已经被处理了的通知情况。
+
+如果一个消息被消费或者被丢弃了，并且没有传递给 ChannelPipeline 中的下一个 ChannelOutboundHandler，那么用户就有责任调用 ReferenceCountUtil#release 。如果消息到达了实际的传输层，那么当他它被写入时或者 Channel 关闭时，都将被自动释放。
+
+## ChannelPipeline
+
+每一个新创建的 Channel 都会被分配一个新的 ChannelPipeline。这项关联是永久的，不可替换或者增加。
+
+根据事件的起源，事件将会被 ChannelInboundHandler 和 ChannelOutboundHandler 处理。随后，通过调用 ChannelHandlerContext 实现。它将被转发给同一超类型的下一个 ChannelHandler。
+
+**ChannelHandlerContext**
+
+<div style="background-color:grey">
+ChannelHandlerContext 使得 ChannelHandler 能够和它的 ChannelPipeline 以及其他的 ChannelHandler 交互。ChannelHandler 可以通知其所属的 ChannelPipeline 中的下一个 ChannelHandler，甚至可以动态修改它所属的 ChannelPipeline（这里指的是其中的 ChannelHandler 的编排）。<br/>
+ChannelHandlerContext 具有丰富的用于处理事件和执行 I/O 操作的 API
+</div>
+
+
+
+
+
+又是这个图，这里灰色的部分，就是 ChannelPipeline。
+
+![Netty实战-流经 ChannelHandler 链的入站事件和出站事件 (1).png](https://i.loli.net/2020/10/14/fUtNMYO6P21FRiW.png)
+
+**ChannelPipeline 相对论**
+
+<div style="background-color:grey">
+	Netty 总是将 ChannelPipeline 的入站口作为头部，出站口作为尾端。<br/>
+    当你完成了通过调用 Channelpipeline#add* （这里的 * 指所有的 add 开头的方法）方法将入站处理器（ChannelInboundHandler）<br/>
+    出站处理器（ChannelOutBoundHandler）混合添加到 ChannelPipeline 之后，每一个 ChannelHandler 从头头部到尾端的顺序<br/>位	 置正如定义他们的一样。
+</div>
+
+在 ChannelPipeline 传播事件时，它会测试ChannelPipeline 中的下一个 ChannelHandler 的类型是否和事件的运动方向相匹配。如果不匹配，ChannelPipeline 将跳过该 ChannelHandler 并前进到下一个，直到它找到和该事件所期望的方向相匹配的为止。
+
+### 修改 ChannelPipline
+
