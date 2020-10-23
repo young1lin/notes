@@ -1,0 +1,11 @@
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+  port: 8080
+
+---
+#分隔符可以在一个文件中配置多个配置源，相当于application-xxx.yml
+---

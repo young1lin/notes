@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>me.young1lin</groupId>
+    <artifactId>distributed-website</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0</version>
+
+    <modules>
+        <module>rpc-consumer</module>
+        <module>rpc-all-http-model</module>
+        <module>rpc-http-consumer</module>
+        <module>rpc-http-provider</module>
+        <module>rpc-provider</module>
+        <module>rpc-service</module>
+        <module>rpc-zookeeper-client</module>
+        <module>others</module>
+    </modules>
+
+</project>

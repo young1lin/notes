@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="EntryPointsManager">
+    <list size="2">
+      <item index="0" class="java.lang.String" itemvalue="org.springframework.web.bind.annotation.GetMapping" />
+      <item index="1" class="java.lang.String" itemvalue="org.springframework.web.bind.annotation.PostMapping" />
+    </list>
+  </component>
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/../rpc-client/pom.xml" />
+        <option value="$PROJECT_DIR$/../rpc-service/pom.xml" />
+        <option value="$PROJECT_DIR$/../rpc-consumer/pom.xml" />
+        <option value="$PROJECT_DIR$/../rpc-provider/pom.xml" />
+        <option value="$PROJECT_DIR$/../rpc-simple-http/pom.xml" />
+        <option value="$PROJECT_DIR$/../rpc-simple-http-model/pom.xml" />
+        <option value="$PROJECT_DIR$/../rpc-doc/pom.xml" />
+        <option value="$PROJECT_DIR$/../rpc-http-consumer/pom.xml" />
+        <option value="$PROJECT_DIR$/../rpc-http-provider/pom.xml" />
+        <option value="$PROJECT_DIR$/../rpc-all-http-model/pom.xml" />
+        <option value="$PROJECT_DIR$/../rpc-zookeeper-client/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="false" project-jdk-name="1.8 (2)" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+</project>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="rpc-service" />
+        <module name="rpc-consumer" />
+        <module name="rpc-http-consumer" />
+        <module name="rpc-all-http-model" />
+        <module name="others" />
+        <module name="rpc-provider" />
+        <module name="rpc-http-provider" />
+        <module name="rpc-zookeeper-client" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="distributed-website" target="1.5" />
+      <module name="others" target="6" />
+      <module name="rpc" target="1.5" />
+      <module name="rpc-all-http-model" target="8" />
+      <module name="rpc-consumer" target="8" />
+      <module name="rpc-http-consumer" target="8" />
+      <module name="rpc-http-provider" target="8" />
+      <module name="rpc-provider" target="8" />
+      <module name="rpc-service" target="8" />
+      <module name="rpc-zookeeper-client" target="8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

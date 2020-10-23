@@ -1,0 +1,10 @@
+server:
+  port: 8111
+spring:
+  application:
+    name: zuulserver
+zuul:
+  routes:
+    products:
+      path: /api/demo/**
+      url: http://localhost:8080/hello/

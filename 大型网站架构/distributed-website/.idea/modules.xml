@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/distributed-website.iml" filepath="$PROJECT_DIR$/distributed-website.iml" />
+      <module fileurl="file://$PROJECT_DIR$/others/others.iml" filepath="$PROJECT_DIR$/others/others.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rpc.iml" filepath="$PROJECT_DIR$/rpc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rpc-all-http-model/rpc-all-http-model.iml" filepath="$PROJECT_DIR$/rpc-all-http-model/rpc-all-http-model.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rpc-consumer/rpc-consumer.iml" filepath="$PROJECT_DIR$/rpc-consumer/rpc-consumer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rpc-http-consumer/rpc-http-consumer.iml" filepath="$PROJECT_DIR$/rpc-http-consumer/rpc-http-consumer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rpc-http-provider/rpc-http-provider.iml" filepath="$PROJECT_DIR$/rpc-http-provider/rpc-http-provider.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rpc-provider/rpc-provider.iml" filepath="$PROJECT_DIR$/rpc-provider/rpc-provider.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rpc-service/rpc-service.iml" filepath="$PROJECT_DIR$/rpc-service/rpc-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rpc-zookeeper-client/rpc-zookeeper-client.iml" filepath="$PROJECT_DIR$/rpc-zookeeper-client/rpc-zookeeper-client.iml" />
+    </modules>
+  </component>
+</project>

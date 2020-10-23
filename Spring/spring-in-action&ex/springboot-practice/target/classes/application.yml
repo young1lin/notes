@@ -1,0 +1,10 @@
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+  # port: 0 是随机端口
+spring:
+  profiles:
+    active: dev

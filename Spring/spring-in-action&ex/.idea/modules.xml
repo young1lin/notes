@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/spring-bean-ex/spring-bean-ex.iml" filepath="$PROJECT_DIR$/spring-bean-ex/spring-bean-ex.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/spring-in-action&amp;ex.iml" filepath="$PROJECT_DIR$/.idea/spring-in-action&amp;ex.iml" />
+      <module fileurl="file://$PROJECT_DIR$/springboot-cache/springboot-cache.iml" filepath="$PROJECT_DIR$/springboot-cache/springboot-cache.iml" />
+      <module fileurl="file://$PROJECT_DIR$/springboot-jpa-demo/springboot-jpa-demo.iml" filepath="$PROJECT_DIR$/springboot-jpa-demo/springboot-jpa-demo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/springboot-practice/springboot-practice.iml" filepath="$PROJECT_DIR$/springboot-practice/springboot-practice.iml" />
+      <module fileurl="file://$PROJECT_DIR$/springcloud-alibaba-nacos-consumer/springcloud-alibaba-nacos-consumer.iml" filepath="$PROJECT_DIR$/springcloud-alibaba-nacos-consumer/springcloud-alibaba-nacos-consumer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/springcloud-config-server/springcloud-config-server.iml" filepath="$PROJECT_DIR$/springcloud-config-server/springcloud-config-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/springcloud-eureka-client/springcloud-eureka-client.iml" filepath="$PROJECT_DIR$/springcloud-eureka-client/springcloud-eureka-client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/springcloud-eureka-server/springcloud-eureka-server.iml" filepath="$PROJECT_DIR$/springcloud-eureka-server/springcloud-eureka-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/springcloud-zuul/springcloud-zuul.iml" filepath="$PROJECT_DIR$/springcloud-zuul/springcloud-zuul.iml" />
+    </modules>
+  </component>
+</project>
