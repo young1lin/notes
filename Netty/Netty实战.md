@@ -1785,18 +1785,23 @@ ChannelPipeline 的出站操作
 
 ChannelHandlerContext 有很多的方法，其中一些方法也存在于 Channel 和 ChannelPipeline 本身上。但是有一点重要的不同。Channel 和 ChannelPipeline 本身的方法影响 All，ChannelHandlerContext 影响当前和下一个。
 
-**我觉得应该是这样的**
+**我觉得应该是这样的** // TODO 把这部分看到后面时，补齐
 
 ```java
-ChannelPipeline cp = ...;
-Object msg = ...;
-List<ChannelInboundHanlder> list = getChannelInboundHandler();
-ChannelHandlerContext nextCtx;
-for(ChannelInboundHandler cih : llist){
-    // 所谓的一个接一个调用，就是这样的，或者用递归
+{
+    ChannelPipeline cp = ...;
+    Object msg = ...;
     ChannelHandlerContext ctx = new ChannelHandlerContext();
-    cih.read(ctx,msg);
+    channelHandler(ctx,cp,msg);
 }
+public void channelHandler(ChannelHandlerContex ctx,ChannelPipeline cp,Object msg){
+    if(cp.next() == null){
+        return;
+    }
+    cp.firexxxx(ctx,msg);
+    channelHandler(ctx,cp,msg);
+}
+
 ```
 
 ChannelHandlerContext 的 API
@@ -1815,13 +1820,66 @@ ChannelHandlerContext 的 API
 | fireChannelInactive    |                                                              |
 | fireChannelRead        |                                                              |
 | handler                |                                                              |
-| isRemoved              |                                                              |
-| name                   |                                                              |
-| pipeline               |                                                              |
-| read                   |                                                              |
+| isRemoved              | 返回这个实例的唯一名称                                       |
+| name                   | 返回这个实例所关联的 ChannelPipeline                         |
+| pipeline               | 将数据从 Channel 读取到第一个入站缓冲区：如果读取成功则将出发一个 channelRead 事件，并（在最后一个消息读取完成后）通知 ChannelInboundCHandler 的 channelReadCompelete （ChannelHandlerContext）方法。 |
+| read                   | 通过这个实例写入消息并经过 ChannelPipeline                   |
 | write还有writeAndFlush |                                                              |
 
++ ChannelHandlerContext 和 ChannelHandler 之间的关联（绑定）是永远不会改变的，所以缓存对它的引用是安全的。
++ 更短的事件流
+
+### 使用 ChannelHandlerContext
+
+![Channel、ChannelPipeline、ChannelHandler 以及 Ctx 之间的关系.png](https://i.loli.net/2020/10/25/ljyxd3AvRfs4zuW.png)
 
 
-**发周报**
+
+为什么会想要从 ChannelPipeline 中的某个特定点开始传播事件呢？
+
++ 为了减少将事件传经它不感兴趣的 ChannelHandler 所带来的开销
++ 为了避免将事件传经那些可能会它感兴趣的 ChannelHandler
+
+要想调用从某个特定的 ChannelHandler 开始的处理过程，必须获取到在 ChannelPipeline 该 ChannelHandler **之前的** ChannleHandler 所关联的 ChannelHandlerContext。这个 ChannelHandlerContext 将调用和它所关联的 ChannelHandler 之后的 ChannelHandler。
+
+**通过 Channel 或者 CHannelPipeline 进行的事件传播。**
+
+[![GlruK.png](https://b1.sbimg.org/file/chevereto-jia/2020/10/26/GlruK.png)](https://sbimg.cn/image/GlruK)
+
+**通过 ChannelHandlerContext 触发的操作的事件流**，可以从特定的 ChannelHandlerContext 中插入事件。
+
+![通过 ChannelHandlerContext 触发的操作的事件流.png](https://i.loli.net/2020/10/26/QLZeC2hHdO3SnY7.png)
+
+### ChannelHandler 和 ChannelHandlerContext 的高级用法
+
+可以通过 ChannelHandlerContext 上的 pipeline 方法来获得封闭的 ChannePipeline 的引用。这使得运行时得以操作 ChannelPipeline 的 ChannelHandler，我们可以利用这一点来实现一些复杂的设计。例如，通过将 ChannelHandler 添加到 ChannelPipeline 中来实现动态的协议切换。
+
+另一种高级的用法是缓存到 ChannelHandlerContext 的引用以供稍后使用，这可能会发生在任何的 ChannelHandler 方法之外，甚至来自于不同的线程。
+
+**缓存到 ChannelHandlerContext 的引用**
+
+```java
+public class WriteHandler extends ChannelHandlerAdapter{
+    
+    private ChannelHandlerContext ctx;
+    
+    @Override
+    public void handlerAdded(ChannelHandlerContext ctx){
+        this.ctx = ctx;
+    }
+    public void send(String msg){
+        ctx.writeAndFlush(msg);
+    }
+}
+```
+
+因为一个 ChannelHandler 可以从属于多个 ChannelPipeline，所以它也可以绑定到多个 ChannelHandlerContext 实例。对于这种用法（指在多个 ChannelPipeline 中共享同一个 ChannelHandler），对应的 ChannelHandler 必须使用 @Sharable 注解标注；否则试图将它添加到多个 ChannelPipeline 时将会触发异常。
+
+ChannelHandler 不可拥有状态，即全局变量，应该是无状态的，这样做会有并发问题。
+
+
+
+## 异常处理
+
+### 处理入站异常
 
