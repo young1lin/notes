@@ -1705,3 +1705,123 @@ ChannelHandlerContext 具有丰富的用于处理事件和执行 I/O 操作的 A
 
 ### 修改 ChannelPipline
 
+通过调用 CHannelPipeline 上的相关方法，ChannelHandler 可以添加、删除或者替换其他的 ChannelHandler，从而实时地修改 ChannelPipeline 的布局。（它也可以将它自己从 ChannelPipeline 中移除）。这是 ChannelHandler 最重要的能力之一。
+
+**ChannelPipeline 上的相关方法，由 ChannelHandler 用来修改 ChannelPipeline 的布局**
+
+| 名称                                            | 描述                                                    |
+| ----------------------------------------------- | ------------------------------------------------------- |
+| addFirst<br/>addBefore<br/>addAfter<br/>addLast | 将一个 ChannelHandler 添加到 ChannelPipeline 中         |
+| remove                                          | 将一个 ChannelHandler 从 ChannelPipeline 中移除         |
+| replace                                         | 将 ChannelPipeline 中的一个 ChannelHandler 替换成另一个 |
+
+**修改一个 ChannelPipeline**
+
+```java
+ChannelPipeline pipeline = .....;
+FirstHandler firstHandler = new FirstHandler(); 
+pipeline.addFirst("first",firstHandler);
+pipeline.addFirst("second",new SecondHandler());
+pipeline.addFirst("third",new ThirdHandler());
+// ....
+pipeline.remove("third");
+pipeline.remove(firstHandler);
+pipeline.replace("second","forth",new ForthHandler());
+```
+
+**ChannelHandler 的执行和阻塞**
+
+*通常 ChannelPipeline 中的每一个 ChannelHandler 都是通过它的 EventLoop （I/O 线程）来处理传递给它的事件的。所以至关重要的是不要阻塞这个线程，因为这会对整体的 I/O 处理产生负面的影响。但有时可能需要与哪些使用阻塞 API 的遗留代码进行交互。对与这种情况，ChannelPipeline 有一些接受一个 EventExecutorGroup 的 add() 方法。如果一个事件被传递一个自定义的 EventExecutorGroup，它将被包含在这个 EventExecutorGroup 中的某个 EventExecutor。所处理从而被从该 Channel 本身的 EventLoop 中移除。对于这种用例，Netty 提供了一个叫 DefaultEventExecutorGroup 的默认实现。*
+
+ChannelPipeline 的用于访问 ChannelHandler 的操作
+
+| 名称    | 描述                                                |
+| ------- | --------------------------------------------------- |
+| get     | 根据名称返回 CahnnelHandler                         |
+| context |                                                     |
+| names   | 返回 ChannelPipeline 中所有的 CHannelHandler 的名称 |
+
+### 触发事件
+
+ChannelPipeline 的 API 公开了用于调用入站和出站操作的附加方法。
+
+**ChannelPipeline 的入站操作**
+
+| Method Name                   | Description                                                  |
+| ----------------------------- | ------------------------------------------------------------ |
+| fireChanneRegistered          | 调用 ChannelPipeline 中下一个 ChannelInboundHandler 的<br/> channelRegistered(ChannelHandlerContext)方法 |
+| fireChannelUnregistered       | 下面都是                                                     |
+| fireChannelActive             |                                                              |
+| fireChannelInactive           |                                                              |
+| fireExceptionCaught           |                                                              |
+| fireUserEventTriggered        |                                                              |
+| fireChannelRead               |                                                              |
+| fireChannelReadCompete        |                                                              |
+| fireChannelWritabilityChanged |                                                              |
+
+ChannelPipeline 的出站操作
+
+| Method Name   | Description                                                  |
+| ------------- | ------------------------------------------------------------ |
+| bind          | 将 Channel 绑定到一个本地地址，这将调用 ChannnelPipeline 中的下一个 ChannelOutboundHandler 的 bind(ChannelHandlerContext,SocketADdress,ChannelPromis) 方法 |
+| connect       | 将 Channel 连接到一个远程地址，这将调用 ChannelPipeline 中的 下一个 ChannelOutboundHandler 的 connect 方法 |
+| disconnect    | 将 Channel 断开连接。同上                                    |
+| close         | 将 Channel 关闭。同上                                        |
+| deregister    | 将 Channel 从它先前分配的 EventExecutor（即 EventLoop）中注销。。同上 |
+| flush         | 冲刷 Channel 所有挂起的写入。同上                            |
+| write         | 将消息写入 Channel。同上。注意这并不会将消息写入底层的 Socket，而只会将它放入队列中，要将它写入 Socket，需要调用 flush 或者下面的方法。 |
+| writeAndFlush | 之前写过这个方法的介绍，往上翻。                             |
+| read          | 请求从 CHannel 中读取更多数据。同上                          |
+
+总结：
+
++ ChannelPipeline 保存了与 Channel 相关联的 ChannelHandler
++ ChannelPipeline 可以根据需要，通过添加或者删除 ChannelHandler 来动态地修改
++ ChannelPipeline 有着丰富的 API 用以被调用，以响应入站和出站事件。
+
+## ChannelHandlerContext
+
+每当有 ChannelHandler 添加到 ChannelPipeline 中时，都会创建 ChannelHandlerContext。
+
+ChannelHandlerContext 有很多的方法，其中一些方法也存在于 Channel 和 ChannelPipeline 本身上。但是有一点重要的不同。Channel 和 ChannelPipeline 本身的方法影响 All，ChannelHandlerContext 影响当前和下一个。
+
+**我觉得应该是这样的**
+
+```java
+ChannelPipeline cp = ...;
+Object msg = ...;
+List<ChannelInboundHanlder> list = getChannelInboundHandler();
+ChannelHandlerContext nextCtx;
+for(ChannelInboundHandler cih : llist){
+    // 所谓的一个接一个调用，就是这样的，或者用递归
+    ChannelHandlerContext ctx = new ChannelHandlerContext();
+    cih.read(ctx,msg);
+}
+```
+
+ChannelHandlerContext 的 API
+
+| Method Name            | Description                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+| alloc                  | 返回和这个实例相关联的 Channel 所配置的 ByteBufAllocator     |
+| bind                   | 绑定到给定的 SocketAddress ，并返回 ChannleFuture            |
+| channel                |                                                              |
+| close                  | 关闭 Channel，并返回 ChannelFuture                           |
+| connect                | 连接给定的 同行                                              |
+| deregister             | 从之前分配的 EventExecutor 注销，并返回 ChannelFuture        |
+| disconnect             | 从远程节点断开，并返回 ChannelFuture                         |
+| executor               | 返回调度事件的 EventExecutor                                 |
+| fireChannelActive      | 触发对下一个 ChannelInboundHandler 上的 channelActive 方法（已连接）的调用 |
+| fireChannelInactive    |                                                              |
+| fireChannelRead        |                                                              |
+| handler                |                                                              |
+| isRemoved              |                                                              |
+| name                   |                                                              |
+| pipeline               |                                                              |
+| read                   |                                                              |
+| write还有writeAndFlush |                                                              |
+
+
+
+**发周报**
+

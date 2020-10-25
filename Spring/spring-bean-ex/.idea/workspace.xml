@@ -4,29 +4,7 @@
     <option name="GROUP_BY_SEVERITY" value="true" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="16d32067-7fa5-4556-92f4-2fddf7fb8903" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../../Kafka/kafka-streams-official-website/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../Kafka/kafka-streams-official-website/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../Kafka/kafkastream/.idea/compiler.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../Kafka/kafkastream/kafkastream.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../Kafka/kafkastream/src/main/java/tk/young1lin/kafkatest/KafkaStreamsWithSpringCloudApplication.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../Kafka/kafkastream/target/classes/application.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../Netty/netty-demo/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../Netty/netty-demo/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../Netty/netty-demo/src/main/java/me/young1lin/netty/demo/channel/handler/DiscardHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../Netty/netty-demo/src/main/java/me/young1lin/netty/demo/channel/handler/DiscardOutBoundHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../Netty/netty-demo/src/main/java/me/young1lin/netty/demo/echo/EchoClientHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../Netty/netty-demo/src/main/java/me/young1lin/netty/demo/transport/NettyOioServer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../mybatis/mybatis-practice/.mvn/wrapper/maven-wrapper.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../设计模式/algorithm-design-patterns/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../设计模式/algorithm-design-patterns/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../设计模式/algorithm-design-patterns/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../设计模式/algorithm-design-patterns/algorithm-design-patterns.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../设计模式/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/sort/BubbleSort.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../设计模式/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/sort/SelectionSort.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../设计模式/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/sort/Sort.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../领域驱动设计/dddsample-core" afterDir="false" />
-    </list>
+    <list default="true" id="16d32067-7fa5-4556-92f4-2fddf7fb8903" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -290,6 +268,7 @@
       <workItem from="1598312562959" duration="16000" />
       <workItem from="1598487145263" duration="11000" />
       <workItem from="1603469306107" duration="36000" />
+      <workItem from="1603531470890" duration="25000" />
     </task>
     <servers />
   </component>
