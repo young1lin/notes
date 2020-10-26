@@ -198,9 +198,9 @@ BeanDefinitionVisitor
 
 \<bean id="sqlSessionFactory" class="org.mybatis.Spring.SqlSessionFactoryBean"\>
 
-中间的 Spring 是小写
+中间的 Spring 正确写法是小写
 
-252 页一样
+252 页有同样的问题
 
 # 258
 
@@ -334,3 +334,14 @@ clientSocketFactory （书上这里多了个 serverSocketFactory）用于导出�
 
 serverSocketFactory 用户在服务端。。。。
 
+# 356 
+
+ return this.RMIExporter.invoke(invocation, this.wrappedObject);
+
+RMI 实际代码时是小写 rmi。
+
+# 359
+
+从而**提高**使用时候的响应时间 -> 从而**降低**使用时候的响应时间
+
+这里应该是降低响应时间。

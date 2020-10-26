@@ -30,6 +30,9 @@ public abstract class AbstractSort implements Sort {
         this.printArr(getArr());
     }
 
+    @Override
+    public abstract void sort(int[] arr);
+
     protected void checkLength(int[] arr) {
         if (arr.length < 1) {
             System.err.println("什么都没有，排个🐔8");

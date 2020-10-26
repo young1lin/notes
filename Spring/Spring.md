@@ -1875,7 +1875,7 @@ protected void renderMergedOutputModel(
 
 # RMI
 
-## RmiServiceExporter
+## 服务端实现 RmiServiceExporter
 
 ```java
 /**
@@ -2046,7 +2046,9 @@ protected Remote getObjectToExport() {
 }
 ```
 
-RemoteExporter#getProxyForService
+### 初始化将要导出的对象
+
+**RemoteExporter#getProxyForService**
 
 ```java
 /**
@@ -2063,11 +2065,12 @@ RemoteExporter#getProxyForService
 protected Object getProxyForService() {
    checkService();
    checkServiceInterface();
-
+   // 使用 JDK 的方式创建代理
    ProxyFactory proxyFactory = new ProxyFactory();
+   // 添加代理接口
    proxyFactory.addInterface(getServiceInterface());
-
    if (this.registerTraceInterceptor != null ? this.registerTraceInterceptor : this.interceptors == null) {
+      // 加入代理的横切面 RemoteInvocationTraceInterceptor 并记录 Exporter 名称
       proxyFactory.addAdvice(new RemoteInvocationTraceInterceptor(getExporterName()));
    }
    if (this.interceptors != null) {
@@ -2076,13 +2079,264 @@ protected Object getProxyForService() {
          proxyFactory.addAdvisor(adapterRegistry.wrap(interceptor));
       }
    }
-
+   // 设置要代理的目标类
    proxyFactory.setTarget(getService());
    proxyFactory.setOpaque(true);
-
+   // 创建代理
    return proxyFactory.getProxy(getBeanClassLoader());
 }
 ```
 
 ### RMI 服务激活调用
 
+bean 初始化的时候做了服务名称绑定 this.registry.bind(this.serviceName.this.exportedObject)，其中的 exportedObject 其实是被 RMIInvocationWrapper 进行过封装的，也就是说当其他服务器调用 serviceName 的 RMI 服务时， Java 会为我们封装其内部操作，而直接会将代码转向 RMIInvocationWrapper 的 invoke 方法中。
+
+**RMIInvocationWrapper#invoke**
+
+```java
+/**
+ * Delegates the actual invocation handling to the RMI exporter.
+ * @see RmiBasedExporter#invoke(org.springframework.remoting.support.RemoteInvocation, Object)
+ */
+@Override
+@Nullable
+public Object invoke(RemoteInvocation invocation)
+   throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+
+   return this.rmiExporter.invoke(invocation, this.wrappedObject);
+}
+```
+
+**RmiBasedExported#invoke**
+
+```
+/**
+ * Redefined here to be visible to RmiInvocationWrapper.
+ * Simply delegates to the corresponding superclass method.
+ */
+@Override
+protected Object invoke(RemoteInvocation invocation, Object targetObject)
+      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+
+   return super.invoke(invocation, targetObject);
+}
+```
+
+**RemoteInvocationBasedExported**
+
+```java
+/**
+ * Apply the given remote invocation to the given target object.
+ * The default implementation delegates to the RemoteInvocationExecutor.
+ * <p>Can be overridden in subclasses for custom invocation behavior,
+ * possibly for applying additional invocation parameters from a
+ * custom RemoteInvocation subclass. Note that it is preferable to use
+ * a custom RemoteInvocationExecutor which is a reusable strategy.
+ * @param invocation the remote invocation
+ * @param targetObject the target object to apply the invocation to
+ * @return the invocation result
+ * @throws NoSuchMethodException if the method name could not be resolved
+ * @throws IllegalAccessException if the method could not be accessed
+ * @throws InvocationTargetException if the method invocation resulted in an exception
+ * @see RemoteInvocationExecutor#invoke
+ */
+protected Object invoke(RemoteInvocation invocation, Object targetObject)
+      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+
+   if (logger.isTraceEnabled()) {
+      logger.trace("Executing " + invocation);
+   }
+   try {
+   		// 下面的方法
+      return getRemoteInvocationExecutor().invoke(invocation, targetObject);
+   }
+   catch (NoSuchMethodException ex) {
+      if (logger.isDebugEnabled()) {
+         logger.debug("Could not find target method for " + invocation, ex);
+      }
+      throw ex;
+   }
+   catch (IllegalAccessException ex) {
+      if (logger.isDebugEnabled()) {
+         logger.debug("Could not access target method for " + invocation, ex);
+      }
+      throw ex;
+   }
+   catch (InvocationTargetException ex) {
+      if (logger.isDebugEnabled()) {
+         logger.debug("Target method failed for " + invocation, ex.getTargetException());
+      }
+      throw ex;
+   }
+}
+```
+**DefaultRemoteInvocationExecutor#invoke**
+
+```java
+/**
+ * Default implementation of the {@link RemoteInvocationExecutor} interface.
+ * Simply delegates to {@link RemoteInvocation}'s invoke method.
+ *
+ * @author Juergen Hoeller
+ * @since 1.1
+ * @see RemoteInvocation#invoke
+ */
+public class DefaultRemoteInvocationExecutor implements RemoteInvocationExecutor {
+
+   @Override
+   public Object invoke(RemoteInvocation invocation, Object targetObject)
+         throws NoSuchMethodException, IllegalAccessException, InvocationTargetException{
+
+      Assert.notNull(invocation, "RemoteInvocation must not be null");
+      Assert.notNull(targetObject, "Target object must not be null");
+      return invocation.invoke(targetObject);
+   }
+    
+}
+```
+
+## 客户端实现 
+
+当获取 Bean 时，首先通过 afterPropertiesSet 创建代理类，并使用当前类作为增强方法，而在调用该 bean 时其实返回的是代理类。
+
+RmiProxyFactoryBean 它的父类 RmiClientInterceptor 的父类 RemoteInvocationBasedAccessor 的父类 UrlBasedRemoteAccessor 实现了 InitializingBean 接口，也就是下面的 afterPropertiesSet 方法的来源，也在 Bean 的生命周期内。
+
+```java
+public class RmiProxyFactoryBean extends RmiClientInterceptor implements FactoryBean<Object>, BeanClassLoaderAware {
+
+   private Object serviceProxy;
+
+
+   @Override
+   public void afterPropertiesSet() {
+      super.afterPropertiesSet();
+      Class<?> ifc = getServiceInterface();
+      Assert.notNull(ifc, "Property 'serviceInterface' is required");
+      this.serviceProxy = new ProxyFactory(ifc, this).getProxy(getBeanClassLoader());
+   }
+
+
+   @Override
+   public Object getObject() {
+      return this.serviceProxy;
+   }
+
+   @Override
+   public Class<?> getObjectType() {
+      return getServiceInterface();
+   }
+
+   @Override
+   public boolean isSingleton() {
+      return true;
+   }
+
+}
+```
+
+**UrlBasedRemoteAccessor#afterPropertiesSet**
+
+```java
+@Override
+public void afterPropertiesSet() {
+   if (getServiceUrl() == null) {
+      throw new IllegalArgumentException("Property 'serviceUrl' is required");
+   }
+}
+```
+
+**RmiClientInterceptor#afterPropertiesSet**
+
+```java
+@Override
+public void afterPropertiesSet() {
+   super.afterPropertiesSet();
+   prepare();
+}
+```
+
+RmiClientInterceptor#prepare
+
+```java
+/**
+ * Fetches RMI stub on startup, if necessary.
+ * @throws RemoteLookupFailureException if RMI stub creation failed
+ * @see #setLookupStubOnStartup
+ * @see #lookupStub
+ */
+public void prepare() throws RemoteLookupFailureException {
+   // Cache RMI stub on initialization?
+   // 如果配置了 lookupStubOnStartup 属性便会在启动时寻找 stub
+   if (this.lookupStubOnStartup) {
+      Remote remoteObj = lookupStub();
+      if (logger.isDebugEnabled()) {
+         if (remoteObj instanceof RmiInvocationHandler) {
+            logger.debug("RMI stub [" + getServiceUrl() + "] is an RMI invoker");
+         }
+         else if (getServiceInterface() != null) {
+            boolean isImpl = getServiceInterface().isInstance(remoteObj);
+            logger.debug("Using service interface [" + getServiceInterface().getName() +
+               "] for RMI stub [" + getServiceUrl() + "] - " +
+               (!isImpl ? "not " : "") + "directly implemented");
+         }
+      }
+      if (this.cacheStub) {
+         this.cachedStub = remoteObj;
+      }
+   }
+}
+```
+
+获取 stub 的动作就会在系统启动时被执行缓存，从而降低使用时后的响应时间。
+
+可以用两种方式获取
+
++ 使用自定义的套接字工厂。如果使用这种方式，需要在构造 Registry 实例时将自定义套接字工厂传入，并使用 Registry 中提供的 lookup 方法来获取对应 stub。
++ 直接使用 RMI 提供的标准方法：Naming#lookup(getServiceUrl())
+
+RmiClinentInterceptor#lookupStub
+
+```java
+protected Remote lookupStub() throws RemoteLookupFailureException {
+   try {
+      Remote stub = null;
+      if (this.registryClientSocketFactory != null) {
+         // RMIClientSocketFactory specified for registry access.
+         // Unfortunately, due to RMI API limitations, this means
+         // that we need to parse the RMI URL ourselves and perform
+         // straight LocateRegistry.getRegistry/Registry.lookup calls.
+         URL url = new URL(null, getServiceUrl(), new DummyURLStreamHandler());
+         String protocol = url.getProtocol();
+         if (protocol != null && !"rmi".equals(protocol)) {
+            throw new MalformedURLException("Invalid URL scheme '" + protocol + "'");
+         }
+         String host = url.getHost();
+         int port = url.getPort();
+         String name = url.getPath();
+         if (name != null && name.startsWith("/")) {
+            name = name.substring(1);
+         }
+         Registry registry = LocateRegistry.getRegistry(host, port, this.registryClientSocketFactory);
+         stub = registry.lookup(name);
+      }
+      else {
+         // Can proceed with standard RMI lookup API...
+         stub = Naming.lookup(getServiceUrl());
+      }
+      if (logger.isDebugEnabled()) {
+         logger.debug("Located RMI stub with URL [" + getServiceUrl() + "]");
+      }
+      return stub;
+   }
+   catch (MalformedURLException ex) {
+      throw new RemoteLookupFailureException("Service URL [" + getServiceUrl() + "] is invalid", ex);
+   }
+   catch (NotBoundException ex) {
+      throw new RemoteLookupFailureException(
+            "Could not find RMI service [" + getServiceUrl() + "] in RMI registry", ex);
+   }
+   catch (RemoteException ex) {
+      throw new RemoteLookupFailureException("Lookup of RMI stub failed", ex);
+   }
+}
+```
