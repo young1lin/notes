@@ -2340,3 +2340,240 @@ protected Remote lookupStub() throws RemoteLookupFailureException {
    }
 }
 ```
+
+2. **增强器进行远程连接**
+
+**RmiClientInterceptor#invoke。**RmiClientInterceptor 是 RmiProxyFactoryBean 的父类。
+
+```java
+@Override
+public Object invoke(MethodInvocation invocation) throws Throwable {
+   Remote stub = getStub();
+   try {
+      return doInvoke(invocation, stub);
+   }
+   catch (RemoteConnectFailureException ex) {
+      return handleRemoteConnectFailure(invocation, ex);
+   }
+   catch (RemoteException ex) {
+      if (isConnectFailure(ex)) {
+         return handleRemoteConnectFailure(invocation, ex);
+      }
+      else {
+         throw ex;
+      }
+   }
+}
+```
+
+当客户端使用接口进行方法调用时是通过 Rmi 获取 stub 的，然后再通过 stub 中封装的信息进行服务器的调用工，这个 stub 就是在构建服务器时发布的对象。
+
+**RimClientInterceptor#getStub**
+
+```java
+protected Remote getStub() throws RemoteLookupFailureException {
+    // 有缓存直接使用缓存
+   if (!this.cacheStub || (this.lookupStubOnStartup && !this.refreshStubOnConnectFailure)) {
+      return (this.cachedStub != null ? this.cachedStub : lookupStub());
+   }
+   else {
+      synchronized (this.stubMonitor) {
+         if (this.cachedStub == null) {
+            this.cachedStub = lookupStub();
+         }
+         return this.cachedStub;
+      }
+   }
+}
+```
+
+Spring 中对于远程方法的调用是分两种情况考虑的。
+
++ 获取的 stub 是 RmiInvocationHandler 类型的，从服务端获取的 stub 是 RmiInvocationHandler，证明服务端也是用 Spring 构建的，就会走 Spring 中的约定。Spring 中的处理方式被委托给了 doInvoke 方法。
++ 获取的 stub 不是上面的类型的。被认为是非 Spring 构建的，按照普通方式处理，反射来做。如下
+
+**RmiClientInterceptor#doInvoke**
+
+```java
+@Nullable
+protected Object doInvoke(MethodInvocation invocation, Remote stub) throws Throwable {
+   if (stub instanceof RmiInvocationHandler) {
+      // RMI invoker
+      try {
+         return doInvoke(invocation, (RmiInvocationHandler) stub);
+      }
+      catch (RemoteException ex) {
+         throw RmiClientInterceptorUtils.convertRmiAccessException(
+            invocation.getMethod(), ex, isConnectFailure(ex), getServiceUrl());
+      }
+      catch (InvocationTargetException ex) {
+         Throwable exToThrow = ex.getTargetException();
+         RemoteInvocationUtils.fillInClientStackTraceIfPossible(exToThrow);
+         throw exToThrow;
+      }
+      catch (Throwable ex) {
+         throw new RemoteInvocationFailureException("Invocation of method [" + invocation.getMethod() +
+               "] failed in RMI service [" + getServiceUrl() + "]", ex);
+      }
+   }
+   else {
+      // traditional RMI stub 直接用反射，传统的 RMI stub
+      try {
+         return RmiClientInterceptorUtils.invokeRemoteMethod(invocation, stub);
+      }
+      catch (InvocationTargetException ex) {
+         Throwable targetEx = ex.getTargetException();
+         if (targetEx instanceof RemoteException) {
+            RemoteException rex = (RemoteException) targetEx;
+            throw RmiClientInterceptorUtils.convertRmiAccessException(
+                  invocation.getMethod(), rex, isConnectFailure(rex), getServiceUrl());
+         }
+         else {
+            throw targetEx;
+         }
+      }
+   }
+}
+```
+
+**RmiClientInterceptor#doInvoke**
+
+```java
+@Nullable
+protected Object doInvoke(MethodInvocation methodInvocation, RmiInvocationHandler invocationHandler)
+   throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+
+   if (AopUtils.isToStringMethod(methodInvocation.getMethod())) {
+      return "RMI invoker proxy for service URL [" + getServiceUrl() + "]";
+   }
+
+   return invocationHandler.invoke(createRemoteInvocation(methodInvocation));
+}
+```
+
+## HttpInvoker
+
+和 Rmi 类似，不再赘述
+
+# Spring 消息
+
+JMS Java Message Service 应用程序接口是一个 Java 平台中关于面向消息中间件（MOM）的 API，用于在两个应用程序之间或分布式系统中发送消息，进行异步通信。Java 消息服务是一个与具体平台无关的 API，绝大多数 MOM 提供供商都对 JMS 提供支持。
+
++ 点对点
++ 发布/订阅
+
+## Spring 整合 JMS
+
+Spring 对一些模版方法进行了一些封装。
+
+1. Spring 配置文件
+
+```xml
+<beans>
+    <bean id="connectionFactory" class="org.apache,.activemq.ActiveMQConnectionFactory">
+    	<property name="brokerURL">
+            <value>tcp://localhost:61616</value>
+        </property>
+    </bean>
+    
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+    	<propety name="connectionFactory">
+        	<ref bean="connectionFactory"/>
+        </propety>
+    </bean>
+    
+    <bean id="detination" class="org.apache.activemq.command.ActiveMQQueue">
+    	<constructor-arg index="0">
+        	<value>HelloWorldQueue</value>
+        </constructor-arg>
+    </bean>
+</beans>
+```
+
+2. 发送端
+
+模版方法，利用 JmsTemplate 进行发送和接受消息。
+
+## JmsTemplate
+
+1. **通用代码抽取**
+
+**JmsTemplate#send**
+
+```java
+@Override
+public void send(final Destination destination, final MessageCreator messageCreator) throws JmsException {
+   execute(session -> {
+      doSend(session, destination, messageCreator);
+      return null;
+   }, false);
+}
+```
+**JmsTemplate#execute**
+
+```java
+@Nullable
+public <T> T execute(SessionCallback<T> action, boolean startConnection) throws JmsException {
+   Assert.notNull(action, "Callback object must not be null");
+   Connection conToClose = null;
+   Session sessionToClose = null;
+   try {
+      Session sessionToUse = ConnectionFactoryUtils.doGetTransactionalSession(
+            obtainConnectionFactory(), this.transactionalResourceFactory, startConnection);
+      if (sessionToUse == null) {
+         conToClose = createConnection();
+         sessionToClose = createSession(conToClose);
+         if (startConnection) {
+            conToClose.start();
+         }
+         sessionToUse = sessionToClose;
+      }
+      if (logger.isDebugEnabled()) {
+         logger.debug("Executing callback on JMS Session: " + sessionToUse);
+      }
+      return action.doInJms(sessionToUse);
+   }
+   catch (JMSException ex) {
+      throw convertJmsAccessException(ex);
+   }
+   finally {
+      JmsUtils.closeSession(sessionToClose);
+      ConnectionFactoryUtils.releaseConnection(conToClose, getConnectionFactory(), startConnection);
+   }
+}
+```
+
+2. 发送消息的实现
+
+基于回调的方式，一步步封装了细节。
+
+```java
+protected void doSend(Session session, Destination destination, MessageCreator messageCreator)
+      throws JMSException {
+
+   Assert.notNull(messageCreator, "MessageCreator must not be null");
+   MessageProducer producer = createProducer(session, destination);
+   try {
+      Message message = messageCreator.createMessage(session);
+      if (logger.isDebugEnabled()) {
+         logger.debug("Sending created message: " + message);
+      }
+      doSend(producer, message);
+      // Check commit - avoid commit call within a JTA transaction.
+      if (session.getTransacted() && isSessionLocallyTransacted(session)) {
+         // Transacted session created by this template -> commit.
+         JmsUtils.commitIfNecessary(session);
+      }
+   }
+   finally {
+      JmsUtils.closeMessageProducer(producer);
+   }
+}
+```
+
+3. 接收消息
+
+和上面差不多
+
+## 监听器容器
+

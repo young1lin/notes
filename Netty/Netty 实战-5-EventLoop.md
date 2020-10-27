@@ -1,10 +1,8 @@
-# EventLoop 和线程模型
-
-## 线程模型概述
+# 线程模型概述
 
 我知道，ThreadPoolExecutor 也会用
 
-## EventLoop 接口
+# EventLoop 接口
 
 运行任务来处理在连接的生命周期内发生的事件是任何网络框架的基本功能——在 Netty 中叫事件循环 EventLoop
 
@@ -18,15 +16,15 @@ Netty 的 EventLoop 是协同设计的一部分，它采用了两个基本的 AP
 
 事件/任务的执行顺序 FIFO。
 
-### Netty 4 中的 I/O 和事件处理
+## Netty 4 中的 I/O 和事件处理
 
 由 I/O 操作触发的事件将流经安装了一个或者多个 ChannelHandler 的 ChannelPipeline。传播这些事件的方法调用可以随后被 ChannelHandler 所拦截，并且可以按需地处理事件。
 
 事件的性质通常决定了它将被如何处理；它可能将数据从网络栈中传递到你的应用程序中，或者进行逆向操作，或者执行一些截然不同的操作。但是事件的处理逻辑鼻血足够的通过和灵活，以处理所有可能的用例。在 Netty4  中，所有的 I/O 操作和事件都由已经被分配给了 EventLoop 的那个 Thread 来处理。
 
-## 任务调度
+# 任务调度
 
-### JDK 的任务调度 API
+## JDK 的任务调度 API
 
 在 Java 5 之前，任务调度是建立在 java.util.Timer 类之上的，其使用了一个后台 Thread，并且具有标准线程相同的限制。后面有了 interface ScheduledExecutorService 。
 
@@ -55,7 +53,7 @@ executor.shutdown();
 
 但是在高负载下它将带来性能上的负担。
 
-### 使用 EventLoop 调度任务
+## 使用 EventLoop 调度任务
 
 **使用 EventLoop 调度任务**
 
@@ -81,15 +79,15 @@ ScheduledFuture<?> future = ch.eventLoop().scheduleAtFixedRate(()->{
 future.cancel(fasle);
 ```
 
-## 实现细节
+# 实现细节
 
-### 线程管理
+## 线程管理
 
 分配给 EventLoop 的“主线程”来确定它的卓越性能。
 
 ![EventLoop 的执行逻辑.png](https://i.loli.net/2020/10/26/qGOiSYwLXRz3AUd.png)
 
-### EventLoop 线程的分配
+## EventLoop 线程的分配
 
 服务于 Channel 的 I/O 事件的 EventLoop 包含在 EventLoopGroup 中。根据不同的额传输实现，EventLoop 的创建和分配方式也不同。
 
@@ -108,23 +106,3 @@ EventLoopGroup 负责为每个新创建的 Channel 分配一个 EventLoop。在�
 2. **阻塞传输**
 
 一个 Channel 对应一个 EventLoop
-
-
-
-# 引导
-
-## BootStrap （这是个类）
-
-**引导类的层次结构**
-
-![引导类的层次结构final.png](https://i.loli.net/2020/10/26/9fwLeMHB17nGV4X.png)
-
-
-
-服务器致力于使用一个父 Channel 来接受来自客户端的连接，并创建子 Channel 以用于它们之间的通信；而客户端将最可能只需要一个单独的、没有父 Channel 的 Channel 类来用于所有的网络交互。（适用于无连接的传输协议，例如 UDP，它们并不是每个连接都需要一个单独的 Channel）。
-
-两种应用程序类型之间**通用的引导步骤**由 AbtractBootstrap 来处理，特定的给子类来做。
-
-**为什么引导类是 Cloneable 的**
-
-可能会需要创建多个具有类似配置或者完全相同配置的 Channel。为了支持这种模式而又不需要为每个 Channel 都创建并配置一个新的引导类实例，AbstractBootstrap 被标记为了 Cloneable。
