@@ -268,4 +268,86 @@ final class ChannelInitializerImpl extends ChannelInitializer<Channel>{
 
 ChannelOption make channel created easier。
 
-Netty 应用程序通常于组织的专有软件集成在一起，而像 Channel 这样的组件可能设置会在正常的 Netty 生命周期之外被使用。在某些常用的属性
+Netty 应用程序通常于组织的专有软件集成在一起，而像 Channel 这样的组件可能设置会在正常的 Netty 生命周期之外被使用。在某些常用的属性和数据不可用时，Netty 提供了 AttributeMap 抽象（一个由 Channel 和引导类提供的集合）以及 AttributeKey<T>(一个用于插入和获取属性的范型类)。使用这些工具，便可以安全地将任何类型的数据项于客户端和服务器 Channel（包含 ServerChannel 的子 Channel）相关联。
+
+**使用属性值**
+
+```java
+AttributeKey<Integer> id = AttributeKey.newInstance("ID");
+Bootstrap bootstrap = new Bootstrap();
+bootstrap.group(new NioEventLoopGroup())
+        .channel(NioSocketChannel.class)
+        .handler(new SimpleChannelInboundHandler<ByteBuf>() {
+            @Override
+            public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+                Integer idValue = ctx.channel().attr(id).get();
+                // do something with the idValue
+                System.out.printf("idValue is : %s",idValue);
+            }
+
+            @Override
+            protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+                System.out.println("Received data");
+            }
+        });
+bootstrap.option(ChannelOption.SO_KEEPALIVE,true)
+        .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,5000);
+bootstrap.attr(id,123456);
+ChannelFuture future = bootstrap.connect(new InetSocketAddress(8080));
+future.syncUninterruptibly();
+```
+
+# 引导 DatagramChannel
+
+前面的引导代码示例都是基于 TCP 协议的 SocketChannel，但是 Bootstrap 类也可以被用于无连接的协议。为此，Netty 提供了各种 DatagramChannel 的实现。唯一区别就是。不再调用 connect 方法。
+
+**使用 Bootstrap 和 DatagramChannel**
+
+```java
+Bootstrap bootstrap = new Bootstrap();
+bootstrap.group(new NioEventLoopGroup())
+        .channel(OioDatagramChannel.class)
+        .handler(new SimpleChannelInboundHandler<DatagramPacket>() {
+
+            @Override
+            protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
+                System.out.println("Receive data");
+            }
+
+        });
+ChannelFuture channelFuture = bootstrap.bind(new InetSocketAddress(0));
+channelFuture.addListener(new ChannelFutureListener() {
+    @Override
+    public void operationComplete(ChannelFuture future) throws Exception {
+        if(future.isSuccess()){
+            System.out.println("Channel bound");
+        }else {
+            System.err.println("Bind attempt failed");
+            future.cause().printStackTrace();
+        }
+    }
+});
+```
+
+# 关闭
+
+引导使你的应用程序启动并且运行期俩，但迟早都需要优雅将它关闭，优雅是指干净地释放所有活动的线程。这就是 EventLoop#shutdownGracefully 方法的作用。这个调用将会返回一个 Future，这个 Future 将在关闭完成时收到通知。shutdownGracefully 也是一个异步的操作。
+
+**优雅关闭**
+
+```java
+    NioEventLoopGroup group = new NioEventLoopGroup();
+    Bootstrap bootstrap = new Bootstrap();
+    bootstrap.group(group)
+            .channel(NioSocketChannel.class)
+            .handler(new SimpleChannelInboundHandler<ByteBuf>() {
+                @Override
+                protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+                    System.out.println("Receive data");
+                }
+            });
+    Future<?> future = group.shutdownGracefully();
+    // block until the group has shutdown
+    future.syncUninterruptibly();
+}
+```

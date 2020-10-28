@@ -5,11 +5,15 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.channel.socket.oio.OioDatagramChannel;
 import io.netty.channel.socket.oio.OioSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.util.AttributeKey;
+import io.netty.util.concurrent.Future;
 
 import java.net.InetSocketAddress;
 
@@ -47,7 +51,7 @@ public class BootstrapDemo {
     /**
      * 兼容性测试
      */
-    public void CompatibilityTest(){
+    public void compatibilityTest(){
         NioEventLoopGroup group = new NioEventLoopGroup();
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(group)
@@ -132,6 +136,11 @@ public class BootstrapDemo {
         });
     }
 
+    /**
+     * 添加多个 ChannelHandler
+     *
+     * @throws InterruptedException
+     */
     public void channelInitializerTest() throws InterruptedException {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(new NioEventLoopGroup(),new NioEventLoopGroup())
@@ -149,5 +158,72 @@ public class BootstrapDemo {
             pipeline.addLast(new HttpClientCodec());
             pipeline.addLast(new HttpObjectAggregator(Integer.MAX_VALUE));
         }
+    }
+
+    public void channelOption(){
+        AttributeKey<Integer> id = AttributeKey.newInstance("ID");
+        Bootstrap bootstrap = new Bootstrap();
+        bootstrap.group(new NioEventLoopGroup())
+                .channel(NioSocketChannel.class)
+                .handler(new SimpleChannelInboundHandler<ByteBuf>() {
+                    @Override
+                    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+                        Integer idValue = ctx.channel().attr(id).get();
+                        // do something with the idValue
+                        System.out.printf("idValue is : %s",idValue);
+                    }
+
+                    @Override
+                    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+                        System.out.println("Received data");
+                    }
+                });
+        bootstrap.option(ChannelOption.SO_KEEPALIVE,true)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,5000);
+        bootstrap.attr(id,123456);
+        ChannelFuture future = bootstrap.connect(new InetSocketAddress(8080));
+        future.syncUninterruptibly();
+    }
+
+    public void bootstrapAndDatagramChannel(){
+        Bootstrap bootstrap = new Bootstrap();
+        bootstrap.group(new NioEventLoopGroup())
+                .channel(OioDatagramChannel.class)
+                .handler(new SimpleChannelInboundHandler<DatagramPacket>() {
+
+                    @Override
+                    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
+                        System.out.println("Receive data");
+                    }
+
+                });
+        ChannelFuture channelFuture = bootstrap.bind(new InetSocketAddress(0));
+        channelFuture.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                if(future.isSuccess()){
+                    System.out.println("Channel bound");
+                }else {
+                    System.err.println("Bind attempt failed");
+                    future.cause().printStackTrace();
+                }
+            }
+        });
+    }
+
+    public void shutdown(){
+        NioEventLoopGroup group = new NioEventLoopGroup();
+        Bootstrap bootstrap = new Bootstrap();
+        bootstrap.group(group)
+                .channel(NioSocketChannel.class)
+                .handler(new SimpleChannelInboundHandler<ByteBuf>() {
+                    @Override
+                    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+                        System.out.println("Receive data");
+                    }
+                });
+        Future<?> future = group.shutdownGracefully();
+        // block until the group has shutdown
+        future.syncUninterruptibly();
     }
 }
