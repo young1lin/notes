@@ -309,3 +309,97 @@ private static Map<String, List<String>> loadSpringFactories(@Nullable ClassLoad
 }
 ```
 
+## factories 调用时序图
+
+META-INF/spring.factories 如何与 Spring 整合。// TODO 画出时序图
+
+ EmbeddedApplicationContext#refresh ->
+
+EmbeddedApplicationContext#invkeBeanFactoryPostProcessors ->
+
+PostProcessortRegistrationDelegate#invokeBeanDefinitionRegistryPostProcessors ->
+
+PostProcessortRegistrationDelegate#postProcessBeanDefinitionRegistry ->
+
+ConfigurationClassPostProcessor#processConfigBeanDefinitions ->
+
+ConfigurationClassPostProcessor#parse - >
+
+ConfigurationClassParaser#processDeferredImportSelectors ->
+
+ConfigurationClassParaser#selectImports ->
+
+AutoConfigurationImportSelector
+
+Spring Boot 使用了 Spring 提供的 BeanDefinitionRegistryPostProcessor 扩展点并实现了 ConfigurationClassPostProcessor 类。从而实现了 Spring 之上的一系列逻辑扩展。下面是 ConfigurationClassPostProcessor 的继承关系。
+
+![image.png](https://i.loli.net/2020/10/29/JkzcEmWxPGsTK9a.png)
+
+## 配置类解析
+
+书上的方法没有了，我找到最相近的的
+
+```java
+public void process() {
+   List<DeferredImportSelectorHolder> deferredImports = this.deferredImportSelectors;
+   this.deferredImportSelectors = null;
+   try {
+      if (deferredImports != null) {
+         DeferredImportSelectorGroupingHandler handler = new DeferredImportSelectorGroupingHandler();
+         deferredImports.sort(DEFERRED_IMPORT_COMPARATOR);
+         deferredImports.forEach(handler::register);
+         handler.processGroupImports();
+      }
+   }
+   finally {
+      this.deferredImportSelectors = new ArrayList<>();
+   }
+}
+```
+
+这是书上的，5.0还在，5.1就改掉了 // TODO 重新打断点找到调用链
+```java
+private void processDeferredImportSelectors() {
+		List<DeferredImportSelectorHolder> deferredImports = this.deferredImportSelectors;
+		this.deferredImportSelectors = null;
+		if (deferredImports == null) {
+			return;
+		}
+		// 排个序
+		deferredImports.sort(DEFERRED_IMPORT_COMPARATOR);
+		Map<Object, DeferredImportSelectorGrouping> groupings = new LinkedHashMap<>();
+		Map<AnnotationMetadata, ConfigurationClass> configurationClasses = new HashMap<>();
+    	// 这里应该就是
+		for (DeferredImportSelectorHolder deferredImport : deferredImports) {
+			Class<? extends Group> group = deferredImport.getImportSelector().getImportGroup();
+			DeferredImportSelectorGrouping grouping = groupings.computeIfAbsent(
+					(group != null ? group : deferredImport),
+					key -> new DeferredImportSelectorGrouping(createGroup(group)));
+			grouping.add(deferredImport);
+			configurationClasses.put(deferredImport.getConfigurationClass().getMetadata(),
+					deferredImport.getConfigurationClass());
+		}
+		for (DeferredImportSelectorGrouping grouping : groupings.values()) {
+			grouping.getImports().forEach(entry -> {
+				ConfigurationClass configurationClass = configurationClasses.get(entry.getMetadata());
+				try {
+					processImports(configurationClass, asSourceClass(configurationClass),
+							asSourceClasses(entry.getImportClassName()), false);
+				}
+				catch (BeanDefinitionStoreException ex) {
+					throw ex;
+				}
+				catch (Throwable ex) {
+					throw new BeanDefinitionStoreException(
+							"Failed to process import candidates for configuration class [" +
+							configurationClass.getMetadata().getClassName() + "]", ex);
+				}
+			});
+		}
+	}
+```
+
+Paraser 解析时序图
+
+![Parser 解析流程.png](https://i.loli.net/2020/10/29/utXDiCo3xfbIjYm.png)
+
