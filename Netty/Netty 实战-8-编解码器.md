@@ -302,3 +302,84 @@ public class WebSocketConvertHandler extends MessageToMessageCodec<WebSocketFram
 
 ## CombinedChannelDuplexHandler 类
 
+```java
+public class CombinedChannelDuplexHandler<I extends ChannelInboundHandler, O extends ChannelOutboundHandler>
+        extends ChannelDuplexHandler {}
+```
+
+这个类充当了 ChannelInboundHandler 和 ChannelOutboundHandler（该类型饿的参数 I 和 O）的容器。
+
+**ByteToCharDecoder 类**
+
+```java
+public class ByteToCharDecoder extends ByteToMessageDecoder {
+    @Override
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+        while (in.readableBytes() >= 2){
+            out.add(in.readChar());
+        }
+    }
+}
+```
+
+char 是两字节，所以这里读的 char 是 2 byte 的，然后包装成 Character 写入到 List。
+
+**CombinedByteCharCodec** 通过父类的构造器，注入
+
+```java
+public class CombinedByteCharCodec extends CombinedChannelDuplexHandler<ByteToCharDecoder,CharToByteEncoder> {
+    public CombinedByteCharCodec(){
+        // 9 折?
+        super(new ByteToCharDecoder(),new CharToByteEncoder());
+    }
+}
+```
+
+CombinedChannelDuplexHandler
+
+```java
+/**
+ * Creates a new instance that combines the specified two handlers into one.
+ */
+public CombinedChannelDuplexHandler(I inboundHandler, O outboundHandler) {
+    // 这里就确保不共享
+    // 父类有个 cache 的 Map，来缓存当前的类和是否 sharable
+    ensureNotSharable();
+    //
+    init(inboundHandler, outboundHandler);
+}
+```
+
+```java
+protected final void init(I inboundHandler, O outboundHandler) {
+    // 验证的一些操作，判空和类型的一些操作，还行，跟我平时写的代码差不多，把长而太多逻辑代码，拆分成一个小的方法
+    validate(inboundHandler, outboundHandler);
+    this.inboundHandler = inboundHandler;
+    this.outboundHandler = outboundHandler;
+}
+```
+
+```java
+private void validate(I inboundHandler, O outboundHandler) {
+    if (this.inboundHandler != null) {
+        throw new IllegalStateException(
+                "init() can not be invoked if " + CombinedChannelDuplexHandler.class.getSimpleName() +
+                        " was constructed with non-default constructor.");
+    }
+
+    ObjectUtil.checkNotNull(inboundHandler, "inboundHandler");
+    ObjectUtil.checkNotNull(outboundHandler, "outboundHandler");
+
+    if (inboundHandler instanceof ChannelOutboundHandler) {
+        throw new IllegalArgumentException(
+                "inboundHandler must not implement " +
+                ChannelOutboundHandler.class.getSimpleName() + " to get combined.");
+    }
+    if (outboundHandler instanceof ChannelInboundHandler) {
+        throw new IllegalArgumentException(
+                "outboundHandler must not implement " +
+                ChannelInboundHandler.class.getSimpleName() + " to get combined.");
+    }
+}
+```
+
