@@ -403,3 +403,273 @@ Paraser 解析时序图
 
 ![Parser 解析流程.png](https://i.loli.net/2020/10/29/utXDiCo3xfbIjYm.png)
 
++ ConfigurationClassPostProcessor 作为 Spring 扩展点是 Spring Boot 一系列功能的基础入口。
++ ConfigurationClassParser 作为解析职责的基本处理类，涵盖了各种解析处理的逻辑，如@Import、@Bean、@ImportResource、@ComponentScan 等注解都是在这个注解类中完成的，而这个类对外开放的函数入口就是 parse 方法。对应步骤 3。（Spring data jpa 就是以 Annotation // TODO 找到是哪个类 开头的 postProcessor 来进行方法转 SQL）
+
++ 完成步骤 3，所有解析的结果已经通过 3.2.2 步骤放在了 parse 的 configurationClasses 属性中，这是对这个属性进行统一的 spring bean 硬编码注册，注册逻辑统一委托给 ConfiurationClassBeanDefinitionReader，对外的接口是 loadBeanDefinitions，对应步骤 4
++ parse 中的处理是最复杂的，parse 中首先会处理自己本身能扫描到的 bean 注册逻辑，然后才会处理 spring.factories 定义的配置。处理 spring.factories 定义的配首先就是要加载配置类，这个时候 EnableAutoConfigurationImportSelector 提供的 selectImports 就被派上用场了，它返回的配置需要进行进一步解析，因为这些配置类肯跟对应不同的类型，如@Import、@Bean、@ImportResource、@PropertySource、@ComponentScan，而这些类型又有不同的处理逻辑。
+
+## ComponentScan 的切入点
+
+ConfigurationClassParser#doProcessConfigurationClass 	这个类是属于 spring-context 里面的
+
+```java
+/**
+ * Apply processing and build a complete {@link ConfigurationClass} by reading the
+ * annotations, members and methods from the source class. This method can be called
+ * multiple times as relevant sources are discovered.
+ * @param configClass the configuration class being build
+ * @param sourceClass a source class
+ * @return the superclass, or {@code null} if none found or previously processed
+ */
+@Nullable
+protected final SourceClass doProcessConfigurationClass(
+      ConfigurationClass configClass, SourceClass sourceClass, Predicate<String> filter)
+      throws IOException {
+
+   if (configClass.getMetadata().isAnnotated(Component.class.getName())) {
+      // Recursively process any member (nested) classes first
+      processMemberClasses(configClass, sourceClass, filter);
+   }
+
+   // Process any @PropertySource annotations
+   for (AnnotationAttributes propertySource : AnnotationConfigUtils.attributesForRepeatable(
+         sourceClass.getMetadata(), PropertySources.class,
+         org.springframework.context.annotation.PropertySource.class)) {
+      if (this.environment instanceof ConfigurableEnvironment) {
+         processPropertySource(propertySource);
+      }
+      else {
+         logger.info("Ignoring @PropertySource annotation on [" + sourceClass.getMetadata().getClassName() +
+               "]. Reason: Environment must implement ConfigurableEnvironment");
+      }
+   }
+
+   // Process any @ComponentScan annotations
+   // 1
+   Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable(
+         sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
+   if (!componentScans.isEmpty() &&
+         !this.conditionEvaluator.shouldSkip(sourceClass.getMetadata(), ConfigurationPhase.REGISTER_BEAN)) {
+      for (AnnotationAttributes componentScan : componentScans) {
+         // The config class is annotated with @ComponentScan -> perform the scan immediately
+         Set<BeanDefinitionHolder> scannedBeanDefinitions =
+               // 2
+               this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
+         // Check the set of scanned definitions for any further config classes and parse recursively if needed 
+         for (BeanDefinitionHolder holder : scannedBeanDefinitions) {
+            BeanDefinition bdCand = holder.getBeanDefinition().getOriginatingBeanDefinition();
+            if (bdCand == null) {
+               bdCand = holder.getBeanDefinition();
+            }
+            // // 对扫描出来的类进行过滤
+            if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
+               // 委托给 parse 方法中递归处理
+               // 3
+               parse(bdCand.getBeanClassName(), holder.getBeanName());
+            }
+         }
+      }
+   }
+
+   // Process any @Import annotations
+   processImports(configClass, sourceClass, getImports(sourceClass), filter, true);
+
+   // Process any @ImportResource annotations
+   AnnotationAttributes importResource =
+         AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
+   if (importResource != null) {
+      String[] resources = importResource.getStringArray("locations");
+      Class<? extends BeanDefinitionReader> readerClass = importResource.getClass("reader");
+      for (String resource : resources) {
+         String resolvedResource = this.environment.resolveRequiredPlaceholders(resource);
+         configClass.addImportedResource(resolvedResource, readerClass);
+      }
+   }
+
+   // Process individual @Bean methods
+   Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);
+   for (MethodMetadata methodMetadata : beanMethods) {
+      configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
+   }
+
+   // Process default methods on interfaces
+   processInterfaces(configClass, sourceClass);
+
+   // Process superclass, if any
+   if (sourceClass.getMetadata().hasSuperClass()) {
+      String superclass = sourceClass.getMetadata().getSuperClassName();
+      if (superclass != null && !superclass.startsWith("java") &&
+            !this.knownSuperclasses.containsKey(superclass)) {
+         this.knownSuperclasses.put(superclass, configClass);
+         // Superclass found, return its annotation metadata and recurse
+         return sourceClass.getSuperClass();
+      }
+   }
+
+   // No superclass -> processing is complete
+   return null;
+}
+```
+
+传入的 configClass 就是 spring.facotries 中定义的配置类。
+
+解析 @ComponentScan({"me.young1lin.spring"})
+
+ `Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable(
+         sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);`
+
+书上说最终到下面这步，但是我找不到，不管是 ConfigurationClassPareser#parse 方法，还是调用的上面的方法。
+
+// TODO 找出到底是哪里调用的下面的这个方法。
+
+```java
+public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, final String declaringClass) {
+   ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,
+         componentScan.getBoolean("useDefaultFilters"), this.environment, this.resourceLoader);
+
+   Class<? extends BeanNameGenerator> generatorClass = componentScan.getClass("nameGenerator");
+   boolean useInheritedGenerator = (BeanNameGenerator.class == generatorClass);
+   scanner.setBeanNameGenerator(useInheritedGenerator ? this.beanNameGenerator :
+         BeanUtils.instantiateClass(generatorClass));
+
+   ScopedProxyMode scopedProxyMode = componentScan.getEnum("scopedProxy");
+   if (scopedProxyMode != ScopedProxyMode.DEFAULT) {
+      scanner.setScopedProxyMode(scopedProxyMode);
+   }
+   else {
+      Class<? extends ScopeMetadataResolver> resolverClass = componentScan.getClass("scopeResolver");
+      scanner.setScopeMetadataResolver(BeanUtils.instantiateClass(resolverClass));
+   }
+
+   scanner.setResourcePattern(componentScan.getString("resourcePattern"));
+
+   for (AnnotationAttributes filter : componentScan.getAnnotationArray("includeFilters")) {
+      for (TypeFilter typeFilter : typeFiltersFor(filter)) {
+         scanner.addIncludeFilter(typeFilter);
+      }
+   }
+   for (AnnotationAttributes filter : componentScan.getAnnotationArray("excludeFilters")) {
+      for (TypeFilter typeFilter : typeFiltersFor(filter)) {
+         scanner.addExcludeFilter(typeFilter);
+      }
+   }
+
+   boolean lazyInit = componentScan.getBoolean("lazyInit");
+   if (lazyInit) {
+      scanner.getBeanDefinitionDefaults().setLazyInit(true);
+   }
+
+   Set<String> basePackages = new LinkedHashSet<>();
+   String[] basePackagesArray = componentScan.getStringArray("basePackages");
+   for (String pkg : basePackagesArray) {
+      String[] tokenized = StringUtils.tokenizeToStringArray(this.environment.resolvePlaceholders(pkg),
+            ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
+      Collections.addAll(basePackages, tokenized);
+   }
+   for (Class<?> clazz : componentScan.getClassArray("basePackageClasses")) {
+      basePackages.add(ClassUtils.getPackageName(clazz));
+   }
+   if (basePackages.isEmpty()) {
+      basePackages.add(ClassUtils.getPackageName(declaringClass));
+   }
+
+   scanner.addExcludeFilter(new AbstractTypeHierarchyTraversingFilter(false, false) {
+      @Override
+      protected boolean matchClassName(String className) {
+         return declaringClass.equals(className);
+      }
+   });
+   return scanner.doScan(StringUtils.toStringArray(basePackages));
+}
+```
+
+里面调用了 ClassPathBeanDefinitionScanner，Spring 原生的解析类，这是 Spring 核心解析类。
+
+之前 Mybatis 整合之中出现过这个。
+
+# Conditional 机制实现
+
+## Conditional 使用
+
+```java
+@Configuration
+@ComponentScan({"me.young1lin.spring.core.resolve.auto"})
+@ConditionalOnProperty(prefix = "resolve",name = "enable",havingValue = "true")
+public class HelloServiceAutoConfiguration {
+    @Bean
+    public HelloService helloService(){
+        return new HelloServiceImpl();
+    }
+}
+```
+
+# Conditional 原理
+
+**OnPropertyCondition#getMatchOutcome**
+
+```java
+@Override
+public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+   // 核心逻辑
+   List<AnnotationAttributes> allAnnotationAttributes = annotationAttributesFromMultiValueMap(
+         metadata.getAllAnnotationAttributes(ConditionalOnProperty.class.getName()));
+   List<ConditionMessage> noMatch = new ArrayList<>();
+   List<ConditionMessage> match = new ArrayList<>();
+   for (AnnotationAttributes annotationAttributes : allAnnotationAttributes) {
+      // 锚点 1
+      ConditionOutcome outcome = determineOutcome(annotationAttributes, context.getEnvironment());
+      (outcome.isMatch() ? match : noMatch).add(outcome.getConditionMessage());
+   }
+   if (!noMatch.isEmpty()) {
+      return ConditionOutcome.noMatch(ConditionMessage.of(noMatch));
+   }
+   return ConditionOutcome.match(ConditionMessage.of(match));
+}
+
+private List<AnnotationAttributes> annotationAttributesFromMultiValueMap(
+      MultiValueMap<String, Object> multiValueMap) {
+   List<Map<String, Object>> maps = new ArrayList<>();
+   multiValueMap.forEach((key, value) -> {
+      for (int i = 0; i < value.size(); i++) {
+         Map<String, Object> map;
+         if (i < maps.size()) {
+            map = maps.get(i);
+         }
+         else {
+            map = new HashMap<>();
+            maps.add(map);
+         }
+         map.put(key, value.get(i));
+      }
+   });
+   List<AnnotationAttributes> annotationAttributes = new ArrayList<>(maps.size());
+   for (Map<String, Object> map : maps) {
+      annotationAttributes.add(AnnotationAttributes.fromMap(map));
+   }
+   return annotationAttributes;
+}
+```
+
+**OnPropertyCondition#determineOutCome**
+
+```java
+// 锚点 1
+private ConditionOutcome determineOutcome(AnnotationAttributes annotationAttributes, PropertyResolver resolver) {
+   Spec spec = new Spec(annotationAttributes);
+   List<String> missingProperties = new ArrayList<>();
+   List<String> nonMatchingProperties = new ArrayList<>();
+   spec.collectProperties(resolver, missingProperties, nonMatchingProperties);
+   if (!missingProperties.isEmpty()) {
+      return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnProperty.class, spec)
+            .didNotFind("property", "properties").items(Style.QUOTE, missingProperties));
+   }
+   if (!nonMatchingProperties.isEmpty()) {
+      return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnProperty.class, spec)
+            .found("different value in property", "different value in properties")
+            .items(Style.QUOTE, nonMatchingProperties));
+   }
+   return ConditionOutcome
+         .match(ConditionMessage.forCondition(ConditionalOnProperty.class, spec).because("matched"));
+}
+```

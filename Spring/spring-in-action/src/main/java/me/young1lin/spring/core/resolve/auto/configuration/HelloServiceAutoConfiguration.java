@@ -2,6 +2,7 @@ package me.young1lin.spring.core.resolve.auto.configuration;
 
 import me.young1lin.spring.core.resolve.auto.configuration.service.HelloService;
 import me.young1lin.spring.core.resolve.auto.configuration.service.impl.HelloServiceImpl;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ComponentScan({"me.young1lin.spring.core.resolve.auto"})
+@ConditionalOnProperty(prefix = "resolve",name = "enable",havingValue = "true")
 public class HelloServiceAutoConfiguration {
     @Bean
     public HelloService helloService(){

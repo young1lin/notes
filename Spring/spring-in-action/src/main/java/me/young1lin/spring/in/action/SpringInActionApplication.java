@@ -27,7 +27,7 @@ public class SpringInActionApplication {
 		ConfigurableApplicationContext cac = new SpringApplication(SpringInActionApplication.class).run(args);
 		// cac.
 		// 通过依赖查找，来找到 Bean
-		HelloService helloService = cac.getBean(HelloService.class);
+		HelloService helloService = cac.getBean("helloService",HelloService.class);
 		// 这里输出的话，就已经自动装配成功了
 		System.out.println(helloService.hello());
 	}

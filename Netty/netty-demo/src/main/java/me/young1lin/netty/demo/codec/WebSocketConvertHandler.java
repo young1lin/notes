@@ -38,7 +38,7 @@ public class WebSocketConvertHandler extends MessageToMessageCodec<WebSocketFram
                 out.add(new ContinuationWebSocketFrame(payload));
                 break;
             default:
-                throw new IllegalStateException("Unsupported websocket msg" + msg);
+                throw new IllegalStateException("Unsupported WebSocket msg" + msg);
         }
     }
 
