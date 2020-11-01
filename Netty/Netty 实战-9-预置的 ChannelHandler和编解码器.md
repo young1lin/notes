@@ -249,7 +249,222 @@ WebSocket 以帧来进行传输，可以传输文本、二进制、Continuation�
 
 **WebSocketFrame 类型**
 
-| ClassName | Description |
-| --------- | ----------- |
-|           |             |
+| ClassName                  | Description                        |
+| -------------------------- | ---------------------------------- |
+| BinaryWebSocketFrame       |                                    |
+| TextWebSocketFrame         |                                    |
+| ContinuationWebSocketFrame | 属于上一个二进制帧或者文本帧的数据 |
+| CloseWebSocketFrame        |                                    |
+| PingWebSocketFrame         | 请求一个 PongWebSocketFrame        |
+| PongWebSocketFrame         | 对 PingWebSocketFrame 请求的响应   |
+
+**在服务器端支持 WebSocket**
+
+```java
+public class WebSocketServerInitializer extends ChannelInitializer<Channel> {
+
+    @Override
+    protected void initChannel(Channel ch) throws Exception {
+        ch.pipeline().addLast(
+                new HttpServerCodec()
+                , new HttpObjectAggregator(65536)
+                , new WebSocketServerProtocolHandler("/hello")
+                , new BinaryFrameHandler()
+                , new TextFrameHandler()
+                , new ContinuationFrameHandler()
+        );
+        
+    }
+
+    public static final class TextFrameHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>{
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) throws Exception {
+
+        }
+
+    }
+
+    public static final class BinaryFrameHandler extends SimpleChannelInboundHandler<BinaryWebSocketFrame>{
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, BinaryWebSocketFrame msg) throws Exception {
+
+        }
+
+    }
+
+    public static final class ContinuationFrameHandler extends SimpleChannelInboundHandler<ContinuationWebSocketFrame>{
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, ContinuationWebSocketFrame msg) throws Exception {
+
+        }
+
+    }
+
+}
+```
+
+# 空闲的连接和超时
+
+**用于空闲连接以及超时的 ChannelHandler**
+
+| ClassName           | Description                                                  |
+| ------------------- | ------------------------------------------------------------ |
+| IdleStateHandler    | 空闲时间太长，触发 IdleStateEvent 事件，可以在 ChannelInboundHandler 中重写 userEventTriggered 方法来处理该事件 |
+| ReadTimeoutHandler  | 在指定时间间隔内没有收到任何的**入站**数据，则抛出 ReadTimeoutException 并关闭对应的 Channel。重写 exceptionCaught 方法检测该异常。 |
+| WriteTimeoutHandler | 如果在指定的时间间隔内没有任何**出站**数据写入。则抛出 WriteTimeoutException 并关闭对应的 Channel。捕捉异常同上。 |
+
+**发送心跳**
+
+```java
+public class IdleStateHandlerInitializer extends ChannelInitializer<Channel> {
+
+    @Override
+    protected void initChannel(Channel ch) throws Exception {
+        ChannelPipeline pipeline = ch.pipeline();
+        pipeline.addLast(
+                // 读心跳时间，写心跳时间，所有心跳时间
+                new IdleStateHandler(0,0,60, TimeUnit.SECONDS));
+        pipeline.addLast(new HeartBeatHandler());
+    }
+
+    public static final class HeartBeatHandler extends ChannelInboundHandlerAdapter {
+        private static final ByteBuf HEARTBEAT_SEQUENCE = Unpooled.unreleasableBuffer(
+                Unpooled.copiedBuffer("HEARTBEAT",CharsetUtil.UTF_8));
+
+        @Override
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+            if(evt instanceof IdleStateEvent){
+                ctx.writeAndFlush(HEARTBEAT_SEQUENCE.duplicate())
+                        .addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+            }else {
+                super.userEventTriggered(ctx,evt);   
+            }
+        }
+    }
+
+}
+```
+
+# 解码给予分隔符的协议和机遇长度的协议
+
+## 基于分隔符的协议
+
+**用于处理基于分隔符的协议和基于长度的协议的解码器**
+
+| Class Name                 | Description                                                  |
+| -------------------------- | ------------------------------------------------------------ |
+| DelimiterBasedFrameDecoder | 使用任何由用户提供的分隔符来提取帧的通用解码器               |
+| LineBasedFrameDecoder      | 提取由行尾符（\n 或 \r\n）分隔的帧的解码器。这个解码器比上面的更快 |
+
+**处理由行尾符分隔的帧**
+
+![由行尾符分隔的帧.png](https://i.loli.net/2020/11/02/fInQSy2l8vErM7a.png)
+
+处理由行尾符分隔的帧
+
+```java
+public class LineBasedHandlerInitializer  extends ChannelInitializer<Channel> {
+
+    @Override
+    protected void initChannel(Channel ch) throws Exception {
+        ChannelPipeline pipeline = ch.pipeline();
+        // 该 LineBasedFrameDecoder 将提取的帧转法给下一个 ChannelInboundHandler
+        // 数值为接受的最大长度
+        pipeline.addLast(new LineBasedFrameDecoder(64*1024));
+        pipeline.addLast(new FrameHandler()) ;
+    }
+
+    public static final class  FrameHandler extends SimpleChannelInboundHandler<ByteBuf>{
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+
+        }
+        
+    }
+
+}
+```
+
+下面是示例的协议规范
+
++ 传入数据流是一系列的帧，每个帧都由换行符（\n）分隔；
++ 每个帧都由一系列的元素组成，每个元素都由单个空格字符分隔；
++ 一个帧的内容代表一个命令，定义一个命令名称后跟着数目可变的参数。
+
+用于这个协议的自定义解码器将定义以下类。
+
++ Cmd——将帧的内容存储在 ByteBuf 中，一个 ByteBuf 用于名称，另一个用于名称；
++ CmdDecoder——从被重写了的 decode 方法中获取一行字符串，并从他的内容构建一个 Cmd 的实例；
++ CmdHandler——从 CmdDecoder 获取解码的 Cmd 对象，并对它进行一些处理；
++ CmdHandlerInitializer——为了简便起见，我们将会把前面的这些定义为专门的  ChannelInitializer 的嵌套类，其将会把这些 ChannelInboundHandler 安装到 ChannelPipline 中。
+
+**使用 ChannelInitializer 安装解码器**
+
+```java
+public class CmdHandlerInitializer extends ChannelInitializer<Channel> {
+
+    static final byte SPACE = (byte) ' ';
+
+    @Override
+    protected void initChannel(Channel ch) throws Exception {
+        ChannelPipeline pipeline = ch.pipeline();
+        pipeline.addLast(new CmdDecoder(64 * 1024));
+        pipeline.addLast(new CmdHandler());
+    }
+
+    public static class Cmd {
+
+        private final ByteBuf name;
+
+        private final ByteBuf args;
+
+        public Cmd(ByteBuf name, ByteBuf args) {
+            this.name = name;
+            this.args = args;
+        }
+
+        public ByteBuf name() {
+            return name;
+        }
+
+        public ByteBuf args() {
+            return args;
+        }
+
+    }
+
+
+    public static final class CmdDecoder extends LineBasedFrameDecoder {
+
+        public CmdDecoder(int maxLength) {
+            super(maxLength);
+        }
+
+        @Override
+        protected Object decode(ChannelHandlerContext ctx, ByteBuf buffer) throws Exception {
+            ByteBuf frame = (ByteBuf) super.decode(ctx, buffer);
+            if (frame == null) {
+                return null;
+            }
+            int index = frame.indexOf(frame.readerIndex(), frame.writerIndex(), SPACE);
+            return new Cmd(frame.slice(frame.readerIndex(), index), frame.slice(index + 1, frame.writerIndex()));
+        }
+
+    }
+
+    public static final class CmdHandler extends SimpleChannelInboundHandler<Cmd>{
+
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, Cmd msg) throws Exception {
+            // 处理对象
+        }
+
+    }
+}
+```
 
