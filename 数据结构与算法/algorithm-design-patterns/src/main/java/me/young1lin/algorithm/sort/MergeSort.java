@@ -1,12 +1,15 @@
 package me.young1lin.algorithm.sort;
 
-import java.util.Arrays;
+import me.young1lin.algorithm.sort.annotation.Order;
 
 /**
+ * 暂时还是搞不明白
+ *
  * @author young1lin
  * @version 1.0
  * @date 2020/10/26 7:26 下午
  */
+@Order(1)
 public class MergeSort extends AbstractSort {
 
     @Override
@@ -14,13 +17,25 @@ public class MergeSort extends AbstractSort {
         doSort(arr, 0, arr.length - 1);
     }
 
+    /**
+     * 第一步是找出递归公式，第二步找出终止条件，第三步推导出代码
+     * 1. 这里的递归公式 doSort(p,r) = merge(doSort(p,q),doSort(q+1,r))
+     * <p>
+     * 2. 终止条件 p>=r
+     * <p>
+     * 3. 就是下面的代码
+     *
+     * @param arr   待排序数组
+     * @param left  待排序数组最左边
+     * @param right 待排序数组最右边
+     */
     private void doSort(int[] arr, int left, int right) {
         // 递归终止条件
         if (left >= right) {
             return;
         }
 
-        // 找中文数，实现分治思想
+        // 找中位数，实现分治思想
         int mid = left + (right - left) / 2;
         // 分治执行递归
         doSort(arr, left, mid);
@@ -29,6 +44,12 @@ public class MergeSort extends AbstractSort {
         merge(arr, left, mid, right);
     }
 
+    /**
+     * @param arr   待合并的数组
+     * @param left  最左边索引
+     * @param mid   中位数
+     * @param right 最右边索引
+     */
     private void merge(int[] arr, int left, int mid, int right) {
         int length = right - left + 1;
         int[] temp = new int[length];

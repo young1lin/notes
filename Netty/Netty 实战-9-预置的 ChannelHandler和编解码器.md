@@ -468,3 +468,210 @@ public class CmdHandlerInitializer extends ChannelInitializer<Channel> {
 }
 ```
 
+## 基于长度的协议
+
+基于长度的协议通过将它的长度编码到帧的头部来定义帧，而不是使用特殊的分隔符来标记它的结束。
+
+**用于基于长度的协议的解码器**
+
+| ClassName                    | Description                                                  |
+| ---------------------------- | ------------------------------------------------------------ |
+| FixedLengthFrameDecoder      | 提取在调用构造函数时指定的定长帧                             |
+| LengthFieldBasedFrameDecoder | 根据编码进帧头部中的长度值提取帧：该字段的偏移量以及长度在构造函数中指定 |
+
+**解码长度为 8 字节的帧**
+
+![解码长度为 8 字节的帧.png](https://i.loli.net/2020/11/02/kb6R5UavqQ1zjYD.png)
+
+会遇到被编码到消息头部的帧大小不是固定之的协议。为了处理这种变长帧，可以使用 LengthFieldBasedFrameDecoder，它将从头部字段确定帧长，然后从数据流中国呢提取指定的字节数。
+
+**将变长帧大小编码进头部的消息** 		我是觉得有点像 Class 文件的无符号数，前面标明了后面的内容长度。
+
+![将变长帧大小编码进头部的消息.png](https://i.loli.net/2020/11/02/ejIEBX4YrWqHLSk.png)
+
+LengthFieldBasedFrameDecoder 提供了几个构造函数来支持各种各样的头部配置情况。
+
+**使用 LengthFieldBasedFrameDecoder 解码器基于长度的协议**
+
+```java
+public class LengthBasedInitializer extends ChannelInitializer<Channel> {
+
+    @Override
+    protected void initChannel(Channel ch) throws Exception {
+        ChannelPipeline pipeline = ch.pipeline();
+        // 第一个参数是帧最大长度，第二参数是长度字段位偏移量，第三个参数是标示长度的字段的长度
+        pipeline.addLast(new LengthFieldBasedFrameDecoder(64*1024,0,8));
+        pipeline.addLast(new FrameHandler());
+    }
+
+    public static final class FrameHandler extends SimpleChannelInboundHandler<ByteBuf> {
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+            // Do something with the frame
+            // 处理帧的数据
+        }
+
+    }
+
+}
+```
+
+# 写大型数据
+
+由于写操作是非阻塞的，所以即使没有写出所有的数据，写操作也会在完成时返回并通知 ChannelFuture。当这种情况发生时，如果仍然不停地写入，就有内存耗尽的风险，所以在写大型数据时，需要准备好处理到远程节点的连接时慢速连接的情况，这种情况会导致内存释放的延迟，
+
+前面提到了 NOI 的零拷贝特性，这种特性消除了将文件的内容从文件系统移动到网络栈的复制过程。所有的这一切都发生在 Netty 的核心中，所以应用程序所有需要做的就是使用一个 FileRegion 接口的实现，其在 Netty 的 API 文档中的定义是：”通过支持零拷贝的文件传输的 Channel 来发送的文件区域。“
+
+**使用 FileRegion 传输文件的内容**
+
+```java
+File file = new File(System.getProperty("user.dir") + File.separator + "pom.xml");
+FileInputStream in = new FileInputStream(file);
+FileRegion region = new DefaultFileRegion(
+        in.getChannel(), 0, file.length());
+
+ch.writeAndFlush(region).addListener(new ChannelFutureListener() {
+    @Override
+    public void operationComplete(ChannelFuture future) throws Exception {
+        if (!future.isSuccess()) {
+            Throwable cause = future.cause();
+            cause.printStackTrace();
+        }
+    }
+});
+```
+
+这个示例知识用于文件内容的直接传输，不包括应用程序对数据的任何处理。在需要将数据从文件系统复制到用户内存中时，可以使用 ChunkedWriteHandler，它是支持异步写大型数据，而又不会导致大量的内存消耗。
+
+关键是 ChunkedInput<B> （接口），其中类型参数 B 是 readChunk 方法返回的类型 Netty 预置了该接口的 4 个实现，如表 11-7 中所列出的，每个都代表了一个将有 ChunkedWriteHandler 处理的不定长度的数据流。
+
+下面说明了 ChunkedStream 的用法，它是实践中最常用的实现。所示的类使用了一个 File 以及一个 SslContexgt 进行实例化。当 initChannel 方法被调用时，它将使用所示 的ChannelHandler 链初始化该 Channel。
+
+**ChunkedInput 的实现**
+
+| Class Name       | Decription                                                   |
+| ---------------- | ------------------------------------------------------------ |
+| ChunkedFile      | 从文件中逐块获取数据，如果当前平台不支持零拷贝，或者需要住那还数据时使用 |
+| ChunkedNioFIle   | 和上面类似，只是使用了 FileChannel                           |
+| ChunkedStream    | 从 InputStream 中逐块传输内容                                |
+| ChunkedNioStream | 从 ReadableByteChannel 中逐块传输内容                        |
+
+当 Channel 的状态变为活动时，WriteStreamHandler 将会逐块地把来自文件中的数据作为 ChunkedStream 写入。数据在传输之前将会由 SslHandler 加密。
+
+**使用 ChunkedStream 传输文件内容**
+
+```java
+public class ChunkedWriteHandlerInitializer extends ChannelInitializer<Channel> {
+
+    private final File file;
+    
+    private final SslContext sslContext;
+
+    public ChunkedWriteHandlerInitializer(File file, SslContext sslContext) {
+        this.file = file;
+        this.sslContext = sslContext;
+    }
+
+    @Override
+    protected void initChannel(Channel ch) throws Exception {
+        ChannelPipeline pipeline = ch.pipeline();
+        pipeline.addLast(new SslHandler(sslContext.newEngine(ch.alloc())));
+        pipeline.addLast(new ChunkedWriteHandler());
+        pipeline.addLast(new WriteStreamHandler());
+    }
+
+    public final class WriteStreamHandler extends ChannelInboundHandlerAdapter {
+
+        @Override
+        public void channelActive(ChannelHandlerContext ctx) throws Exception {
+            super.channelActive(ctx);
+            ctx.writeAndFlush(new ChunkedStream(new FileInputStream(file)));
+        }
+
+    }
+
+}
+```
+
+**逐块输入**要是哟睾自己的 ChunkedInput 实现，请在 ChannelPipeline 中安装一个 ChunkedWriteHandler
+
+# 序列化数据
+
+JDK 提供了 ObjectInputStream 和 ObjectOutputStream 用于通过网络对 POJO 的基本类型和图进行序列化和反序列化。在《大型分布式网站架构与实战》中就讲到了，这个有安全问题，并且容易制造网络传输“炸弹”，导致整个应用的资源都耗在反序列化上。推荐 JSON 的和 Hessian。
+
+## JDK 序列化
+
+**JDK 序列化编解码器**
+
+| Class Name                        | Description                                                  |
+| --------------------------------- | ------------------------------------------------------------ |
+| CompatibleObjectDecoder（已废弃） | 和使用 JDK 序列化的非基于 Netty 的远程节点进行互操作的解码器 |
+| CompatibleObjectEncoder           | 和使用 JDK 序列化的非基于 Netty 的远程节点进行互操作的编码器 |
+| ObjectDecoder                     | 构建于 JDK 序列化之上的使用自定义的序列化来解码的解码器；当没有其他的外部依赖时，它提供了速度上的改进。否则其他的序列化更加可取。 |
+| ObjectEncoder                     | 同上                                                         |
+
+## 使用 JBoss Marshalling 进行序列化
+
+算是对原生 JDK 序列化一种优化。
+
+**JBoss Marshalling 编解码器**
+
+| Class Name                                                   | Description                                       |
+| ------------------------------------------------------------ | ------------------------------------------------- |
+| CompatibleMarshallingDecoder<br/>CompatibleMarshallingEncoder | 与只使用 JDK 序列化的远程节点兼容                 |
+| MarshallingDecoder<br/>MarshallingEncoder                    | 适用于使用 JBoss Marshalling 的节点，必须一起使用 |
+
+**使用 JBoss Marshalling **
+
+```java
+public class MarshallingInitializer extends ChannelInitializer<Channel> {
+
+    private final MarshallerProvider marshallerProvider;
+
+    private final UnmarshallerProvider unmarshallerProvider;
+
+    public MarshallingInitializer(MarshallerProvider marshallerProvider
+            , UnmarshallerProvider unmarshallerProvider) {
+        this.marshallerProvider = marshallerProvider;
+        this.unmarshallerProvider = unmarshallerProvider;
+    }
+
+    @Override
+    protected void initChannel(Channel ch) throws Exception {
+        ChannelPipeline pipeline = ch.pipeline();
+        pipeline.addLast(new MarshallingDecoder(unmarshallerProvider));
+        pipeline.addLast(new MarshallingEncoder(marshallerProvider));
+        pipeline.addLast(new ObjectHandler());
+
+    }
+
+    public static final class ObjectHandler extends SimpleChannelInboundHandler<Serializable>{
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, Serializable msg) throws Exception {
+            // Do something
+        }
+
+    }
+
+}
+```
+
+## 通过 Protocol Buffers 序列化
+
+由 Google 公司开发，已经开源的数据交换格式。
+
+以一种紧凑而高效的方式对结构化的数据进行编码以及解码，可以跨语言传输。
+
+**Protobuf 编解码器**
+
+| Class Name                           | Description                                                  |
+| ------------------------------------ | ------------------------------------------------------------ |
+| ProtobufDecoder                      | 使用 protobuf 对消息进行解码                                 |
+| ProtobufEncoder                      | 编码                                                         |
+| ProtobufVarint32FrameDecoder         | 根据消息中的 Google Protocol Buffers 的 “Base128 Varints”整型长度字段值动态地分割所接收到的 ByteBuf |
+| ProtobufVarint32LengthFieldPropender | 向 ByteBuf 前追加一个 Google Protocol Buffers 的“Base 128 Varints” 整型的长度字段值 |
+
+本质上编解码就是特殊的 ChannelHandler，通过 ChannelPipeline 添加，然后处理其中传输的消息。
+
