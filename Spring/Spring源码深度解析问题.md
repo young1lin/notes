@@ -1,4 +1,4 @@
-# 6.4.1
+#  6.4.1
 
 customizeBeanFactory(DefaultListableBeanFactory beanFactory){
 
@@ -354,5 +354,4 @@ study.enabled=true -> study.enable=true
 
 416 页又是有 d 的了。后面都是没 d 的了。
 
-
-
+420、421 又有 d 了。

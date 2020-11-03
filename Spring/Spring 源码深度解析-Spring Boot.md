@@ -659,7 +659,8 @@ private ConditionOutcome determineOutcome(AnnotationAttributes annotationAttribu
    Spec spec = new Spec(annotationAttributes);
    List<String> missingProperties = new ArrayList<>();
    List<String> nonMatchingProperties = new ArrayList<>();
-   spec.collectProperties(resolver, missingProperties, nonMatchingProperties);
+    // 这个对象是当前类的静态内部类。
+   spec.collectProperties(resolver, missingProperties, nonMatchingProperties);   
    if (!missingProperties.isEmpty()) {
       return ConditionOutcome.noMatch(ConditionMessage.forCondition(ConditionalOnProperty.class, spec)
             .didNotFind("property", "properties").items(Style.QUOTE, missingProperties));
@@ -673,3 +674,300 @@ private ConditionOutcome determineOutcome(AnnotationAttributes annotationAttribu
          .match(ConditionMessage.forCondition(ConditionalOnProperty.class, spec).because("matched"));
 }
 ```
+
+**OnPropertyCondition.Sepc#collectProperties**
+
+```java
+// 这个函数尝试使用 PropertyResolver 来验证对应的属性是否存在，如果不存在则验证不通过。
+private void collectProperties(PropertyResolver resolver, List<String> missing, List<String> nonMatching) {
+   for (String name : this.names) {
+      String key = this.prefix + name;
+      if (resolver.containsProperty(key)) {
+         if (!isMatch(resolver.getProperty(key), this.havingValue)) {
+            nonMatching.add(name);
+         }
+      }
+      else {
+         if (!this.matchIfMissing) {
+            missing.add(name);
+         }
+      }
+   }
+}
+```
+
+## 调用切入点
+
+**ConfigurationClassParser#processConfigurationClass**
+
+```java
+protected void processConfigurationClass(ConfigurationClass configClass, Predicate<String> filter) throws IOException {
+    // 第一行的判断就是 Conditional 逻辑生效的切入点，如果这里判断不通过，后面都不会执行。
+   if (this.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) {
+      return;
+   }
+
+   ConfigurationClass existingClass = this.configurationClasses.get(configClass);
+   if (existingClass != null) {
+      if (configClass.isImported()) {
+         if (existingClass.isImported()) {
+            existingClass.mergeImportedBy(configClass);
+         }
+         // Otherwise ignore new imported config class; existing non-imported class overrides it.
+         return;
+      }
+      else {
+         // Explicit bean definition found, probably replacing an import.
+         // Let's remove the old one and go with the new one.
+         this.configurationClasses.remove(configClass);
+         this.knownSuperclasses.values().removeIf(configClass::equals);
+      }
+   }
+
+   // Recursively process the configuration class and its superclass hierarchy.
+   SourceClass sourceClass = asSourceClass(configClass, filter);
+   do {
+      sourceClass = doProcessConfigurationClass(configClass, sourceClass, filter);
+   }
+   while (sourceClass != null);
+
+   this.configurationClasses.put(configClass, configClass);
+}
+```
+
+**ConditionEvaluator#shouldSkip**
+
+```java
+/**
+ * Determine if an item should be skipped based on {@code @Conditional} annotations.
+ * @param metadata the meta data
+ * @param phase the phase of the call
+ * @return if the item should be skipped
+ */
+public boolean shouldSkip(@Nullable AnnotatedTypeMetadata metadata, @Nullable ConfigurationPhase phase) {
+   if (metadata == null || !metadata.isAnnotated(Conditional.class.getName())) {
+      return false;
+   }
+
+   if (phase == null) {
+      if (metadata instanceof AnnotationMetadata &&
+            ConfigurationClassUtils.isConfigurationCandidate((AnnotationMetadata) metadata)) {
+         return shouldSkip(metadata, ConfigurationPhase.PARSE_CONFIGURATION);
+      }
+      return shouldSkip(metadata, ConfigurationPhase.REGISTER_BEAN);
+   }
+
+   List<Condition> conditions = new ArrayList<>();
+    // 获取评估的类
+   for (String[] conditionClasses : getConditionClasses(metadata)) {
+      for (String conditionClass : conditionClasses) {
+         Condition condition = getCondition(conditionClass, this.context.getClassLoader());
+         conditions.add(condition);
+      }
+   }
+
+   AnnotationAwareOrderComparator.sort(conditions);
+
+   for (Condition condition : conditions) {
+      ConfigurationPhase requiredPhase = null;
+      if (condition instanceof ConfigurationCondition) {
+         requiredPhase = ((ConfigurationCondition) condition).getConfigurationPhase();
+      }
+       // 之前这里是两个 if 现在是一个 if
+      if ((requiredPhase == null || requiredPhase == phase) && !condition.matches(this.context, metadata)) {
+         return true;
+      }
+   }
+
+   return false;
+}
+```
+
+# 属性自动化配置实现
+
+@Value 如果塞入属性的
+
+**DefaultListableBeanFactory#doResolveDependency**
+
+```java
+@Nullable
+public Object doResolveDependency(DependencyDescriptor descriptor, @Nullable String beanName,
+      @Nullable Set<String> autowiredBeanNames, @Nullable TypeConverter typeConverter) throws BeansException {
+
+   InjectionPoint previousInjectionPoint = ConstructorResolver.setCurrentInjectionPoint(descriptor);
+   try {
+      Object shortcut = descriptor.resolveShortcut(this);
+      if (shortcut != null) {
+         return shortcut;
+      }
+
+      Class<?> type = descriptor.getDependencyType();
+      Object value = getAutowireCandidateResolver().getSuggestedValue(descriptor);
+      if (value != null) {
+         if (value instanceof String) {
+             // 这里解析 @Value 
+            String strVal = resolveEmbeddedValue((String) value);
+            BeanDefinition bd = (beanName != null && containsBean(beanName) ?
+                  getMergedBeanDefinition(beanName) : null);
+            value = evaluateBeanDefinitionString(strVal, bd);
+         }
+         TypeConverter converter = (typeConverter != null ? typeConverter : getTypeConverter());
+         try {
+            return converter.convertIfNecessary(value, type, descriptor.getTypeDescriptor());
+         }
+         catch (UnsupportedOperationException ex) {
+            // A custom TypeConverter which does not support TypeDescriptor resolution...
+            return (descriptor.getField() != null ?
+                  converter.convertIfNecessary(value, type, descriptor.getField()) :
+                  converter.convertIfNecessary(value, type, descriptor.getMethodParameter()));
+         }
+      }
+
+      Object multipleBeans = resolveMultipleBeans(descriptor, beanName, autowiredBeanNames, typeConverter);
+      if (multipleBeans != null) {
+         return multipleBeans;
+      }
+
+      Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
+      if (matchingBeans.isEmpty()) {
+         if (isRequired(descriptor)) {
+            raiseNoMatchingBeanFound(type, descriptor.getResolvableType(), descriptor);
+         }
+         return null;
+      }
+
+      String autowiredBeanName;
+      Object instanceCandidate;
+
+      if (matchingBeans.size() > 1) {
+         autowiredBeanName = determineAutowireCandidate(matchingBeans, descriptor);
+         if (autowiredBeanName == null) {
+            if (isRequired(descriptor) || !indicatesMultipleBeans(type)) {
+               return descriptor.resolveNotUnique(descriptor.getResolvableType(), matchingBeans);
+            }
+            else {
+               // In case of an optional Collection/Map, silently ignore a non-unique case:
+               // possibly it was meant to be an empty collection of multiple regular beans
+               // (before 4.3 in particular when we didn't even look for collection beans).
+               return null;
+            }
+         }
+         instanceCandidate = matchingBeans.get(autowiredBeanName);
+      }
+      else {
+         // We have exactly one match.
+         Map.Entry<String, Object> entry = matchingBeans.entrySet().iterator().next();
+         autowiredBeanName = entry.getKey();
+         instanceCandidate = entry.getValue();
+      }
+
+      if (autowiredBeanNames != null) {
+         autowiredBeanNames.add(autowiredBeanName);
+      }
+      if (instanceCandidate instanceof Class) {
+         instanceCandidate = descriptor.resolveCandidate(autowiredBeanName, type, this);
+      }
+      Object result = instanceCandidate;
+      if (result instanceof NullBean) {
+         if (isRequired(descriptor)) {
+            raiseNoMatchingBeanFound(type, descriptor.getResolvableType(), descriptor);
+         }
+         result = null;
+      }
+      if (!ClassUtils.isAssignableValue(type, result)) {
+         throw new BeanNotOfRequiredTypeException(autowiredBeanName, type, instanceCandidate.getClass());
+      }
+      return result;
+   }
+   finally {
+      ConstructorResolver.setCurrentInjectionPoint(previousInjectionPoint);
+   }
+}
+```
+
+**AbstractBeanFactory#resolveEmbeddedValue**
+
+```java
+public String resolveEmbeddedValue(@Nullable String value) {
+   if (value == null) {
+      return null;
+   }
+   String result = value;
+   for (StringValueResolver resolver : this.embeddedValueResolvers) {
+      result = resolver.resolveStringValue(result);
+      if (result == null) {
+         return null;
+      }
+   }
+   return result;
+}
+```
+
+**StringValueResolver** 是个接口，并且标注了被用作 Lambda 表达式的注解 @FunctionalInterface
+
+**StringValueResolver** 功能实现依赖 Spring 的切入点是 **PropertySourcesPlaceholderConfigurer**。
+
+下面是 **PropertySourcesPlaceholderConfigurer**的类层次结构
+
+![PropertySourcesPlaceholderConfigurer类层次结构图.png](https://i.loli.net/2020/11/03/OvJyjpXVPl68cWH.png)
+
+先从 postProcessBeanFactory 方法
+
+```java
+/**
+ * Processing occurs by replacing ${...} placeholders in bean definitions by resolving each
+ * against this configurer's set of {@link PropertySources}, which includes:
+ * <ul>
+ * <li>all {@linkplain org.springframework.core.env.ConfigurableEnvironment#getPropertySources
+ * environment property sources}, if an {@code Environment} {@linkplain #setEnvironment is present}
+ * <li>{@linkplain #mergeProperties merged local properties}, if {@linkplain #setLocation any}
+ * {@linkplain #setLocations have} {@linkplain #setProperties been}
+ * {@linkplain #setPropertiesArray specified}
+ * <li>any property sources set by calling {@link #setPropertySources}
+ * </ul>
+ * <p>If {@link #setPropertySources} is called, <strong>environment and local properties will be
+ * ignored</strong>. This method is designed to give the user fine-grained control over property
+ * sources, and once set, the configurer makes no assumptions about adding additional sources.
+ */
+@Override
+public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+   if (this.propertySources == null) {
+       // 这个 MutablePropertySources 是一个配置的类，它是 PropertySource 的默认实现。内部有一个默认的 CopyOnWriteArrayList 容器 
+      this.propertySources = new MutablePropertySources();
+      if (this.environment != null) {
+         this.propertySources.addLast(
+            new PropertySource<Environment>(ENVIRONMENT_PROPERTIES_PROPERTY_SOURCE_NAME, this.environment) {
+               @Override
+               @Nullable
+               public String getProperty(String key) {
+                  return this.source.getProperty(key);
+               }
+            }
+         );
+      }
+      try {
+         PropertySource<?> localPropertySource =
+               new PropertiesPropertySource(LOCAL_PROPERTIES_PROPERTY_SOURCE_NAME, mergeProperties());
+         if (this.localOverride) {
+            this.propertySources.addFirst(localPropertySource);
+         }
+         else {
+            this.propertySources.addLast(localPropertySource);
+         }
+      }
+      catch (IOException ex) {
+         throw new BeanInitializationException("Could not load properties", ex);
+      }
+   }
+
+   processProperties(beanFactory, new PropertySourcesPropertyResolver(this.propertySources));
+   this.appliedPropertySources = this.propertySources;
+}
+```
+
+StringValueResolver 初始化过程
+
+![BsSMTS.png](https://s1.ax1x.com/2020/11/03/BsSMTS.png)
+
+## Environment 初始化过程
+
