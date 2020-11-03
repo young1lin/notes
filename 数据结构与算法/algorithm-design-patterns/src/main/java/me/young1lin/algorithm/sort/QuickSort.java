@@ -25,10 +25,10 @@ public class QuickSort extends AbstractSort {
 
     /**
      * 获取随机区间值
-     * @param arr
-     * @param left
-     * @param right
-     * @return
+     * @param arr The array to be sorted
+     * @param left The first index of an array
+     * @param right The last index of an array
+     * @return the partition index of the array
      */
     private int partition(int[] arr, int left, int right) {
         int pivot = arr[right];

@@ -8,17 +8,18 @@ fi
 message=""
 
 for i in "$*"; do
-    message+=$i
+   message=$message$i
 done
+commit_info="${message} update"
 
 git add .
 echo "-----------------------------"
 echo "add all ...."
 echo "-----------------------------"
 
-git commit -m "$message update"
+git commit -m "$commit_info"
 echo "-----------------------------"
-echo "commit info"
+echo "commit info is $commit_info"
 echo "-----------------------------"
 git push
 echo "-----------------------------"

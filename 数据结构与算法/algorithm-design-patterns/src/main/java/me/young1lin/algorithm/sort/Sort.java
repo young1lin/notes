@@ -39,7 +39,7 @@ public interface Sort {
     }
 
     /**
-     * 提供默认比较并交换的方法
+     * 提供默认交换的方法
      *
      * @param arr 待排序的数组
      * @param i   左边

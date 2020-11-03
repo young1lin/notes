@@ -46,7 +46,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
-        // 如果请求了 WebSocket 协议升级，则增加引用技术（调用 retain 方法），并将它传递给下一个 ChannelInboundHandler
+        // 如果请求了 WebSocket 协议升级，则增加引用计数（调用 retain 方法），并将它传递给下一个 ChannelInboundHandler
         if (wsUri.equalsIgnoreCase(request.getUri())) {
             ctx.fireChannelRead(request.retain());
         } else {
@@ -92,3 +92,64 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
 }
 ```
 
+如果不需要压缩和加密，那么可以通过将 index.html 的内容存储到 DefaultFileRegion 中来达到最佳效率。这将会利用零拷贝特性进行内容的传输。
+
+**处理文本帧**
+
+```java
+public class TextWebSocketFrameHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+    private final ChannelGroup group;
+
+    public TextWebSocketFrameHandler(ChannelGroup group) {
+        this.group = group;
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt == WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
+            // 握手完成之后，去掉 HttpRequesthandler
+            ctx.pipeline().remove(HttpRequestHandler.class);
+            // 广播到所有的 Channel
+            group.writeAndFlush(new TextWebSocketFrame("Client " + ctx.channel() + " joined"));
+            group.add(ctx.channel());
+        } else {
+            super.userEventTriggered(ctx, evt);
+        }
+    }
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) throws Exception {
+        group.writeAndFlush(msg.retain());
+    }
+
+}
+```
+
+和之前一样，对于 retain 方法的调用是必需的，因为当 channelRead0 方法返回时，TextWebSocketFrame 的引用计数将会被减少。由于所有的操作都是异步的，因此，writeAndFlush 方法可能会在 channelRead0 方法返回之后完成，而且它绝对不能访问一个已经失效的引用。
+
+## 初始化 ChannelPipeline
+
+**初始化 ChannelPipeline**
+
+```java
+public class ChatServerInitializer extends ChannelInitializer<Channel> {
+
+    private final ChannelGroup group;
+
+    public ChatServerInitializer(ChannelGroup group) {
+        this.group = group;
+    }
+
+    @Override
+    protected void initChannel(Channel ch) throws Exception {
+        ChannelPipeline pipeline = ch.pipeline();
+        pipeline.addLast(new HttpServerCodec());
+        pipeline.addLast(new ChunkedWriteHandler());
+        pipeline.addLast(new HttpObjectAggregator(64 *1024));
+        pipeline.addLast(new HttpRequestHandler("/ws"));
+        pipeline.addLast(new WebSocketServerProtocolHandler("/ws"));
+        pipeline.addLast(new TextWebSocketFrameHandler(group));
+    }
+
+}
+```
