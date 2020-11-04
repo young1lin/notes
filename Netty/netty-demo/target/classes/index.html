@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>测试 Netty WebSocket 页面</title>
+    <script type="text/javascript">
+        var socket;
+        if (typeof(WebSocket) == "undefined") {
+            console.log("您的浏览器不支持WebSocket");
+        }else{
+            socket = new WebSocket("ws://localhost:9999/ws");
+            //打开事件
+            socket.onopen = function() {
+               console.log("websocket客户端已打开");
+            };
+            // Listen for messages
+            socket.addEventListener('message', function (event) {
+                alert('Message from server ', event.data);
+            });
+        }
+
+         function send(){
+            var text = document.getElementById("webSocketText");
+            var textValue = text.value;
+            socket.send(textValue);
+         }
+
+
+    </script>
+</head>
+<body>
+<table>
+    <tr>
+        <td>
+
+            <input id="webSocketText" type="text"/>
+        </td>
+        <td>
+            <button type="button" onclick="send()">send</button>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

@@ -18,8 +18,14 @@ public class ChatServerInitializer extends ChannelInitializer<Channel> {
 
     private final ChannelGroup group;
 
-    public ChatServerInitializer(ChannelGroup group) {
+    /**
+     * 这个标志这是否是用书上原始的页面内容
+     */
+    private final boolean isOriginal;
+
+    public ChatServerInitializer(ChannelGroup group,boolean isOriginal) {
         this.group = group;
+        this.isOriginal = isOriginal;
     }
 
     @Override
@@ -28,7 +34,7 @@ public class ChatServerInitializer extends ChannelInitializer<Channel> {
         pipeline.addLast(new HttpServerCodec());
         pipeline.addLast(new ChunkedWriteHandler());
         pipeline.addLast(new HttpObjectAggregator(64 *1024));
-        pipeline.addLast(new HttpRequestHandler("/ws"));
+        pipeline.addLast(new HttpRequestHandler("/ws",isOriginal));
         pipeline.addLast(new WebSocketServerProtocolHandler("/ws"));
         pipeline.addLast(new TextWebSocketFrameHandler(group));
     }
