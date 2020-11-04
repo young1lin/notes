@@ -969,5 +969,171 @@ StringValueResolver 初始化过程
 
 ![BsSMTS.png](https://s1.ax1x.com/2020/11/03/BsSMTS.png)
 
+1. 初始化 MutablePropertySource
+2. 初始化 PropertySourcesPropertyResolver
+3. 初始化 StringValueResolver 
+4. 注册 StringValueResolver
+
 ## Environment 初始化过程
+
+**Envvironment 初始化过程**
+
+![Environment 初始化过程.png](https://i.loli.net/2020/11/04/HoSt68flxRNmrCp.png)
+
+Load 函数 // TODO 和书上不一样了，需要重新写一下
+
+**ConfigFileApplicationListener.Loader#load**
+
+```java
+void load() {
+   FilteredPropertySource.apply(this.environment, DEFAULT_PROPERTIES, LOAD_FILTERED_PROPERTY,
+         (defaultProperties) -> {
+            this.profiles = new LinkedList<>();
+            this.processedProfiles = new LinkedList<>();
+            this.activatedProfiles = false;
+            this.loaded = new LinkedHashMap<>();
+            initializeProfiles();
+            while (!this.profiles.isEmpty()) {
+               Profile profile = this.profiles.poll();
+               if (isDefaultProfile(profile)) {
+                  addProfileToEnvironment(profile.getName());
+               }
+               load(profile, this::getPositiveProfileFilter,
+                     addToLoaded(MutablePropertySources::addLast, false));
+               this.processedProfiles.add(profile);
+            }
+            load(null, this::getNegativeProfileFilter, addToLoaded(MutablePropertySources::addFirst, true));
+            addLoadedPropertySources();
+            applyActiveProfiles(defaultProperties);
+         });
+}
+```
+
+Spring 的 profile 机制在这里体现了。我搞不懂的是下面几个参数，在这个类的时候
+
+**ConfigFileApplicationListener**
+
+```java
+static {
+   Set<String> filteredProperties = new HashSet<>();
+   filteredProperties.add("spring.profiles.active");
+   filteredProperties.add("spring.profiles.include");
+   LOAD_FILTERED_PROPERTY = Collections.unmodifiableSet(filteredProperties);
+}
+
+/**
+ * The "active profiles" property name.
+ */
+public static final String ACTIVE_PROFILES_PROPERTY = "spring.profiles.active";
+
+/**
+ * The "includes profiles" property name.
+ */
+public static final String INCLUDE_PROFILES_PROPERTY = "spring.profiles.include";
+```
+
+# Tomcat 启动
+
+**SpringApplication#run**
+
+```java
+public ConfigurableApplicationContext run(String... args) {
+   StopWatch stopWatch = new StopWatch();
+   stopWatch.start();
+   ConfigurableApplicationContext context = null;
+   Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
+   configureHeadlessProperty();
+   SpringApplicationRunListeners listeners = getRunListeners(args);
+   listeners.starting();
+   try {
+      ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+      ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
+      configureIgnoreBeanInfo(environment);
+      Banner printedBanner = printBanner(environment);
+      // 在创建好 environment 对象之后，打印完 banner 之后，来启动 servlet 容器
+      context = createApplicationContext();
+      exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
+            new Class[] { ConfigurableApplicationContext.class }, context);
+      // 对应着 Spring 应用生命周期的 prepare 阶段，并且 environment 对象注入进入，避免在 get 的时候，为 null 时，默认创建空的 environment 对象。这也是 Spring 的扩展机制的一种
+      prepareContext(context, environment, listeners, applicationArguments, printedBanner);
+      refreshContext(context);
+      afterRefresh(context, applicationArguments);
+      stopWatch.stop();
+      if (this.logStartupInfo) {
+         new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), stopWatch);
+      }
+      listeners.started(context);
+      callRunners(context, applicationArguments);
+   }
+   catch (Throwable ex) {
+      handleRunFailure(context, ex, exceptionReporters, listeners);
+      throw new IllegalStateException(ex);
+   }
+
+   try {
+      listeners.running(context);
+   }
+   catch (Throwable ex) {
+      handleRunFailure(context, ex, exceptionReporters, null);
+      throw new IllegalStateException(ex);
+   }
+   return context;
+}
+```
+
+**SpringApplication#createApplication**
+
+```java
+protected ConfigurableApplicationContext createApplicationContext() {
+   Class<?> contextClass = this.applicationContextClass;
+   if (contextClass == null) {
+      try {
+         switch (this.webApplicationType) {
+         case SERVLET:
+            // 这一步才是加载 Tomcat 容器的时候
+            contextClass = Class.forName(DEFAULT_SERVLET_WEB_CONTEXT_CLASS);
+            break;
+         case REACTIVE:
+            contextClass = Class.forName(DEFAULT_REACTIVE_WEB_CONTEXT_CLASS);
+            break;
+         default:
+            contextClass = Class.forName(DEFAULT_CONTEXT_CLASS);
+         }
+      }
+      catch (ClassNotFoundException ex) {
+         throw new IllegalStateException(
+               "Unable create a default ApplicationContext, please specify an ApplicationContextClass", ex);
+      }
+   }
+   // 这个
+   return (ConfigurableApplicationContext) BeanUtils.instantiateClass(contextClass);
+}
+```
+
+**AbstractApplicationContext** debug 看了下，Class.forName 就执行了下这个（Spring 整合 WebLogic 有些 bug，需要提前加载 ContextClosedEvent），重头戏在下面。
+
+```java
+static {
+   // Eagerly load the ContextClosedEvent class to avoid weird classloader issues
+   // on application shutdown in WebLogic 8.1. (Reported by Dustin Woods.)
+   ContextClosedEvent.class.getName();
+}
+```
+
+在 run 方法中的 refreshContext 中，调用 AbstractApplication 的 refresh 方法。然后 ServletWebServerApplicationContext 重写了其中的 onRefresh 方法，在这一步创建的 Tomcat 服务器。onRefresh 方法也是个常用的扩展点。
+
+**ServletWebServerApplicationContext#onRefresh**
+
+```java
+@Override
+protected void onRefresh() {
+   super.onRefresh();
+   try {
+      createWebServer();
+   }
+   catch (Throwable ex) {
+      throw new ApplicationContextException("Unable to start web server", ex);
+   }
+}
+```
 
