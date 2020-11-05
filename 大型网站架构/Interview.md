@@ -2569,7 +2569,6 @@ public Object postProcessBeforeInitialization(Object bean, String beanName) thro
 
 BeanPostProcessor#postProcessBeforeInitialization
 
-
 ### Spring Bean 初始化阶段
 
 依次往下执行
