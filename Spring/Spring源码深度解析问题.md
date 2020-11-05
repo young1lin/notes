@@ -25,6 +25,12 @@ class AspectJAutoProxyBeanDefinitionParser implements BeanDefinitionParser {}
 
 和书上内容不一样了，
 
+# 264
+
+阀值
+
+根本没有阀值这个词，只有阈值。阈值又叫临界值，是指一个效应能够产生的最低值或最高值。
+
 # 182 
 
 ```java
