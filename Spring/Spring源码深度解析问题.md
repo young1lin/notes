@@ -282,6 +282,12 @@ private void processBeanDefinitions(Set<BeanDefinitionHolder> beanDefinitions) {
 }
 ```
 
+# 278
+
+考虑到对事务的应用比
+
+考虑到对声明式事务的应用比
+
 # 300 建议修改
 
 `List<User> userList = new ArrayList<User>();`

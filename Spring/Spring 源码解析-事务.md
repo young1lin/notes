@@ -292,7 +292,560 @@ protected List<Advisor> findAdvisorsThatCanApply(
 
 ### 1. 寻找候选增强器
 
+**AbstractAdvisorAutoProxyCreator#findCandidateAdvisors**
+
+```java
+/**
+ * Find all candidate Advisors to use in auto-proxying.
+ * @return the List of candidate Advisors
+ */
+protected List<Advisor> findCandidateAdvisors() {
+   Assert.state(this.advisorRetrievalHelper != null, "No BeanFactoryAdvisorRetrievalHelper available");
+   return this.advisorRetrievalHelper.findAdvisorBeans();
+}
+```
+
+**BeanFactoryAdvisorRetrievaHelper#findAdvisorBeans**这是少有的非接口，直接是实现类的调用。
+
+```java
+/**
+ * Find all eligible Advisor beans in the current bean factory,
+ * ignoring FactoryBeans and excluding beans that are currently in creation.
+ * @return the list of {@link org.springframework.aop.Advisor} beans
+ * @see #isEligibleBean
+ */
+public List<Advisor> findAdvisorBeans() {
+   // Determine list of advisor bean names, if not cached already.
+   String[] advisorNames = this.cachedAdvisorBeanNames;
+   if (advisorNames == null) {
+      // Do not initialize FactoryBeans here: We need to leave all regular beans
+      // uninitialized to let the auto-proxy creator apply to them!
+      advisorNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
+            this.beanFactory, Advisor.class, true, false);
+      this.cachedAdvisorBeanNames = advisorNames;
+   }
+   if (advisorNames.length == 0) {
+      return new ArrayList<>();
+   }
+
+   List<Advisor> advisors = new ArrayList<>();
+   for (String name : advisorNames) {
+      if (isEligibleBean(name)) {
+         if (this.beanFactory.isCurrentlyInCreation(name)) {
+            if (logger.isTraceEnabled()) {
+               logger.trace("Skipping currently created advisor '" + name + "'");
+            }
+         }
+         else {
+            try {
+               advisors.add(this.beanFactory.getBean(name, Advisor.class));
+            }
+            catch (BeanCreationException ex) {
+               Throwable rootCause = ex.getMostSpecificCause();
+               if (rootCause instanceof BeanCurrentlyInCreationException) {
+                  BeanCreationException bce = (BeanCreationException) rootCause;
+                  String bceBeanName = bce.getBeanName();
+                  if (bceBeanName != null && this.beanFactory.isCurrentlyInCreation(bceBeanName)) {
+                     if (logger.isTraceEnabled()) {
+                        logger.trace("Skipping advisor '" + name +
+                              "' with dependency on currently created bean: " + ex.getMessage());
+                     }
+                     // Ignore: indicates a reference back to the bean we're trying to advise.
+                     // We want to find advisors other than the currently created bean itself.
+                     continue;
+                  }
+               }
+               throw ex;
+            }
+         }
+      }
+   }
+   return advisors;
+}
+```
+
 ### 2. 候选增强器中寻找到匹配项
+
+**AopUtils#findAdvisorsThatCanApply**
+
+```java
+/**
+ * Determine the sublist of the {@code candidateAdvisors} list
+ * that is applicable to the given class.
+ * @param candidateAdvisors the Advisors to evaluate
+ * @param clazz the target class
+ * @return sublist of Advisors that can apply to an object of the given class
+ * (may be the incoming List as-is)
+ */
+public static List<Advisor> findAdvisorsThatCanApply(List<Advisor> candidateAdvisors, Class<?> clazz) {
+   if (candidateAdvisors.isEmpty()) {
+      return candidateAdvisors;
+   }
+   List<Advisor> eligibleAdvisors = new ArrayList<>();
+   // 处理引介增强
+   for (Advisor candidate : candidateAdvisors) {
+      // 锚点 1
+      if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
+         eligibleAdvisors.add(candidate);
+      }
+   }
+   boolean hasIntroductions = !eligibleAdvisors.isEmpty();
+   for (Advisor candidate : candidateAdvisors) {
+      // 引介增强已经处理
+      if (candidate instanceof IntroductionAdvisor) {
+         // already processed
+         continue;
+      }
+      // 对于普通 bean 的处理
+      if (canApply(candidate, clazz, hasIntroductions)) {
+         eligibleAdvisors.add(candidate);
+      }
+   }
+   return eligibleAdvisors;
+}
+```
+
+**AopUtils#canApply**
+
+```java
+/**
+ * Can the given advisor apply at all on the given class?
+ * This is an important test as it can be used to optimize
+ * out a advisor for a class.
+ * @param advisor the advisor to check
+ * @param targetClass class we're testing
+ * @return whether the pointcut can apply on any method
+ */
+// 锚点 1
+public static boolean canApply(Advisor advisor, Class<?> targetClass) {
+   return canApply(advisor, targetClass, false);
+}
+
+/**
+ * Can the given advisor apply at all on the given class?
+ * <p>This is an important test as it can be used to optimize out a advisor for a class.
+ * This version also takes into account introductions (for IntroductionAwareMethodMatchers).
+ * @param advisor the advisor to check
+ * @param targetClass class we're testing
+ * @param hasIntroductions whether or not the advisor chain for this bean includes
+ * any introductions
+ * @return whether the pointcut can apply on any method
+ */
+public static boolean canApply(Advisor advisor, Class<?> targetClass, boolean hasIntroductions) {
+   if (advisor instanceof IntroductionAdvisor) {
+      return ((IntroductionAdvisor) advisor).getClassFilter().matches(targetClass);
+   }
+   else if (advisor instanceof PointcutAdvisor) {
+      PointcutAdvisor pca = (PointcutAdvisor) advisor;
+      return canApply(pca.getPointcut(), targetClass, hasIntroductions);
+   }
+   else {
+      // It doesn't have a pointcut so we assume it applies.
+      return true;
+   }
+}
+```
+
+**AopUtils#canApply**
+
+```java
+/**
+ * Can the given pointcut apply at all on the given class?
+ * <p>This is an important test as it can be used to optimize
+ * out a pointcut for a class.
+ * @param pc the static or dynamic pointcut to check
+ * @param targetClass the class to test
+ * @param hasIntroductions whether or not the advisor chain
+ * for this bean includes any introductions
+ * @return whether the pointcut can apply on any method
+ */
+public static boolean canApply(Pointcut pc, Class<?> targetClass, boolean hasIntroductions) {
+   Assert.notNull(pc, "Pointcut must not be null");
+   if (!pc.getClassFilter().matches(targetClass)) {
+      return false;
+   }
+   // pc 表示的是 TransactionAttributeSourcePointcut#getMethodMatcher 返回的正是本身
+   // @Override
+   // public final MethodMatcher getMethodMatcher() {
+   //		return this;
+   //}
+
+   MethodMatcher methodMatcher = pc.getMethodMatcher();
+   if (methodMatcher == MethodMatcher.TRUE) {
+      // No need to iterate the methods if we're matching any method anyway...
+      return true;
+   }
+
+   IntroductionAwareMethodMatcher introductionAwareMethodMatcher = null;
+   if (methodMatcher instanceof IntroductionAwareMethodMatcher) {
+      introductionAwareMethodMatcher = (IntroductionAwareMethodMatcher) methodMatcher;
+   }
+
+   Set<Class<?>> classes = new LinkedHashSet<>();
+   if (!Proxy.isProxyClass(targetClass)) {
+      classes.add(ClassUtils.getUserClass(targetClass));
+   }
+   classes.addAll(ClassUtils.getAllInterfacesForClassAsSet(targetClass));
+
+   for (Class<?> clazz : classes) {
+      Method[] methods = ReflectionUtils.getAllDeclaredMethods(clazz);
+      for (Method method : methods) {
+         // 锚点 2 matches 
+         if (introductionAwareMethodMatcher != null ?
+               introductionAwareMethodMatcher.matches(method, targetClass, hasIntroductions) :
+               methodMatcher.matches(method, targetClass)) {
+            return true;
+         }
+      }
+   }
+
+   return false;
+}
+```
+
+**BeanFactoryTransactionAttributeSourceAdvisor.pointcut** 这个在上面的时候，注册了进来。
+
+```java
+@Nullable
+private TransactionAttributeSource transactionAttributeSource;
+
+private final TransactionAttributeSourcePointcut pointcut = new TransactionAttributeSourcePointcut() {
+   @Override
+   @Nullable
+   protected TransactionAttributeSource getTransactionAttributeSource() {
+      return transactionAttributeSource;
+   }
+};
+```
+
+**TransactionAttributeSourcePointcut#matches**
+
+```java
+@Override
+public boolean matches(Method method, Class<?> targetClass) {
+   if (TransactionalProxy.class.isAssignableFrom(targetClass) ||
+         PlatformTransactionManager.class.isAssignableFrom(targetClass) ||
+         PersistenceExceptionTranslator.class.isAssignableFrom(targetClass)) {
+      return false;
+   }
+   TransactionAttributeSource tas = getTransactionAttributeSource();
+   // 锚点 3  此时的 tas 表示 AnnotationTransactionAttributeSource 类型
+   return (tas == null || tas.getTransactionAttribute(method, targetClass) != null);
+}
+```
+
+**AbstractFallbackTransactionAttributeSource#getTransactionAttribute**
+
+```java
+// 锚点 3
+@Nullable
+public TransactionAttribute getTransactionAttribute(Method method, @Nullable Class<?> targetClass) {
+   if (method.getDeclaringClass() == Object.class) {
+      return null;
+   }
+
+   // First, see if we have a cached value.
+   Object cacheKey = getCacheKey(method, targetClass);
+   TransactionAttribute cached = this.attributeCache.get(cacheKey);
+   if (cached != null) {
+      // Value will either be canonical value indicating there is no transaction attribute,
+      // or an actual transaction attribute.
+      if (cached == NULL_TRANSACTION_ATTRIBUTE) {
+         return null;
+      }
+      else {
+         return cached;
+      }
+   }
+   else {
+      // We need to work it out.
+      // 提取事务标签
+      TransactionAttribute txAttr = computeTransactionAttribute(method, targetClass);
+      // Put it in the cache.
+      if (txAttr == null) {
+         this.attributeCache.put(cacheKey, NULL_TRANSACTION_ATTRIBUTE);
+      }
+      else {
+         String methodIdentification = ClassUtils.getQualifiedMethodName(method, targetClass);
+         if (txAttr instanceof DefaultTransactionAttribute) {
+            ((DefaultTransactionAttribute) txAttr).setDescriptor(methodIdentification);
+         }
+         if (logger.isTraceEnabled()) {
+            logger.trace("Adding transactional method '" + methodIdentification + "' with attribute: " + txAttr);
+         }
+         this.attributeCache.put(cacheKey, txAttr);
+      }
+      return txAttr;
+   }
+}
+```
 
 ### 3. 提取事务标签
 
+**AbstractFallbackTransactionAttributeSource#computeTransactionAttribute**
+
+```java
+/**
+ * Same signature as {@link #getTransactionAttribute}, but doesn't cache the result.
+ * {@link #getTransactionAttribute} is effectively a caching decorator for this method.
+ * <p>As of 4.1.8, this method can be overridden.
+ * @since 4.1.8
+ * @see #getTransactionAttribute
+ */
+@Nullable
+protected TransactionAttribute computeTransactionAttribute(Method method, @Nullable Class<?> targetClass) {
+   // Don't allow no-public methods as required.
+   if (allowPublicMethodsOnly() && !Modifier.isPublic(method.getModifiers())) {
+      return null;
+   }
+
+   // The method may be on an interface, but we need attributes from the target class.
+   // If the target class is null, the method will be unchanged.
+   Method specificMethod = AopUtils.getMostSpecificMethod(method, targetClass);
+   // 锚点 4 查看方法中是否存在事务声明
+   // First try is the method in the target class.
+   TransactionAttribute txAttr = findTransactionAttribute(specificMethod);
+   if (txAttr != null) {
+      return txAttr;
+   }
+   // 锚点 5 查看方法所在类中是否存在事务声明
+   // Second try is the transaction attribute on the target class.
+   txAttr = findTransactionAttribute(specificMethod.getDeclaringClass());
+   if (txAttr != null && ClassUtils.isUserLevelMethod(method)) {
+      return txAttr;
+   }
+   // 如果存在接口，则到接口中去寻找
+   if (specificMethod != method) {
+      // Fallback is to look at the original method. 查找接口方法
+      txAttr = findTransactionAttribute(method);
+      if (txAttr != null) {
+         return txAttr;
+      }
+      // Last fallback is the class of the original method. 到接口中的类去寻找
+      txAttr = findTransactionAttribute(method.getDeclaringClass());
+      if (txAttr != null && ClassUtils.isUserLevelMethod(method)) {
+         return txAttr;
+      }
+   }
+
+   return null;
+}
+```
+
+**AbstractFallbackTransactionAttributeSource#findTransactionAttribute**
+
+```java
+// 锚点 4 
+@Override
+@Nullable
+protected TransactionAttribute findTransactionAttribute(Class<?> clazz) {
+   return determineTransactionAttribute(clazz);
+}
+
+@Override
+@Nullable
+protected TransactionAttribute findTransactionAttribute(Method method) {
+   return determineTransactionAttribute(method);
+}
+
+/**
+ * Determine the transaction attribute for the given method or class.
+ * <p>This implementation delegates to configured
+ * {@link TransactionAnnotationParser TransactionAnnotationParsers}
+ * for parsing known annotations into Spring's metadata attribute class.
+ * Returns {@code null} if it's not transactional.
+ * <p>Can be overridden to support custom annotations that carry transaction metadata.
+ * @param element the annotated method or class
+ * @return the configured transaction attribute, or {@code null} if none was found
+ */
+@Nullable
+protected TransactionAttribute determineTransactionAttribute(AnnotatedElement element) {
+   // 这里的 annotationParsers 是当前类 AnnotationTransactionAttributeSource 初始化的时候初始化的，其中的
+   // 的值被加入了 SpringTransactionAnnotationParser，也就是当进行属性获取的时候其实是使用 SpringTransactionAnnotationParser 类的 parseTransactionAnnotation 放的进行解析。
+   for (TransactionAnnotationParser annotationParser : this.annotationParsers) {
+      TransactionAttribute attr = annotationParser.parseTransactionAnnotation(element);
+      if (attr != null) {
+         return attr;
+      }
+   }
+   return null;
+}
+```
+
+**SpringTransactionAnnotationParser#parseTransactionAnnotation**
+
+```java
+public TransactionAttribute parseTransactionAnnotation(AnnotatedElement element) {
+   AnnotationAttributes attributes = AnnotatedElementUtils.findMergedAnnotationAttributes(
+         element, Transactional.class, false, false);
+   if (attributes != null) {
+      // 锚点 5
+      return parseTransactionAnnotation(attributes);
+   }
+   else {
+      return null;
+   }
+}
+```
+
+**SpringTransactionAnnotationParser#parseTransactionAnnotation**
+
+```java
+protected TransactionAttribute parseTransactionAnnotation(AnnotationAttributes attributes) {
+   RuleBasedTransactionAttribute rbta = new RuleBasedTransactionAttribute();
+
+   Propagation propagation = attributes.getEnum("propagation");
+   rbta.setPropagationBehavior(propagation.value());
+   Isolation isolation = attributes.getEnum("isolation");
+   rbta.setIsolationLevel(isolation.value());
+   rbta.setTimeout(attributes.getNumber("timeout").intValue());
+   rbta.setReadOnly(attributes.getBoolean("readOnly"));
+   rbta.setQualifier(attributes.getString("value"));
+
+   List<RollbackRuleAttribute> rollbackRules = new ArrayList<>();
+   for (Class<?> rbRule : attributes.getClassArray("rollbackFor")) {
+      rollbackRules.add(new RollbackRuleAttribute(rbRule));
+   }
+   for (String rbRule : attributes.getStringArray("rollbackForClassName")) {
+      rollbackRules.add(new RollbackRuleAttribute(rbRule));
+   }
+   for (Class<?> rbRule : attributes.getClassArray("noRollbackFor")) {
+      rollbackRules.add(new NoRollbackRuleAttribute(rbRule));
+   }
+   for (String rbRule : attributes.getStringArray("noRollbackForClassName")) {
+      rollbackRules.add(new NoRollbackRuleAttribute(rbRule));
+   }
+   rbta.setRollbackRules(rollbackRules);
+
+   return rbta;
+}
+```
+
+这里只是事务功能的初始化工作便结束了，当判断某个 bean 适用于事务增强时，也就是适用于增强器 BeanFactoryTransactionAttributeSourceAdvisor，在自定义标签解析时，注入的类成为了整个事务功能的基础。
+
+# 事务增强器
+
+**TransactionInterceptor#invoke**
+
+```java
+@Override
+@Nullable
+public Object invoke(MethodInvocation invocation) throws Throwable {
+   // Work out the target class: may be {@code null}.
+   // The TransactionAttributeSource should be passed the target class
+   // as well as the method, which may be from an interface.
+   Class<?> targetClass = (invocation.getThis() != null ? AopUtils.getTargetClass(invocation.getThis()) : null);
+
+   // Adapt to TransactionAspectSupport's invokeWithinTransaction...
+   return invokeWithinTransaction(invocation.getMethod(), targetClass, invocation::proceed);
+}
+```
+
+**TransactionAspectSupport#invokeWithinTransaction**  TransactionInterceptor 继承自该类
+
+```java
+/**
+ * General delegate for around-advice-based subclasses, delegating to several other template
+ * methods on this class. Able to handle {@link CallbackPreferringPlatformTransactionManager}
+ * as well as regular {@link PlatformTransactionManager} implementations.
+ * @param method the Method being invoked
+ * @param targetClass the target class that we're invoking the method on
+ * @param invocation the callback to use for proceeding with the target invocation
+ * @return the return value of the method, if any
+ * @throws Throwable propagated from the target invocation
+ */
+@Nullable
+protected Object invokeWithinTransaction(Method method, @Nullable Class<?> targetClass,
+      final InvocationCallback invocation) throws Throwable {
+   // 获取对应事务属性
+   // If the transaction attribute is null, the method is non-transactional.
+   TransactionAttributeSource tas = getTransactionAttributeSource();
+   final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
+   // 获取 beanFatory 中的 transactionManager
+   final PlatformTransactionManager tm = determineTransactionManager(txAttr);
+   // 构造方法唯一标识，类#方法
+   final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
+   // 声明式事务处理
+   if (txAttr == null || !(tm instanceof CallbackPreferringPlatformTransactionManager)) {
+      // Standard transaction demarcation with getTransaction and commit/rollback calls.
+      TransactionInfo txInfo = createTransactionIfNecessary(tm, txAttr, joinpointIdentification);
+
+      Object retVal;
+      try {
+         // This is an around advice: Invoke the next interceptor in the chain.
+         // This will normally result in a target object being invoked.
+         // 执行被增强方法
+         retVal = invocation.proceedWithInvocation();
+      }
+      catch (Throwable ex) {
+         // target invocation exception
+         // 异常回滚
+         completeTransactionAfterThrowing(txInfo, ex);
+         throw ex;
+      }
+      finally {
+         // 清除信息
+         cleanupTransactionInfo(txInfo);
+      }
+      // 提交事务
+      commitTransactionAfterReturning(txInfo);
+      return retVal;
+   }
+
+   else {
+      // 编程式事务处理
+      final ThrowableHolder throwableHolder = new ThrowableHolder();
+
+      // It's a CallbackPreferringPlatformTransactionManager: pass a TransactionCallback in.
+      try {
+         Object result = ((CallbackPreferringPlatformTransactionManager) tm).execute(txAttr, status -> {
+            TransactionInfo txInfo = prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);
+            try {
+               return invocation.proceedWithInvocation();
+            }
+            catch (Throwable ex) {
+               if (txAttr.rollbackOn(ex)) {
+                  // A RuntimeException: will lead to a rollback.
+                  if (ex instanceof RuntimeException) {
+                     throw (RuntimeException) ex;
+                  }
+                  else {
+                     throw new ThrowableHolderException(ex);
+                  }
+               }
+               else {
+                  // A normal return value: will lead to a commit.
+                  throwableHolder.throwable = ex;
+                  return null;
+               }
+            }
+            finally {
+               cleanupTransactionInfo(txInfo);
+            }
+         });
+
+         // Check result state: It might indicate a Throwable to rethrow.
+         if (throwableHolder.throwable != null) {
+            throw throwableHolder.throwable;
+         }
+         return result;
+      }
+      catch (ThrowableHolderException ex) {
+         throw ex.getCause();
+      }
+      catch (TransactionSystemException ex2) {
+         if (throwableHolder.throwable != null) {
+            logger.error("Application exception overridden by commit exception", throwableHolder.throwable);
+            ex2.initApplicationException(throwableHolder.throwable);
+         }
+         throw ex2;
+      }
+      catch (Throwable ex2) {
+         if (throwableHolder.throwable != null) {
+            logger.error("Application exception overridden by commit exception", throwableHolder.throwable);
+         }
+         throw ex2;
+      }
+   }
+}
+```
