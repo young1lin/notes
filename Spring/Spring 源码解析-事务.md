@@ -768,6 +768,8 @@ protected Object invokeWithinTransaction(Method method, @Nullable Class<?> targe
    // 声明式事务处理
    if (txAttr == null || !(tm instanceof CallbackPreferringPlatformTransactionManager)) {
       // Standard transaction demarcation with getTransaction and commit/rollback calls.
+       // 创建事务。上面的意思是根据 getTransaction 和 commit/rollback 调用进行标准事务划分
+       // 锚点 1
       TransactionInfo txInfo = createTransactionIfNecessary(tm, txAttr, joinpointIdentification);
 
       Object retVal;
@@ -849,3 +851,291 @@ protected Object invokeWithinTransaction(Method method, @Nullable Class<?> targe
    }
 }
 ```
+
+从上面的函数中， Spring 支持两种事务处理的方式，声明式和编程式事务。
+
+声明式事务步骤如下：
+
+1. 获取事务的属性。
+2. 加载配置中配置的 TransactionManager。
+3. 不同的事务处理方式使用不同的逻辑。
+
+4. 在目标方法执行前获取事务并手机事务信息。
+5. 执行目标方法。
+6. 一旦出现异常，尝试异常处理。（Spring 默认只支持 RuntimeException 回滚，所以必须在上面写上 Exception）
+7. 提交事务前的事务信息清除。
+8. 提交事务。
+
+## 创建事务
+
+**TransactionAspectSupport#createTransactionIfNecessary**
+
+```java
+/**
+ * Create a transaction if necessary based on the given TransactionAttribute.
+ * <p>Allows callers to perform custom TransactionAttribute lookups through
+ * the TransactionAttributeSource.
+ * @param txAttr the TransactionAttribute (may be {@code null})
+ * @param joinpointIdentification the fully qualified method name
+ * (used for monitoring and logging purposes)
+ * @return a TransactionInfo object, whether or not a transaction was created.
+ * The {@code hasTransaction()} method on TransactionInfo can be used to
+ * tell if there was a transaction created.
+ * @see #getTransactionAttributeSource()
+ */
+@SuppressWarnings("serial")
+protected TransactionInfo createTransactionIfNecessary(@Nullable PlatformTransactionManager tm,
+      @Nullable TransactionAttribute txAttr, final String joinpointIdentification) {
+
+   // If no name specified, apply method identification as transaction name.
+    // 如果没有名称指定则使用方法唯一标识，并使用 DelegatingTransactionAttribute 封装 txAttr
+   if (txAttr != null && txAttr.getName() == null) {
+      txAttr = new DelegatingTransactionAttribute(txAttr) {
+         @Override
+         public String getName() {
+            return joinpointIdentification;
+         }
+      };
+   }
+
+   TransactionStatus status = null;
+   if (txAttr != null) {
+      if (tm != null) {
+          // 获取事务
+         status = tm.getTransaction(txAttr);
+      }
+      else {
+         if (logger.isDebugEnabled()) {
+            logger.debug("Skipping transactional joinpoint [" + joinpointIdentification +
+                  "] because no transaction manager has been configured");
+         }
+      }
+   }
+    // 根据指定的属性与 status 准备一个 TransactionInfo
+   return prepareTransactionInfo(tm, txAttr, joinpointIdentification, status);
+}
+```
+
+1. 使用 DelegatingTransactionAttribute 封装传入的 TransactionAttribute 实例。
+2. 获取事务。
+3. 构建事务信息。
+
+### 1. 获取事务
+
+**AbstractPlatformTransactionManager#getTransaction**
+
+```java
+/**
+ * This implementation handles propagation behavior. Delegates to
+ * {@code doGetTransaction}, {@code isExistingTransaction}
+ * and {@code doBegin}.
+ * @see #doGetTransaction
+ * @see #isExistingTransaction
+ * @see #doBegin
+ */
+@Override
+public final TransactionStatus getTransaction(@Nullable TransactionDefinition definition)
+      throws TransactionException {
+
+   // Use defaults if no transaction definition given.
+   TransactionDefinition def = (definition != null ? definition : TransactionDefinition.withDefaults());
+   // 锚点 1
+   Object transaction = doGetTransaction();
+   boolean debugEnabled = logger.isDebugEnabled();
+   // 判断当前线程是否存在事务，判断依据为当前线程记录的连接不为空且连接中 connectionHolder 中的 transactionActive 属性不为空
+   if (isExistingTransaction(transaction)) {
+      // Existing transaction found -> check propagation behavior to find out how to behave.
+       // 当前线程已经存在事务
+      return handleExistingTransaction(def, transaction, debugEnabled);
+   }
+	// 事务超时设置验证
+   // Check definition settings for new transaction.
+   if (def.getTimeout() < TransactionDefinition.TIMEOUT_DEFAULT) {
+      throw new InvalidTimeoutException("Invalid transaction timeout", def.getTimeout());
+   }
+	// 如果当前线程不存在事务，但是 propagationBehavior 却被声明为 PROPAGATION_MANDATORY 抛出异常
+   // No existing transaction found -> check propagation behavior to find out how to proceed.
+   if (def.getPropagationBehavior() == TransactionDefinition.PROPAGATION_MANDATORY) {
+      throw new IllegalTransactionStateException(
+            "No existing transaction found for transaction marked with propagation 'mandatory'");
+   }
+    // 下面几个都需要新建事务 PROPAGATION_REQUIRED、PROPAGATION_REQUIRES_NEW、PROPAGATION_NESTED
+   else if (def.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRED ||
+         def.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRES_NEW ||
+         def.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NESTED) {
+       // 空挂起
+      SuspendedResourcesHolder suspendedResources = suspend(null);
+      if (debugEnabled) {
+         logger.debug("Creating new transaction with name [" + def.getName() + "]: " + def);
+      }
+      try {
+         // 这是原文中的开始事务的方法
+         return startTransaction(def, transaction, debugEnabled, suspendedResources);
+      }
+      catch (RuntimeException | Error ex) {
+         resume(null, suspendedResources);
+         throw ex;
+      }
+   }
+   else {
+      // Create "empty" transaction: no actual transaction, but potentially synchronization.
+      if (def.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT && logger.isWarnEnabled()) {
+         logger.warn("Custom isolation level specified but no actual transaction initiated; " +
+               "isolation level will effectively be ignored: " + def);
+      }
+      boolean newSynchronization = (getTransactionSynchronization() == SYNCHRONIZATION_ALWAYS);
+      return prepareTransactionStatus(def, null, true, newSynchronization, debugEnabled, null);
+   }
+}
+```
+
+**DataSourceTransactionManager#doGetTransaction**
+
+```java
+// 锚点 1 这里是上面的类的子类，供于提供扩展，
+@Override
+protected Object doGetTransaction() {
+   DataSourceTransactionObject txObject = new DataSourceTransactionObject();
+   txObject.setSavepointAllowed(isNestedTransactionAllowed());
+   ConnectionHolder conHolder =
+         (ConnectionHolder) TransactionSynchronizationManager.getResource(obtainDataSource());
+   txObject.setConnectionHolder(conHolder, false);
+   return txObject;
+}
+```
+
+**AbstractPlatformTransactionManager#startTransaction**
+
+```java
+/**
+ * Start a new transaction.
+ */
+private TransactionStatus startTransaction(TransactionDefinition definition, Object transaction,
+      boolean debugEnabled, @Nullable SuspendedResourcesHolder suspendedResources) {
+   
+   boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);
+   DefaultTransactionStatus status = newTransactionStatus(
+         definition, transaction, true, newSynchronization, debugEnabled, suspendedResources);
+   // 构造 transaction，包括设置 ConnectionHolder、隔离级别、timeout
+   // 这里是给子类扩展的，spring 有默认的 jdbc 实现，为 DataSourceTransactionManager
+   doBegin(transaction, definition);
+   // 新同步事务的设置，针对于当前线程的设置
+   prepareSynchronization(status, definition);
+   return status;
+}
+```
+
+事务的准备工作包括以下：
+
+1. 获取事务。
+2. 如果当前线程存在事务，则转向嵌套事务的处理。
+3. 事务超时设置验证。
+4. 事务 propagationBehavior 属性的设置验证。
+5. 构建 DefaultTransactionStatus/
+6. 完善 transaction，包括设置 ConnectionHolder、隔离级别、timeout，如果是新连接，则绑定到当前线程。
+
+**DataSourceTransactionManager#dobegin**
+
+```java
+@Override
+protected void doBegin(Object transaction, TransactionDefinition definition) {
+   DataSourceTransactionObject txObject = (DataSourceTransactionObject) transaction;
+   Connection con = null;
+
+   try {
+      if (!txObject.hasConnectionHolder() ||
+            txObject.getConnectionHolder().isSynchronizedWithTransaction()) {
+         Connection newCon = obtainDataSource().getConnection();
+         if (logger.isDebugEnabled()) {
+            logger.debug("Acquired Connection [" + newCon + "] for JDBC transaction");
+         }
+         txObject.setConnectionHolder(new ConnectionHolder(newCon), true);
+      }
+
+      txObject.getConnectionHolder().setSynchronizedWithTransaction(true);
+      con = txObject.getConnectionHolder().getConnection();
+	  // 设置事务隔离级别
+      Integer previousIsolationLevel = DataSourceUtils.prepareConnectionForTransaction(con, definition);
+      txObject.setPreviousIsolationLevel(previousIsolationLevel);
+      txObject.setReadOnly(definition.isReadOnly());
+
+      // Switch to manual commit if necessary. This is very expensive in some JDBC drivers,
+      // so we don't want to do it unnecessarily (for example if we've explicitly
+      // configured the connection pool to set it already).
+      // 更改自动提交设置，由 Spring 控制提交
+      if (con.getAutoCommit()) {
+         txObject.setMustRestoreAutoCommit(true);
+         if (logger.isDebugEnabled()) {
+            logger.debug("Switching JDBC Connection [" + con + "] to manual commit");
+         }
+         con.setAutoCommit(false);
+      }
+
+      prepareTransactionalConnection(con, definition);
+      // 设置判断当前线程是否存在事务的依据
+      txObject.getConnectionHolder().setTransactionActive(true);
+
+      int timeout = determineTimeout(definition);
+      if (timeout != TransactionDefinition.TIMEOUT_DEFAULT) {
+         txObject.getConnectionHolder().setTimeoutInSeconds(timeout);
+      }
+
+      // Bind the connection holder to the thread.
+      if (txObject.isNewConnectionHolder()) {
+         // 将当前获取到的连接绑定到当前线程 TransactionSynchronizationManager.resources 这个 Manager 有很多的 NameThreadLocal
+         // HBase 的客户端也做了类似的事情，也有个 HTableManager
+         TransactionSynchronizationManager.bindResource(obtainDataSource(), txObject.getConnectionHolder());
+      }
+   }
+
+   catch (Throwable ex) {
+      if (txObject.isNewConnectionHolder()) {
+         DataSourceUtils.releaseConnection(con, obtainDataSource());
+         txObject.setConnectionHolder(null, false);
+      }
+      throw new CannotCreateTransactionException("Could not open JDBC Connection for transaction", ex);
+   }
+}
+```
+
+**TransactionAspectSupport#prepareTransactionInfo**
+
+```java
+/**
+ * Prepare a TransactionInfo for the given attribute and status object.
+ * @param txAttr the TransactionAttribute (may be {@code null})
+ * @param joinpointIdentification the fully qualified method name
+ * (used for monitoring and logging purposes)
+ * @param status the TransactionStatus for the current transaction
+ * @return the prepared TransactionInfo object
+ */
+protected TransactionInfo prepareTransactionInfo(@Nullable PlatformTransactionManager tm,
+      @Nullable TransactionAttribute txAttr, String joinpointIdentification,
+      @Nullable TransactionStatus status) {
+
+   TransactionInfo txInfo = new TransactionInfo(tm, txAttr, joinpointIdentification);
+   if (txAttr != null) {
+      // We need a transaction for this method...
+      if (logger.isTraceEnabled()) {
+         logger.trace("Getting transaction for [" + txInfo.getJoinpointIdentification() + "]");
+      }
+      // The transaction manager will flag an error if an incompatible tx already exists.
+      txInfo.newTransactionStatus(status);
+   }
+   else {
+      // The TransactionInfo.hasTransaction() method will return false. We created it only
+      // to preserve the integrity of the ThreadLocal stack maintained in this class.
+      if (logger.isTraceEnabled()) {
+         logger.trace("No need to create transaction for [" + joinpointIdentification +
+               "]: This method is not transactional.");
+      }
+   }
+
+   // We always bind the TransactionInfo to the thread, even if we didn't create
+   // a new transaction here. This guarantees that the TransactionInfo stack
+   // will be managed correctly even if no transaction was created by this aspect.
+   txInfo.bindToThread();
+   return txInfo;
+}
+```
+

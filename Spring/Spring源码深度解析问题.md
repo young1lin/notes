@@ -288,6 +288,22 @@ private void processBeanDefinitions(Set<BeanDefinitionHolder> beanDefinitions) {
 
 考虑到对声明式事务的应用比
 
+# 280
+
+对于 createTransactionIfNecessar 函数主要做了
+
+对于 createTransactionIfNecessary 函数主要做了
+
+少了个 y
+
+# 281
+
+隔离级别、timout
+
+隔离级别、timeout
+
+少了个 e
+
 # 300 建议修改
 
 `List<User> userList = new ArrayList<User>();`
