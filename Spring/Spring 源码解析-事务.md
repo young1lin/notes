@@ -1045,6 +1045,8 @@ protected void doBegin(Object transaction, TransactionDefinition definition) {
    try {
       if (!txObject.hasConnectionHolder() ||
             txObject.getConnectionHolder().isSynchronizedWithTransaction()) {
+          // DataSourceTransactionManager 内置了个 DataSource 引用，并且实现了InitializingBean 接口，在 afterProperties 方法里面检查 DataSource 是否为空。
+          // 并且在这个基础上，返回当前通过构造函数注入的实际 DataSource 对象的引用。
          Connection newCon = obtainDataSource().getConnection();
          if (logger.isDebugEnabled()) {
             logger.debug("Acquired Connection [" + newCon + "] for JDBC transaction");
@@ -1055,6 +1057,7 @@ protected void doBegin(Object transaction, TransactionDefinition definition) {
       txObject.getConnectionHolder().setSynchronizedWithTransaction(true);
       con = txObject.getConnectionHolder().getConnection();
 	  // 设置事务隔离级别
+      // prepareConnectionForTransaction 下面第一个方法
       Integer previousIsolationLevel = DataSourceUtils.prepareConnectionForTransaction(con, definition);
       txObject.setPreviousIsolationLevel(previousIsolationLevel);
       txObject.setReadOnly(definition.isReadOnly());
@@ -1064,13 +1067,15 @@ protected void doBegin(Object transaction, TransactionDefinition definition) {
       // configured the connection pool to set it already).
       // 更改自动提交设置，由 Spring 控制提交
       if (con.getAutoCommit()) {
+          // 这一步就是给 Spring 来控制的。
          txObject.setMustRestoreAutoCommit(true);
          if (logger.isDebugEnabled()) {
             logger.debug("Switching JDBC Connection [" + con + "] to manual commit");
          }
+          // 然后将原来的 dataSource 返回的 Connection 设置为默认不自动提交
          con.setAutoCommit(false);
       }
-
+		
       prepareTransactionalConnection(con, definition);
       // 设置判断当前线程是否存在事务的依据
       txObject.getConnectionHolder().setTransactionActive(true);
@@ -1083,7 +1088,7 @@ protected void doBegin(Object transaction, TransactionDefinition definition) {
       // Bind the connection holder to the thread.
       if (txObject.isNewConnectionHolder()) {
          // 将当前获取到的连接绑定到当前线程 TransactionSynchronizationManager.resources 这个 Manager 有很多的 NameThreadLocal
-         // HBase 的客户端也做了类似的事情，也有个 HTableManager
+         // HBase 的客户端也做了类似的事情，也有个 HTableCacheManager
          TransactionSynchronizationManager.bindResource(obtainDataSource(), txObject.getConnectionHolder());
       }
    }
@@ -1098,44 +1103,255 @@ protected void doBegin(Object transaction, TransactionDefinition definition) {
 }
 ```
 
-**TransactionAspectSupport#prepareTransactionInfo**
+可以说事务是从这个函数开始的，在这个函数中已经开始尝试了对数据库连接的获取，当然，在获取数据库连接的同时，一些必要的设置也是需要同步设置的。
+
+1. 尝试获取连接。
+2. 设置隔离级别一级只读标识。
+3. 更改默认的提交设置。
+4. 设置标识位，标识当前连接已经被事务激活。
+5. 设置过期时间。
+6. 将 connectionHolder 绑定到当前线程。
+
+**DataSourceUtils#prepareConnectionForTransaction**
+
+```java
+// prepareConnectionForTransaction
+/**
+ * Prepare the given Connection with the given transaction semantics.
+ * @param con the Connection to prepare
+ * @param definition the transaction definition to apply
+ * @return the previous isolation level, if any
+ * @throws SQLException if thrown by JDBC methods
+ * @see #resetConnectionAfterTransaction
+ * @see Connection#setTransactionIsolation
+ * @see Connection#setReadOnly
+ */
+@Nullable
+public static Integer prepareConnectionForTransaction(Connection con, @Nullable TransactionDefinition definition)
+      throws SQLException {
+
+   Assert.notNull(con, "No Connection specified");
+
+   boolean debugEnabled = logger.isDebugEnabled();
+   // Set read-only flag.
+   if (definition != null && definition.isReadOnly()) {
+      try {
+         if (debugEnabled) {
+            logger.debug("Setting JDBC Connection [" + con + "] read-only");
+         }
+         con.setReadOnly(true);
+      }
+      catch (SQLException | RuntimeException ex) {
+         Throwable exToCheck = ex;
+         while (exToCheck != null) {
+            if (exToCheck.getClass().getSimpleName().contains("Timeout")) {
+               // Assume it's a connection timeout that would otherwise get lost: e.g. from JDBC 4.0
+               throw ex;
+            }
+            exToCheck = exToCheck.getCause();
+         }
+         // "read-only not supported" SQLException -> ignore, it's just a hint anyway
+         logger.debug("Could not set JDBC Connection read-only", ex);
+      }
+   }
+
+   // Apply specific isolation level, if any.
+   Integer previousIsolationLevel = null;
+   if (definition != null && definition.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT) {
+      if (debugEnabled) {
+         logger.debug("Changing isolation level of JDBC Connection [" + con + "] to " +
+               definition.getIsolationLevel());
+      }
+      int currentIsolation = con.getTransactionIsolation();
+      if (currentIsolation != definition.getIsolationLevel()) {
+         previousIsolationLevel = currentIsolation;
+         con.setTransactionIsolation(definition.getIsolationLevel());
+      }
+   }
+
+   return previousIsolationLevel;
+}
+```
+
+**AbstractPlatformTransactionManager#prepareSynchronization** 这一步是上面执行 dobegin 后的一步骤。将事务信息记录在当前线程中。
 
 ```java
 /**
- * Prepare a TransactionInfo for the given attribute and status object.
- * @param txAttr the TransactionAttribute (may be {@code null})
- * @param joinpointIdentification the fully qualified method name
- * (used for monitoring and logging purposes)
- * @param status the TransactionStatus for the current transaction
- * @return the prepared TransactionInfo object
+ * Initialize transaction synchronization as appropriate.
  */
-protected TransactionInfo prepareTransactionInfo(@Nullable PlatformTransactionManager tm,
-      @Nullable TransactionAttribute txAttr, String joinpointIdentification,
-      @Nullable TransactionStatus status) {
-
-   TransactionInfo txInfo = new TransactionInfo(tm, txAttr, joinpointIdentification);
-   if (txAttr != null) {
-      // We need a transaction for this method...
-      if (logger.isTraceEnabled()) {
-         logger.trace("Getting transaction for [" + txInfo.getJoinpointIdentification() + "]");
-      }
-      // The transaction manager will flag an error if an incompatible tx already exists.
-      txInfo.newTransactionStatus(status);
+protected void prepareSynchronization(DefaultTransactionStatus status, TransactionDefinition definition) {
+   if (status.isNewSynchronization()) {
+      TransactionSynchronizationManager.setActualTransactionActive(status.hasTransaction());
+      TransactionSynchronizationManager.setCurrentTransactionIsolationLevel(
+            definition.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT ?
+                  definition.getIsolationLevel() : null);
+      TransactionSynchronizationManager.setCurrentTransactionReadOnly(definition.isReadOnly());
+      TransactionSynchronizationManager.setCurrentTransactionName(definition.getName());
+      TransactionSynchronizationManager.initSynchronization();
    }
-   else {
-      // The TransactionInfo.hasTransaction() method will return false. We created it only
-      // to preserve the integrity of the ThreadLocal stack maintained in this class.
-      if (logger.isTraceEnabled()) {
-         logger.trace("No need to create transaction for [" + joinpointIdentification +
-               "]: This method is not transactional.");
-      }
-   }
-
-   // We always bind the TransactionInfo to the thread, even if we didn't create
-   // a new transaction here. This guarantees that the TransactionInfo stack
-   // will be managed correctly even if no transaction was created by this aspect.
-   txInfo.bindToThread();
-   return txInfo;
 }
 ```
+
+### 2. 处理已经存在的事务
+
+Spring 中支持多种事务的传播规则，这些都是在已经存在事务的基础上进一步的处理。
+
+**AbstractPlatformTransactionManager#handleExistingTransaction**
+
+```java
+/**
+ * Create a TransactionStatus for an existing transaction.
+ */
+private TransactionStatus handleExistingTransaction(
+      TransactionDefinition definition, Object transaction, boolean debugEnabled)
+      throws TransactionException {
+
+   if (definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NEVER) {
+      throw new IllegalTransactionStateException(
+            "Existing transaction found for transaction marked with propagation 'never'");
+   }
+
+   if (definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NOT_SUPPORTED) {
+      if (debugEnabled) {
+         logger.debug("Suspending current transaction");
+      }
+      Object suspendedResources = suspend(transaction);
+      boolean newSynchronization = (getTransactionSynchronization() == SYNCHRONIZATION_ALWAYS);
+      return prepareTransactionStatus(
+            definition, null, false, newSynchronization, debugEnabled, suspendedResources);
+   }
+
+   if (definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRES_NEW) {
+      if (debugEnabled) {
+         logger.debug("Suspending current transaction, creating new transaction with name [" +
+               definition.getName() + "]");
+      }
+       // 新事务的建立
+      SuspendedResourcesHolder suspendedResources = suspend(transaction);
+      try {
+         return startTransaction(definition, transaction, debugEnabled, suspendedResources);
+      }
+      catch (RuntimeException | Error beginEx) {
+         resumeAfterBeginException(transaction, suspendedResources, beginEx);
+         throw beginEx;
+      }
+   }
+	// 嵌入式事务的处理
+   if (definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NESTED) {
+      if (!isNestedTransactionAllowed()) {
+         throw new NestedTransactionNotSupportedException(
+               "Transaction manager does not allow nested transactions by default - " +
+               "specify 'nestedTransactionAllowed' property with value 'true'");
+      }
+      if (debugEnabled) {
+         logger.debug("Creating nested transaction with name [" + definition.getName() + "]");
+      }
+      if (useSavepointForNestedTransaction()) {
+         // Create savepoint within existing Spring-managed transaction,
+         // through the SavepointManager API implemented by TransactionStatus.
+         // Usually uses JDBC 3.0 savepoints. Never activates Spring synchronization.
+          // 如果没有可以使用保存点的方式控制事务回滚，那么在嵌入式事务的建立初始建立保存点。
+         DefaultTransactionStatus status =
+               prepareTransactionStatus(definition, transaction, false, false, debugEnabled, null);
+         status.createAndHoldSavepoint();
+         return status;
+      }
+      else {
+         // Nested transaction through nested begin and commit/rollback calls.
+         // Usually only for JTA: Spring synchronization might get activated here
+         // in case of a pre-existing JTA transaction.
+          // 有些晴空是不能使用保存点操作，比如 JTA，那么建立新事务。
+         return startTransaction(definition, transaction, debugEnabled, null);
+      }
+   }
+
+   // Assumably PROPAGATION_SUPPORTS or PROPAGATION_REQUIRED.
+   if (debugEnabled) {
+      logger.debug("Participating in existing transaction");
+   }
+   if (isValidateExistingTransaction()) {
+      if (definition.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT) {
+         Integer currentIsolationLevel = TransactionSynchronizationManager.getCurrentTransactionIsolationLevel();
+         if (currentIsolationLevel == null || currentIsolationLevel != definition.getIsolationLevel()) {
+            Constants isoConstants = DefaultTransactionDefinition.constants;
+            throw new IllegalTransactionStateException("Participating transaction with definition [" +
+                  definition + "] specifies isolation level which is incompatible with existing transaction: " +
+                  (currentIsolationLevel != null ?
+                        isoConstants.toCode(currentIsolationLevel, DefaultTransactionDefinition.PREFIX_ISOLATION) :
+                        "(unknown)"));
+         }
+      }
+      if (!definition.isReadOnly()) {
+         if (TransactionSynchronizationManager.isCurrentTransactionReadOnly()) {
+            throw new IllegalTransactionStateException("Participating transaction with definition [" +
+                  definition + "] is not marked as read-only but existing transaction is");
+         }
+      }
+   }
+   boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);
+   return prepareTransactionStatus(definition, transaction, false, newSynchronization, debugEnabled, null);
+}
+```
+
+对于已经存在的事务的处理考虑两种情况。
+
++ **PROPAGATION_REQUIRES_NEW** 表示当前方法必须在它自己的事务里运行，一个新的事务将被启动，而如果有一个事务正在运行的话，则在这个方法运行期间被挂起。而 Spring 中对于此种传播方式的处理与新事务建立最大的不同点在与使用 suspend 方法将原事务挂起。将信息挂起的目的当然是为了在当前事务执行完毕后再将原事务还原。
++ **PROPAGATION_NESTED** 表示如果当前一正有一个事务在运行中，则该方法应该运行在一个嵌套的事务中，被嵌套的事务可以独立于封装事务进行提交或者回滚，如果封装事务不存在，行为就像上面的 PROPAGATION_REQUIRES_NEW。对于嵌入式事务的处理，Spring 主要考虑了两种方式的处理。
+  + Spring 中允许嵌入式事务的时候，则首选设置保存点的方式作为异常处理的回滚。
+  + 对于其他方式，比如 JTA 无法使用保存点的方式，那么处理方式于 PROPAGATION_REQUIRES_NEW 相同，而一旦出现异常，则由 Spring 的事务异常处理机制去完成后续操作。
+
+**AbstractPlatformTransactionManager#suspend**
+
+```java
+/**
+ * Suspend the given transaction. Suspends transaction synchronization first,
+ * then delegates to the {@code doSuspend} template method.
+ * @param transaction the current transaction object
+ * (or {@code null} to just suspend active synchronizations, if any)
+ * @return an object that holds suspended resources
+ * (or {@code null} if neither transaction nor synchronization active)
+ * @see #doSuspend
+ * @see #resume
+ */
+@Nullable
+protected final SuspendedResourcesHolder suspend(@Nullable Object transaction) throws TransactionException {
+   if (TransactionSynchronizationManager.isSynchronizationActive()) {
+      List<TransactionSynchronization> suspendedSynchronizations = doSuspendSynchronization();
+      try {
+         Object suspendedResources = null;
+         if (transaction != null) {
+            suspendedResources = doSuspend(transaction);
+         }
+         String name = TransactionSynchronizationManager.getCurrentTransactionName();
+         TransactionSynchronizationManager.setCurrentTransactionName(null);
+         boolean readOnly = TransactionSynchronizationManager.isCurrentTransactionReadOnly();
+         TransactionSynchronizationManager.setCurrentTransactionReadOnly(false);
+         Integer isolationLevel = TransactionSynchronizationManager.getCurrentTransactionIsolationLevel();
+         TransactionSynchronizationManager.setCurrentTransactionIsolationLevel(null);
+         boolean wasActive = TransactionSynchronizationManager.isActualTransactionActive();
+         TransactionSynchronizationManager.setActualTransactionActive(false);
+         return new SuspendedResourcesHolder(
+               suspendedResources, suspendedSynchronizations, name, readOnly, isolationLevel, wasActive);
+      }
+      catch (RuntimeException | Error ex) {
+         // doSuspend failed - original transaction is still active...
+         doResumeSynchronization(suspendedSynchronizations);
+         throw ex;
+      }
+   }
+   else if (transaction != null) {
+      // Transaction active but no synchronization active.
+      Object suspendedResources = doSuspend(transaction);
+      return new SuspendedResourcesHolder(suspendedResources);
+   }
+   else {
+      // Neither transaction nor synchronization active.
+      return null;
+   }
+}
+```
+
+### 3. 准备事务信息
+
+## 回滚处理
 

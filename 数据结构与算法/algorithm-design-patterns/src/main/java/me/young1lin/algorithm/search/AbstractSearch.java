@@ -17,6 +17,10 @@ public abstract class AbstractSearch implements Search {
         this(DEFAULT_SORTED_ARR, DEFAULT_SEARCH_VALUE);
     }
 
+    public AbstractSearch(int searchValue){
+        this(DEFAULT_SORTED_ARR,searchValue);
+    }
+
     public AbstractSearch(int[] arr, int searchValue) {
         this.arr = arr;
         this.searchValue = searchValue;
@@ -33,7 +37,7 @@ public abstract class AbstractSearch implements Search {
     @Override
     public void print() {
         System.out.println(this.getClass().getSimpleName() + ":\t" + Arrays.toString(getArr()));
-        System.out.println(this.getClass().getSimpleName() + ":\t" + find(arr, searchValue));
+        System.out.println(this.getClass().getSimpleName() + ":\t" + find(getArr(), searchValue));
     }
 
 }

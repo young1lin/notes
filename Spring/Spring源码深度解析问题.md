@@ -304,6 +304,14 @@ private void processBeanDefinitions(Set<BeanDefinitionHolder> beanDefinitions) {
 
 少了个 e
 
+# 287
+
+在将原事务还原
+
+再将原事务还原
+
+zaì 字错误
+
 # 300 建议修改
 
 `List<User> userList = new ArrayList<User>();`
