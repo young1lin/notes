@@ -1353,5 +1353,231 @@ protected final SuspendedResourcesHolder suspend(@Nullable Object transaction) t
 
 ### 3. 准备事务信息
 
+当已经建立事务连接并完成了事务信息的提取后，需要将所有的事务信息统一记录在 TransactionInfo 类型的实例中，这个实例包含了目标方法开始前的所有状态信息，一旦事务执行失败，Spring 会通过 TransactionInfo 类型的实例中的信息来进行回滚等后续工作。
+
+**TransactionAspectSupport#prepareTransactionInfo**
+
+```java
+/**
+ * Prepare a TransactionInfo for the given attribute and status object.
+ * @param txAttr the TransactionAttribute (may be {@code null})
+ * @param joinpointIdentification the fully qualified method name
+ * (used for monitoring and logging purposes)
+ * @param status the TransactionStatus for the current transaction
+ * @return the prepared TransactionInfo object
+ */
+protected TransactionInfo prepareTransactionInfo(@Nullable PlatformTransactionManager tm,
+      @Nullable TransactionAttribute txAttr, String joinpointIdentification,
+      @Nullable TransactionStatus status) {
+
+   TransactionInfo txInfo = new TransactionInfo(tm, txAttr, joinpointIdentification);
+   if (txAttr != null) {
+      // We need a transaction for this method...
+      if (logger.isTraceEnabled()) {
+         logger.trace("Getting transaction for [" + txInfo.getJoinpointIdentification() + "]");
+      }
+      // The transaction manager will flag an error if an incompatible tx already exists.
+      txInfo.newTransactionStatus(status);
+   }
+   else {
+      // The TransactionInfo.hasTransaction() method will return false. We created it only
+      // to preserve the integrity of the ThreadLocal stack maintained in this class.
+      if (logger.isTraceEnabled()) {
+         logger.trace("No need to create transaction for [" + joinpointIdentification +
+               "]: This method is not transactional.");
+      }
+   }
+
+   // We always bind the TransactionInfo to the thread, even if we didn't create
+   // a new transaction here. This guarantees that the TransactionInfo stack
+   // will be managed correctly even if no transaction was created by this aspect.
+   txInfo.bindToThread();
+   return txInfo;
+} 
+```
+
+1. **TransactionAspectSupport#createTransactionIfNecessary** 
+
+2. createTransactionIfNecessary 里面调用 AbstractPlatformTransactionManager#getTransaction，就是上面的创建事务 -> 存在事务处理 -> 超时处理 -> 挂起 等操作的方法，
+3. 然后执行 prepareTransactionInfo
+
 ## 回滚处理
+
+在  **TransactionAspectSupport#invokeWithinTransaction** 里面执行完 createTransactionIfNecessary 后，如果抛出异常，则进行捕捉，并且执行 completeTransactionAfterThrowing 方法。
+
+**TransactionAspectSupport#completeTransactionAfterThrowing**
+
+```java
+/**
+ * Handle a throwable, completing the transaction.
+ * We may commit or roll back, depending on the configuration.
+ * @param txInfo information about the current transaction
+ * @param ex throwable encountered
+ */
+protected void completeTransactionAfterThrowing(@Nullable TransactionInfo txInfo, Throwable ex) {
+    // 当抛出异常时首先判断当前是否存在事务，如果没有，则不执行任何操作
+   if (txInfo != null && txInfo.getTransactionStatus() != null) {
+      if (logger.isTraceEnabled()) {
+         logger.trace("Completing transaction for [" + txInfo.getJoinpointIdentification() +
+               "] after exception: " + ex);
+      }
+       // 这里判断是否回滚默认的依据是抛出的异常是否是 RuntimeException 或者是 Error 的类型
+      if (txInfo.transactionAttribute != null && txInfo.transactionAttribute.rollbackOn(ex)) {
+         try {
+             // 根据 TransactionStatus 信息进行回滚处理
+            txInfo.getTransactionManager().rollback(txInfo.getTransactionStatus());
+         }
+         catch (TransactionSystemException ex2) {
+            logger.error("Application exception overridden by rollback exception", ex);
+            ex2.initApplicationException(ex);
+            throw ex2;
+         }
+         catch (RuntimeException | Error ex2) {
+            logger.error("Application exception overridden by rollback exception", ex);
+            throw ex2;
+         }
+      }
+      else {
+         // We don't roll back on this exception.
+         // Will still roll back if TransactionStatus.isRollbackOnly() is true.
+          // 如果不满足回滚条件即使抛出异常也同样会提交
+         try {
+            txInfo.getTransactionManager().commit(txInfo.getTransactionStatus());
+         }
+         catch (TransactionSystemException ex2) {
+            logger.error("Application exception overridden by commit exception", ex);
+            ex2.initApplicationException(ex);
+            throw ex2;
+         }
+         catch (RuntimeException | Error ex2) {
+            logger.error("Application exception overridden by commit exception", ex);
+            throw ex2;
+         }
+      }
+   }
+}
+```
+
+### 1. 默认的回滚条件
+
+**DefaultTransactionAttribute#rollbackOn**
+
+```java
+public boolean rollbackOn(Throwable ex) {
+   return (ex instanceof RuntimeException || ex instanceof Error);
+}
+```
+
+可以通过注解的方式来改变
+
+### 2. 回滚处理
+
+一旦符合回滚条件， Spring 就会将程序引导至回滚处理函数中。
+
+**AbstractPlatformTransactionManager#rollback** 
+
+```java
+/**
+ * This implementation of rollback handles participating in existing
+ * transactions. Delegates to {@code doRollback} and
+ * {@code doSetRollbackOnly}.
+ * @see #doRollback
+ * @see #doSetRollbackOnly
+ */
+@Override
+public final void rollback(TransactionStatus status) throws TransactionException {
+   // 如果事务已经完成，则抛出异常
+   if (status.isCompleted()) {
+      throw new IllegalTransactionStateException(
+            "Transaction is already completed - do not call commit or rollback more than once per transaction");
+   }
+
+   DefaultTransactionStatus defStatus = (DefaultTransactionStatus) status;
+   processRollback(defStatus, false);
+}
+```
+
+**AbstractPlatformTransactionManager#processRollback**
+
+```java
+/**
+ * Process an actual rollback.
+ * The completed flag has already been checked.
+ * @param status object representing the transaction
+ * @throws TransactionException in case of rollback failure
+ */
+private void processRollback(DefaultTransactionStatus status, boolean unexpected) {
+   try {
+      boolean unexpectedRollback = unexpected;
+
+      try {
+          // 激活所有 TransactionSynchronization 中对应的方法
+         triggerBeforeCompletion(status);
+		 // 如果有保存点
+         if (status.hasSavepoint()) {
+            if (status.isDebug()) {
+               logger.debug("Rolling back transaction to savepoint");
+            }
+             // 如果有保存点，也就是当前事务为单独的线程则会退到保存点
+            status.rollbackToHeldSavepoint();
+         }
+         else if (status.isNewTransaction()) {
+            if (status.isDebug()) {
+               logger.debug("Initiating transaction rollback");
+            }
+             // 如果当前事务为独立的新事务，则直接回退
+            doRollback(status);
+         }
+         else {
+            // Participating in larger transaction
+            if (status.hasTransaction()) {
+               if (status.isLocalRollbackOnly() || isGlobalRollbackOnParticipationFailure()) {
+                  if (status.isDebug()) {
+                     logger.debug("Participating transaction failed - marking existing transaction as rollback-only");
+                  }
+                   // 如果当前事务不是独立的事务，那么只能标记状态，等到事务链执行完毕后统一回滚。
+                  doSetRollbackOnly(status);
+               }
+               else {
+                  if (status.isDebug()) {
+                     logger.debug("Participating transaction failed - letting transaction originator decide on rollback");
+                  }
+               }
+            }
+            else {
+               logger.debug("Should roll back transaction but cannot - no transaction available");
+            }
+            // Unexpected rollback only matters here if we're asked to fail early
+            if (!isFailEarlyOnGlobalRollbackOnly()) {
+               unexpectedRollback = false;
+            }
+         }
+      }
+      catch (RuntimeException | Error ex) {
+         triggerAfterCompletion(status, TransactionSynchronization.STATUS_UNKNOWN);
+         throw ex;
+      }
+		// 激活所有 TransactionSynchronization 中对应的方法
+      triggerAfterCompletion(status, TransactionSynchronization.STATUS_ROLLED_BACK);
+
+      // Raise UnexpectedRollbackException if we had a global rollback-only marker
+      if (unexpectedRollback) {
+         throw new UnexpectedRollbackException(
+               "Transaction rolled back because it has been marked as rollback-only");
+      }
+   }
+   finally {
+       // 晴空记录的资源并将挂起的资源恢复
+      cleanupAfterCompletion(status);
+   }
+}
+```
+
+上述方法过程如下：
+
+1. 
+
+
+
+## 事务提交
 
