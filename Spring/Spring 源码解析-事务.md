@@ -1567,7 +1567,7 @@ private void processRollback(DefaultTransactionStatus status, boolean unexpected
       }
    }
    finally {
-       // 晴空记录的资源并将挂起的资源恢复
+       // 清空记录的资源并将挂起的资源恢复
       cleanupAfterCompletion(status);
    }
 }
@@ -1575,9 +1575,306 @@ private void processRollback(DefaultTransactionStatus status, boolean unexpected
 
 上述方法过程如下：
 
-1. 
+1. 首先是自定义触发器的调用，包括在回滚前、完成回滚后的调用，完成回滚摆阔正常回滚与回滚过程出现异常，自定义的触发器会根据这些信息作进一步处理，而对于触发器的注册，常见是在回调过程中通过 TransactionSynchronizationManager 类中的静态方法直接注册。`public static void registerSynchronization(TransactionSynchronization synchronization)`。
 
+2. 除了出发监听函数外，就是真正的回滚逻辑处理。
 
+   + 当之前已经保存的事务信息中有保存点信息的时候，使用保存点信息进行回滚。常用于嵌入式事务，对于嵌入式事务的处理，内嵌的事务异常并不会引起外部事物的回滚。
+   + 当之前已经保存的事务信息中的事务为新事务，那么直接回滚。常用于单独事务的处理。对于没有保存点的回滚，Spring 同样是使用底层数据库连接提供的 API 来操作的。doRollback。
+   + 当前事务信息中表明是存在事务的，又不属于上面两种情况，多数用于 JTA，只做回滚标识，等到提交的时候统一不提交。
+
+3. 回滚后的信息清除。
+
+   无论回滚是否成功，都会执行 `cleanupAfterCompletion(status)`
+
+**AbstractPlatformTransactionManager#cleanupAfterCompletion**
+
+```java
+/**
+ * Clean up after completion, clearing synchronization if necessary,
+ * and invoking doCleanupAfterCompletion.
+ * @param status object representing the transaction
+ * @see #doCleanupAfterCompletion
+ */
+private void cleanupAfterCompletion(DefaultTransactionStatus status) {
+   status.setCompleted();
+   if (status.isNewSynchronization()) {
+      TransactionSynchronizationManager.clear();
+   }
+   if (status.isNewTransaction()) {
+      doCleanupAfterCompletion(status.getTransaction());
+   }
+   if (status.getSuspendedResources() != null) {
+      if (status.isDebug()) {
+         logger.debug("Resuming suspended transaction after completion of inner transaction");
+      }
+      Object transaction = (status.hasTransaction() ? status.getTransaction() : null);
+      resume(transaction, (SuspendedResourcesHolder) status.getSuspendedResources());
+   }
+}
+```
+
+上面的函数得知：
+
++ 设置状态是对事务信息作完成标识以避免重复调用。
++ 如果当前事务是新的同步状态，需要将绑定到当前线程的事务信息清除。
++ 如果是新事务需要做些清除资源的工作。
+
+**DataSourceTransactionManager#doCleanupAfterCompletion**
+
+```java
+@Override
+protected void doCleanupAfterCompletion(Object transaction) {
+   DataSourceTransactionObject txObject = (DataSourceTransactionObject) transaction;
+
+   // Remove the connection holder from the thread, if exposed.
+   if (txObject.isNewConnectionHolder()) {
+       // 从当前线程中解绑
+      TransactionSynchronizationManager.unbindResource(obtainDataSource());
+   }
+
+   // Reset connection.释放（重置）连接
+   Connection con = txObject.getConnectionHolder().getConnection();
+   try {
+      if (txObject.isMustRestoreAutoCommit()) {
+         con.setAutoCommit(true);
+      }
+       // 重置数据库连接
+      DataSourceUtils.resetConnectionAfterTransaction(
+            con, txObject.getPreviousIsolationLevel(), txObject.isReadOnly());
+   }
+   catch (Throwable ex) {
+      logger.debug("Could not reset JDBC Connection after transaction", ex);
+   }
+
+   if (txObject.isNewConnectionHolder()) {
+      if (logger.isDebugEnabled()) {
+         logger.debug("Releasing JDBC Connection [" + con + "] after transaction");
+      }
+       // 如果当前事务时独立的心创建的事务则在事务完成时释放数据连接
+      DataSourceUtils.releaseConnection(con, this.dataSource);
+   }
+
+   txObject.getConnectionHolder().clear();
+}
+```
+
++ 如果在事务执行前有事务挂起，那么当前事务执行结束后需要将刮起的事务恢复。
+
+**AbstractPlatformTransactionManager#resume**
+
+```java
+/**
+ * Resume the given transaction. Delegates to the {@code doResume}
+ * template method first, then resuming transaction synchronization.
+ * @param transaction the current transaction object
+ * @param resourcesHolder the object that holds suspended resources,
+ * as returned by {@code suspend} (or {@code null} to just
+ * resume synchronizations, if any)
+ * @see #doResume
+ * @see #suspend
+ */
+protected final void resume(@Nullable Object transaction, @Nullable SuspendedResourcesHolder resourcesHolder)
+      throws TransactionException {
+
+   if (resourcesHolder != null) {
+      Object suspendedResources = resourcesHolder.suspendedResources;
+      if (suspendedResources != null) {
+          // 实际的工作还是交给子类完成的
+         doResume(transaction, suspendedResources);
+      }
+      List<TransactionSynchronization> suspendedSynchronizations = resourcesHolder.suspendedSynchronizations;
+      if (suspendedSynchronizations != null) {
+         TransactionSynchronizationManager.setActualTransactionActive(resourcesHolder.wasActive);
+         TransactionSynchronizationManager.setCurrentTransactionIsolationLevel(resourcesHolder.isolationLevel);
+         TransactionSynchronizationManager.setCurrentTransactionReadOnly(resourcesHolder.readOnly);
+         TransactionSynchronizationManager.setCurrentTransactionName(resourcesHolder.name);
+         doResumeSynchronization(suspendedSynchronizations);
+      }
+   }
+}
+```
 
 ## 事务提交
+
+如果没有发生什么异常，就直接提交事务了。
+
+**TransactionAspectSupport#commitTransactionAfterReturning**
+
+```java
+/**
+ * Execute after successful completion of call, but not after an exception was handled.
+ * Do nothing if we didn't create a transaction.
+ * @param txInfo information about the current transaction
+ */
+protected void commitTransactionAfterReturning(@Nullable TransactionInfo txInfo) {
+   if (txInfo != null && txInfo.getTransactionStatus() != null) {
+      if (logger.isTraceEnabled()) {
+         logger.trace("Completing transaction for [" + txInfo.getJoinpointIdentification() + "]");
+      }
+      txInfo.getTransactionManager().commit(txInfo.getTransactionStatus());
+   }
+}
+```
+
+当某个事务既没有保存点又不是新事务，Spring 对它的处理方式只是设置一个回滚标识。
+
+某个事务是另一个事务的嵌入事务，但是这些事务又不在 Spring 的管理范围内，或者无法设置保存点，那么 Spring 会通过设置回滚标识的方式来禁止提交。首先当某个嵌入式事务发生回滚的时候会设置回滚标识，而等到外部事务提交时，一旦判断出当前事务流被设置了回滚标识，则由外部事务来统一进行整体事务的回滚。
+
+所以，当事务没有被异常捕获的时候也并不意味着一定会执行提交的过程。
+
+**AbstractPlatformTransactionManager#commit**
+
+```java
+/**
+ * This implementation of commit handles participating in existing
+ * transactions and programmatic rollback requests.
+ * Delegates to {@code isRollbackOnly}, {@code doCommit}
+ * and {@code rollback}.
+ * @see org.springframework.transaction.TransactionStatus#isRollbackOnly()
+ * @see #doCommit
+ * @see #rollback
+ */
+@Override
+public final void commit(TransactionStatus status) throws TransactionException {
+   if (status.isCompleted()) {
+      throw new IllegalTransactionStateException(
+            "Transaction is already completed - do not call commit or rollback more than once per transaction");
+   }
+
+   DefaultTransactionStatus defStatus = (DefaultTransactionStatus) status;
+    // 如果在事务链中已经被标记回滚，那么不会尝试提交事务，直接回滚
+   if (defStatus.isLocalRollbackOnly()) {
+      if (defStatus.isDebug()) {
+         logger.debug("Transactional code has requested rollback");
+      }
+      processRollback(defStatus, false);
+      return;
+   }
+
+   if (!shouldCommitOnGlobalRollbackOnly() && defStatus.isGlobalRollbackOnly()) {
+      if (defStatus.isDebug()) {
+         logger.debug("Global transaction is marked as rollback-only but transactional code requested commit");
+      }
+      processRollback(defStatus, true);
+      return;
+   }
+	// 处理事务提交
+   processCommit(defStatus);
+}
+```
+
+**AbstractPlatformTransactionManager#processCommit**
+
+```java
+/**
+ * Process an actual commit.
+ * Rollback-only flags have already been checked and applied.
+ * @param status object representing the transaction
+ * @throws TransactionException in case of commit failure
+ */
+private void processCommit(DefaultTransactionStatus status) throws TransactionException {
+   try {
+      boolean beforeCompletionInvoked = false;
+
+      try {
+         boolean unexpectedRollback = false;
+          // 预留
+         prepareForCommit(status);
+          // 激活 TransactionSynchronization 中的对应方法调用
+         triggerBeforeCommit(status);
+          // 激活 TransactionSynchronization 中的对应方法调用
+         triggerBeforeCompletion(status);
+         beforeCompletionInvoked = true;
+
+         if (status.hasSavepoint()) {
+            if (status.isDebug()) {
+               logger.debug("Releasing transaction savepoint");
+            }
+            unexpectedRollback = status.isGlobalRollbackOnly();
+             // 如果存在保存点则清除保存点信息
+            status.releaseHeldSavepoint();
+         }
+         else if (status.isNewTransaction()) {
+            if (status.isDebug()) {
+               logger.debug("Initiating transaction commit");
+            }
+            unexpectedRollback = status.isGlobalRollbackOnly();
+             // 如果是独立的事务则直接提交
+            doCommit(status);
+         }
+         else if (isFailEarlyOnGlobalRollbackOnly()) {
+            unexpectedRollback = status.isGlobalRollbackOnly();
+         }
+
+         // Throw UnexpectedRollbackException if we have a global rollback-only
+         // marker but still didn't get a corresponding exception from commit.
+         if (unexpectedRollback) {
+            throw new UnexpectedRollbackException(
+                  "Transaction silently rolled back because it has been marked as rollback-only");
+         }
+      }
+      catch (UnexpectedRollbackException ex) {
+         // can only be caused by doCommit
+         triggerAfterCompletion(status, TransactionSynchronization.STATUS_ROLLED_BACK);
+         throw ex;
+      }
+      catch (TransactionException ex) {
+         // can only be caused by doCommit
+         if (isRollbackOnCommitFailure()) {
+            doRollbackOnCommitException(status, ex);
+         }
+         else {
+            triggerAfterCompletion(status, TransactionSynchronization.STATUS_UNKNOWN);
+         }
+         throw ex;
+      }
+      catch (RuntimeException | Error ex) {
+         if (!beforeCompletionInvoked) {
+            triggerBeforeCompletion(status);
+         }
+          // 提交出现异常则回滚
+         doRollbackOnCommitException(status, ex);
+         throw ex;
+      }
+
+      // Trigger afterCommit callbacks, with an exception thrown there
+      // propagated to callers but the transaction still considered as committed.
+      try {
+         triggerAfterCommit(status);
+      }
+      finally {
+         triggerAfterCompletion(status, TransactionSynchronization.STATUS_COMMITTED);
+      }
+
+   }
+   finally {
+      cleanupAfterCompletion(status);
+   }
+}
+```
+
+符合提交的条件有下
+
++ 当事务状态中有保存点信息的话便不会去提交事务。
++ 当事务非心事的时候也不会去执行提交事务操作。
+
+**DataSourceTransactionManager#doCommit**
+
+```java
+@Override
+protected void doCommit(DefaultTransactionStatus status) {
+   DataSourceTransactionObject txObject = (DataSourceTransactionObject) status.getTransaction();
+   Connection con = txObject.getConnectionHolder().getConnection();
+   if (status.isDebug()) {
+      logger.debug("Committing JDBC transaction on Connection [" + con + "]");
+   }
+   try {
+      con.commit();
+   }
+   catch (SQLException ex) {
+      throw new TransactionSystemException("Could not commit JDBC transaction", ex);
+   }
+}
+```
 
