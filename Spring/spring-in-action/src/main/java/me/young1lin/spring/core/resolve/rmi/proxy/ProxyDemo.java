@@ -21,12 +21,12 @@ public class ProxyDemo{
         proxyFactory.setTarget(new ProxyClass());
         proxyFactory.setOpaque(false);
         // 这里要在里面打断点并且 debug 运行，不然会报错，来不及创建
-        // ProxyClass proxy = (ProxyClass)proxyFactory.getProxy(ProxyDemo.class.getClassLoader());
+         //ProxyClass proxy = (ProxyClass)proxyFactory.getProxy(ProxyDemo.class.getClassLoader());
         // proxy.println();
         // proxy.println();
-        Object proxy = proxyFactory.getProxy(ProxyDemo.class.getClassLoader());
+        Object proxy1 = proxyFactory.getProxy(ProxyDemo.class.getClassLoader());
         // 这里如果执行的话，正常应该会输出三次，直接正常运行是输出一次，在 JdkDynamicAopProxy 50 行打断点一步步执行，才可以
-        System.out.println(proxy.toString());
+        System.out.println(proxy1.toString());
     }
 }
 
