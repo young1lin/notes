@@ -83,3 +83,52 @@ public class SafeListener{
 }
 ```
 
+# 线程封闭（Thread Confinement）
+
+造成线程不安全的因素就是共享数据，没有共享，就没有伤害。如果仅在线程内访问数据，那就不需要同步。
+
+线程封闭技术的一种常见应用是 JDBC（Java Database Connectivity） 的 Connection 对象。Connect 对象并不要求是线程安全的，但是线程池必须是线程安全的。
+
+## Ad-hoc 线程封闭
+
+维护线程封闭性的指责完全由程序实现来承担。
+
+在 Volatile 变量上存在一种特殊的线程封闭。只要你能确保只有单个线程对共享的 volatile 变量执行写入操作，那么就可以安全地在这些共享 volatile 变量上执行 “读取-修改-写入” 的操作。在这种情况下，相当于将修改操作封闭在单个线程中以防止发生竞态条件，并且 volatile 变量的可见性保证还确保了其他线程能看到最新的值。
+
+由于 Ad-hoc 线程封闭技术的脆弱性，因此在程序中尽量少用它，在可能的情况下应该使用更强的线程封闭技术（例如 栈封闭或 ThreadLocal 类）。
+
+## 栈封闭
+
+栈封闭是线程封闭的一种特例，在栈封闭中，只能通过局部变量才能访问对象。**使用局部变量。**
+
+## ThreadLocal 类
+
+ThreadLocal 对象通常用于对可变的单实例或全局变量进行共享。例如在单线程应用程序中可能会维持一个全局的数据库连接，并在程序启动时初始化这个连接对象，从而避免在调用每个方法时都要传递一个 Connection 对象。
+
+Spring-tx 就是用这个来实现嵌套事务的，来根据大量 ThreadLocal 变量判断，savepoint 回滚、当前事务隔离级别、事务进行状态、事务同步操作。
+
+**TransactionSynchronizationManager**具体就是这个类。在 **DataSourceTransactionManager** 中调用，这是 AbstractPlatformTransactionManager 的子类，表现的是 DataSourceTransaction ，还有 Jpa、JTA、Hibernate 等 Transaction。
+
+```java
+/**
+ * 对，没错，就是根据这个来绑定和解绑 resource 的
+ */
+private static final ThreadLocal<Map<Object, Object>> resources =
+new NamedThreadLocal<>("Transactional resources");
+
+private static final ThreadLocal<Set<TransactionSynchronization>> synchronizations =
+new NamedThreadLocal<>("Transaction synchronizations");
+
+private static final ThreadLocal<String> currentTransactionName =
+new NamedThreadLocal<>("Current transaction name");
+
+private static final ThreadLocal<Boolean> currentTransactionReadOnly =
+new NamedThreadLocal<>("Current transaction read-only status");
+
+private static final ThreadLocal<Integer> currentTransactionIsolationLevel =
+new NamedThreadLocal<>("Current transaction isolation level");
+
+private static final ThreadLocal<Boolean> actualTransactionActive =
+new NamedThreadLocal<>("Actual transaction active");
+```
+
