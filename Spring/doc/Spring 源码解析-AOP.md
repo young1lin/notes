@@ -169,6 +169,7 @@ private static void useClassProxyingIfNecessary(BeanDefinitionRegistry registry,
 **AopConfigUtils#forceAutoProxyCreatorToUseClassProxying**
 
 ```java
+// 强制使用的过程其实也是一个属性设置的过程
 public static void forceAutoProxyCreatorToUseClassProxying(BeanDefinitionRegistry registry) {
    if (registry.containsBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME)) {
       BeanDefinition definition = registry.getBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME);
@@ -187,6 +188,145 @@ public static void forceAutoProxyCreatorToExposeProxy(BeanDefinitionRegistry reg
    }
 }
 ```
+
++ proxy-target-class：Spring AOP 部分使用 JDK 动态代理或者 CGLIB 来为目标对象创建代理（书上是建议尽量使用 JDK 的动态代理，我觉得都差不多）。如果被代理的目标对象实现了至少一个接口，则会使用 JDK 动态代理。所有该目标类型实现的接口都将被代理。若该目标对象没有实现任何接口，则创建一个 CGLIB 代理。如果希望强制使用 CGLIB 代理，例如希望代理目标对象的所有方法，而不只是实现自接口的方法。会有两个问题
+
+  + 无法通知（Advise）Final 方法，因为 Final 方法不能被覆盖。
+  + 需要引入 CGLIB 二进制发行包在 classpath 下面。
+
+  强制使用 `CGLIB <aop:config proxy-target-class="true">...</aop:config>`
+
++ JDK 动态代理：其代理对象必须是某个接口的实现，它是通过在运行期间创建一个接口的实现类来完成目标对象的代理。
+
++ CGLIB 代理：运行期间生成的代理对象是针对目标类扩展的子类。CGLIB 是高效的代码生成包，底层是靠 ASM 操作字节码实现的，性能比 JDK 强（现在其实差不多了）。
+
++ expose-proxy：有时候目标对象内部的自我调用将无法实施切面中的增强。
+
+```java
+public interface Service{
+
+    void a();
+    
+    void b();
+
+}
+@Service
+public class DefaultService implements Service{
+
+    @Tranactional(propagation = Propagation.REQUIRED)
+    @Override
+    public void a(){
+        this.b();
+    }
+    
+    @Tranactional(propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public void b(){
+        
+    }
+
+}
+```
+
+需要把 this.b() 改成 ((Service)AopContext.currentProxy()).b();或者自己引入自己，例如 
+
+```java
+public class DefaultService implements Service{
+    /**
+     * 这里为了演示方便，没有用构造器注入，正确的应该是构造器注入更为合理
+     */
+    @Autowried
+    private Service service;
+    
+    @Tranactional(propagation = Propagation.REQUIRED)
+    @Override
+    public void a(){
+        service.b();
+    }
+    
+    @Tranactional(propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public void b(){
+        
+    }
+    
+}
+```
+
+# 创建 AOP 代理
+
+**AbstractAutoProxyCreator#postProcessAfterInitialization**
+
+```java
+/**
+ * Create a proxy with the configured interceptors if the bean is
+ * identified as one to proxy by the subclass.
+ * @see #getAdvicesAndAdvisorsForBean
+ */
+@Override
+public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
+   if (bean != null) {
+       // 根据给定的 bean 的 class 和 name 构建出个 key，格式为 beanClassName_beanName
+      Object cacheKey = getCacheKey(bean.getClass(), beanName);
+      if (this.earlyProxyReferences.remove(cacheKey) != bean) {
+          // 如果它适合被代理，则需要封装指定 bean
+         return wrapIfNecessary(bean, beanName, cacheKey);
+      }
+   }
+   return bean;
+}
+```
+
+**AbstractAutoProxyCreator#wrapIfNecessary**
+
+```java
+/**
+ * Wrap the given bean if necessary, i.e. if it is eligible for being proxied.
+ * @param bean the raw bean instance
+ * @param beanName the name of the bean
+ * @param cacheKey the cache key for metadata access
+ * @return a proxy wrapping the bean, or the raw bean instance as-is
+ */
+protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) {
+   // 如果已经处理过
+    if (StringUtils.hasLength(beanName) && this.targetSourcedBeans.contains(beanName)) {
+      return bean;
+   }
+    // 无需增强
+   if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
+      return bean;
+   }
+    // 给定的 bean 类是否代表一个基础设施类，基础设施类不应被代理，或者配置了指定 bean 不需要自代理
+   if (isInfrastructureClass(bean.getClass()) || shouldSkip(bean.getClass(), beanName)) {
+      this.advisedBeans.put(cacheKey, Boolean.FALSE);
+      return bean;
+   }
+
+   // Create proxy if we have advice.
+   Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
+   if (specificInterceptors != DO_NOT_PROXY) {
+      this.advisedBeans.put(cacheKey, Boolean.TRUE);
+      Object proxy = createProxy(
+            bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
+      this.proxyTypes.put(cacheKey, proxy.getClass());
+      return proxy;
+   }
+
+   this.advisedBeans.put(cacheKey, Boolean.FALSE);
+   return bean;
+}
+```
+
+创建代理主要包含了两个步骤。
+
+1. 获取增强方法或者增强器；
+2. 根据获取的增强进行代理。
+
+**AbstractAutoProxyCreator 的 postProcessAfterInitialization**
+
+![AbstractAutoProxyCreator 的 postProcessAfterInitialization.png](https://i.loli.net/2020/11/17/8eQ3LJVoNgbGCc2.png)
+
+
 
 ## 注册 AnnotationAwareAspectAutoProxyCreator
 
