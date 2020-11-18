@@ -132,3 +132,97 @@ private static final ThreadLocal<Boolean> actualTransactionActive =
 new NamedThreadLocal<>("Actual transaction active");
 ```
 
+当然还有各种各样的 ResourceCacheManager（例如 HBase 里面的，HBaseUtils 里边有个 getTable 方法） 使用 ThreadLocal 来实现的，本质上就是减少分配操作。 还有事务的断点（savePoint）恢复等操作。
+
+## 不变性
+
+满足同步需求的另一种方法是使对象不可变，例如 Google Guava 的 ImmutableMap，创建之后就不能 put 值进去，只能使用 get 读取。
+
+**不可变对象一定是线程安全的。**
+
+只有满足以下条件时，对象才是不可变的。
+
+1. 对象创建以后其状态就能修改。
+2. 对象的所有域都是 final 类型。
+3. 对象时正确创建的（在对象的创建期间，this 引用没有逸出）。
+
+```java
+ImmutableMap<String,String> myMap = ImmutableMap.builder()
+    .put("key1", "value1") 
+    .put("key2", "value2") 
+    .put("key3", "value3") 
+    .put("key4", "value4") 
+    .put("key5", "value5") 
+    .put("key6", "value6") 
+    .put("key7", "value7") 
+    .put("key8", "value8") 
+    .put("key9", "value9")
+    .build();
+```
+
+### Final 域
+
+关键字 final 可以视为 C++ 中 const 机制的一种受限版本，用于构造不可变性对象。final 类型的域时不能修改的（但如果是 final 域所引用的对象是可变的，那么这些被引用的对象时可以修改的）。然而在 JMM 中，final 域还有着特殊的语义。final 域能确保初始化过程的安全性，从而可以不受限制地访问不可变对象，并在共享这些对象时无须同步。
+
+```java
+/**
+ * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
+ * @version 1.0
+ * @since 2020/11/18 9:20 下午
+ */
+public class OneValueCache {
+
+    private final BigInteger lastNumber;
+
+    private final BigInteger[] lastFactors;
+
+    public OneValueCache(BigInteger i,BigInteger[] factors){
+        this.lastNumber = i;
+        this.lastFactors = Arrays.copyOf(factors,factors.length);
+    }
+
+    public BigInteger[] getLastFactors(BigInteger i){
+        if(lastNumber == null || !lastNumber.equals(i)){
+            return null;
+        }
+        return Arrays.copyOf(lastFactors,lastFactors.length);
+    }
+
+}
+```
+
+## 安全发布
+
+1. 不正确的发布：正确的对象被破坏。
+2. 不可变对象与初始化安全性。
+3. 安全发布的常用模式。
+
+要安全地发布一个对象，对象的引用以及对象的状态必须同时对其他线程可见。一个正确的构造的对象可以通过以下方式来安全发布。
+
++ 在静态初始化函数中初始化一个对象引用。
++ 将对象的引用保存到 volatile 类型的域或者 AtomicReferance 对象中。
++ 将对象的引用保存到某个正确构造对象的 final 类型域中。
++ 将对象的引用保存到一个由锁保护的域中。
+
+4. 事实不可变的对象。
+
+就是 ImmutableMap，生成后就不可变。
+
+### 可变对象
+
+对象的发布需求取决于它的可变性：
+
++ 不可变对象可以通过任意机制来发布。
++ 事实不可变对象必须通过安全方式来发布。
++ 可变对象必须通过安全方式来发布，并且必须是线程安全的或者由某个锁保护起来。
+
+### 安全的地共享对象
+
+线程封闭
+
+只读共享
+
+线程安全共享
+
+保护对象
+
