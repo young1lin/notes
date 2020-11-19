@@ -694,9 +694,675 @@ public InstantiationModelAwarePointcutAdvisorImpl(AspectJExpressionPointcut decl
 
 ```java
 private Advice instantiateAdvice(AspectJExpressionPointcut pointcut) {
+    // 锚点
    Advice advice = this.aspectJAdvisorFactory.getAdvice(this.aspectJAdviceMethod, pointcut,
          this.aspectInstanceFactory, this.declarationOrder, this.aspectName);
    return (advice != null ? advice : EMPTY_ADVICE);
 }
 ```
+
+**ReflectiveAspectJAdvisorFactory#getAdvice**
+
+```java
+// 锚点
+@Override
+@Nullable
+public Advice getAdvice(Method candidateAdviceMethod, AspectJExpressionPointcut expressionPointcut,
+      MetadataAwareAspectInstanceFactory aspectInstanceFactory, int declarationOrder, String aspectName) {
+
+   Class<?> candidateAspectClass = aspectInstanceFactory.getAspectMetadata().getAspectClass();
+   validate(candidateAspectClass);
+
+   AspectJAnnotation<?> aspectJAnnotation =
+         AbstractAspectJAdvisorFactory.findAspectJAnnotationOnMethod(candidateAdviceMethod);
+   if (aspectJAnnotation == null) {
+      return null;
+   }
+
+   // If we get here, we know we have an AspectJ method.
+   // Check that it's an AspectJ-annotated class
+   if (!isAspect(candidateAspectClass)) {
+      throw new AopConfigException("Advice must be declared inside an aspect type: " +
+            "Offending method '" + candidateAdviceMethod + "' in class [" +
+            candidateAspectClass.getName() + "]");
+   }
+
+   if (logger.isDebugEnabled()) {
+      logger.debug("Found AspectJ method: " + candidateAdviceMethod);
+   }
+
+   AbstractAspectJAdvice springAdvice;
+	// 根据不同的注解类型封装不同的增强器
+   switch (aspectJAnnotation.getAnnotationType()) {
+      case AtPointcut:
+         if (logger.isDebugEnabled()) {
+            logger.debug("Processing pointcut '" + candidateAdviceMethod.getName() + "'");
+         }
+         return null;
+      case AtAround:
+         springAdvice = new AspectJAroundAdvice(
+               candidateAdviceMethod, expressionPointcut, aspectInstanceFactory);
+         break;
+      case AtBefore:
+         springAdvice = new AspectJMethodBeforeAdvice(
+               candidateAdviceMethod, expressionPointcut, aspectInstanceFactory);
+         break;
+      case AtAfter:
+         springAdvice = new AspectJAfterAdvice(
+               candidateAdviceMethod, expressionPointcut, aspectInstanceFactory);
+         break;
+      case AtAfterReturning:
+         springAdvice = new AspectJAfterReturningAdvice(
+               candidateAdviceMethod, expressionPointcut, aspectInstanceFactory);
+         AfterReturning afterReturningAnnotation = (AfterReturning) aspectJAnnotation.getAnnotation();
+         if (StringUtils.hasText(afterReturningAnnotation.returning())) {
+            springAdvice.setReturningName(afterReturningAnnotation.returning());
+         }
+         break;
+      case AtAfterThrowing:
+         springAdvice = new AspectJAfterThrowingAdvice(
+               candidateAdviceMethod, expressionPointcut, aspectInstanceFactory);
+         AfterThrowing afterThrowingAnnotation = (AfterThrowing) aspectJAnnotation.getAnnotation();
+         if (StringUtils.hasText(afterThrowingAnnotation.throwing())) {
+            springAdvice.setThrowingName(afterThrowingAnnotation.throwing());
+         }
+         break;
+      default:
+         throw new UnsupportedOperationException(
+               "Unsupported advice type on method: " + candidateAdviceMethod);
+   }
+
+   // Now to configure the advice...
+   springAdvice.setAspectName(aspectName);
+   springAdvice.setDeclarationOrder(declarationOrder);
+   String[] argNames = this.parameterNameDiscoverer.getParameterNames(candidateAdviceMethod);
+   if (argNames != null) {
+      springAdvice.setArgumentNamesFromStringArray(argNames);
+   }
+   springAdvice.calculateArgumentBindings();
+
+   return springAdvice;
+}
+```
+
+常用的增强器实现。
+
++ MethodBeforeAdviceInterceptor
+
+```java
+/**
+ * Interceptor to wrap a {@link MethodBeforeAdvice}.
+ * <p>Used internally by the AOP framework; application developers should not
+ * need to use this class directly.
+ *
+ * @author Rod Johnson
+ * @see AfterReturningAdviceInterceptor
+ * @see ThrowsAdviceInterceptor
+ */
+@SuppressWarnings("serial")
+public class MethodBeforeAdviceInterceptor implements MethodInterceptor, BeforeAdvice, Serializable {
+
+   private final MethodBeforeAdvice advice;
+
+
+   /**
+    * Create a new MethodBeforeAdviceInterceptor for the given advice.
+    * @param advice the MethodBeforeAdvice to wrap
+    */
+   public MethodBeforeAdviceInterceptor(MethodBeforeAdvice advice) {
+      Assert.notNull(advice, "Advice must not be null");
+      this.advice = advice;
+   }
+
+
+   @Override
+   public Object invoke(MethodInvocation mi) throws Throwable {
+      this.advice.before(mi.getMethod(), mi.getArguments(), mi.getThis());
+      return mi.proceed();
+   }
+
+}
+```
+
+**AspectJMethodBeforeAdvice**
+
+```java
+/**
+ * Spring AOP advice that wraps an AspectJ before method.
+ *
+ * @author Rod Johnson
+ * @author Adrian Colyer
+ * @since 2.0
+ */
+@SuppressWarnings("serial")
+public class AspectJMethodBeforeAdvice extends AbstractAspectJAdvice implements MethodBeforeAdvice, Serializable {
+
+   public AspectJMethodBeforeAdvice(
+         Method aspectJBeforeAdviceMethod, AspectJExpressionPointcut pointcut, AspectInstanceFactory aif) {
+
+      super(aspectJBeforeAdviceMethod, pointcut, aif);
+   }
+
+	// 上面会调用这个方法，再调用下面的方法
+   @Override
+   public void before(Method method, Object[] args, @Nullable Object target) throws Throwable {
+      invokeAdviceMethod(getJoinPointMatch(), null, null);
+   }
+
+   @Override
+   public boolean isBeforeAdvice() {
+      return true;
+   }
+
+   @Override
+   public boolean isAfterAdvice() {
+      return false;
+   }
+
+}
+```
+
+**AbstractAspectJAdvice#invokeAdviceMethod**
+
+```java
+/**
+ * Invoke the advice method.
+ * @param jpMatch the JoinPointMatch that matched this execution join point
+ * @param returnValue the return value from the method execution (may be null)
+ * @param ex the exception thrown by the method execution (may be null)
+ * @return the invocation result
+ * @throws Throwable in case of invocation failure
+ */
+protected Object invokeAdviceMethod(
+      @Nullable JoinPointMatch jpMatch, @Nullable Object returnValue, @Nullable Throwable ex)
+      throws Throwable {
+
+   return invokeAdviceMethodWithGivenArgs(argBinding(getJoinPoint(), jpMatch, returnValue, ex));
+}
+```
+
+**AbstractAspectJAdvice#invokeAdviceMethodWithGivenArgs**
+
+```java
+protected Object invokeAdviceMethodWithGivenArgs(Object[] args) throws Throwable {
+   Object[] actualArgs = args;
+   if (this.aspectJAdviceMethod.getParameterCount() == 0) {
+      actualArgs = null;
+   }
+   try {
+      ReflectionUtils.makeAccessible(this.aspectJAdviceMethod);
+      // TODO AopUtils.invokeJoinpointUsingReflection
+       // 这个其实就是方法了，Method#invoke
+      return this.aspectJAdviceMethod.invoke(this.aspectInstanceFactory.getAspectInstance(), actualArgs);
+   }
+   catch (IllegalArgumentException ex) {
+      throw new AopInvocationException("Mismatch on arguments to advice method [" +
+            this.aspectJAdviceMethod + "]; pointcut expression [" +
+            this.pointcut.getPointcutExpression() + "]", ex);
+   }
+   catch (InvocationTargetException ex) {
+      throw ex.getTargetException();
+   }
+}
+```
+
++ AspectJAfterAdvice
+
+后置增强和前置增强有些不一样。前置增强大致的结构是在拦截器链中防止 MethodBeforeAdviceInterceptor，而在 MethodBeforeAdviceInterceptor 中又防止了 AspectJMethodBeforeAdvice，并在调用 invoke 的时候首先串联调用。
+
+```java
+/**
+ * Spring AOP advice wrapping an AspectJ after advice method.
+ *
+ * @author Rod Johnson
+ * @since 2.0
+ */
+@SuppressWarnings("serial")
+public class AspectJAfterAdvice extends AbstractAspectJAdvice
+      implements MethodInterceptor, AfterAdvice, Serializable {
+
+   public AspectJAfterAdvice(
+         Method aspectJBeforeAdviceMethod, AspectJExpressionPointcut pointcut, AspectInstanceFactory aif) {
+
+      super(aspectJBeforeAdviceMethod, pointcut, aif);
+   }
+
+
+   @Override
+   public Object invoke(MethodInvocation mi) throws Throwable {
+      try {
+         return mi.proceed();
+      }
+      finally {
+         invokeAdviceMethod(getJoinPointMatch(), null, null);
+      }
+   }
+
+   @Override
+   public boolean isBeforeAdvice() {
+      return false;
+   }
+
+   @Override
+   public boolean isAfterAdvice() {
+      return true;
+   }
+
+}
+```
+
+### 2. 增强同步实例化增强器
+
+如果寻找的增强器不为空且又配置了增强延迟初始化，那么就需要在首位加入同步实例化增强器。同步实例化增强器 SyntheticInstantiationAdvisor 如下。
+
+**ReflectiveAspectJAdvisorFactory.SyntheticInstantiationAdvisor**
+
+```java
+/**
+ * Synthetic advisor that instantiates the aspect.
+ * Triggered by per-clause pointcut on non-singleton aspect.
+ * The advice has no effect.
+ */
+@SuppressWarnings("serial")
+protected static class SyntheticInstantiationAdvisor extends DefaultPointcutAdvisor {
+
+   public SyntheticInstantiationAdvisor(final MetadataAwareAspectInstanceFactory aif) {
+      super(aif.getAspectMetadata().getPerClausePointcut(), (MethodBeforeAdvice)
+            (method, args, target) -> aif.getAspectInstance());
+   }
+}
+```
+
+### 3. 获取 DeclareParents 注解
+
+**ReflectiveAspectJAdvisorFactory#getDeclareParentsAdvisor**
+
+```java
+/**
+ * Build a {@link org.springframework.aop.aspectj.DeclareParentsAdvisor}
+ * for the given introduction field.
+ * <p>Resulting Advisors will need to be evaluated for targets.
+ * @param introductionField the field to introspect
+ * @return the Advisor instance, or {@code null} if not an Advisor
+ */
+@Nullable
+private Advisor getDeclareParentsAdvisor(Field introductionField) {
+   DeclareParents declareParents = introductionField.getAnnotation(DeclareParents.class);
+   if (declareParents == null) {
+      // Not an introduction field
+      return null;
+   }
+
+   if (DeclareParents.class == declareParents.defaultImpl()) {
+      throw new IllegalStateException("'defaultImpl' attribute must be set on DeclareParents");
+   }
+
+   return new DeclareParentsAdvisor(
+         introductionField.getType(), declareParents.value(), declareParents.defaultImpl());
+}
+```
+
+## 寻找匹配的增强器
+
+**AbstractAdvisorAutoProxyCreator#findAdvisorsThatCanApply**
+
+```java
+/**
+ * Search the given candidate Advisors to find all Advisors that
+ * can apply to the specified bean.
+ * @param candidateAdvisors the candidate Advisors
+ * @param beanClass the target's bean class
+ * @param beanName the target's bean name
+ * @return the List of applicable Advisors
+ * @see ProxyCreationContext#getCurrentProxiedBeanName()
+ */
+protected List<Advisor> findAdvisorsThatCanApply(
+      List<Advisor> candidateAdvisors, Class<?> beanClass, String beanName) {
+
+   ProxyCreationContext.setCurrentProxiedBeanName(beanName);
+   try {
+       // 过滤已经得到的 advisors
+      return AopUtils.findAdvisorsThatCanApply(candidateAdvisors, beanClass);
+   }
+   finally {
+      ProxyCreationContext.setCurrentProxiedBeanName(null);
+   }
+}
+```
+
+**AopUtils#findAdvisorsThatCanApply**
+
+```java
+/**
+ * Determine the sublist of the {@code candidateAdvisors} list
+ * that is applicable to the given class.
+ * @param candidateAdvisors the Advisors to evaluate
+ * @param clazz the target class
+ * @return sublist of Advisors that can apply to an object of the given class
+ * (may be the incoming List as-is)
+ */
+public static List<Advisor> findAdvisorsThatCanApply(List<Advisor> candidateAdvisors, Class<?> clazz) {
+   if (candidateAdvisors.isEmpty()) {
+      return candidateAdvisors;
+   }
+   List<Advisor> eligibleAdvisors = new ArrayList<>();
+    // 首先处理引介增强
+   for (Advisor candidate : candidateAdvisors) {
+      if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
+         eligibleAdvisors.add(candidate);
+      }
+   }
+   boolean hasIntroductions = !eligibleAdvisors.isEmpty();
+   for (Advisor candidate : candidateAdvisors) {
+       // 引介增强已经处理
+      if (candidate instanceof IntroductionAdvisor) {
+         // already processed
+         continue;
+      }
+       // 对于普通的 bean 的处理
+      if (canApply(candidate, clazz, hasIntroductions)) {
+         eligibleAdvisors.add(candidate);
+      }
+   }
+   return eligibleAdvisors;
+}
+```
+
+**AopUtils#canApply**
+
+```java
+/**
+ * Can the given advisor apply at all on the given class?
+ * <p>This is an important test as it can be used to optimize out a advisor for a class.
+ * This version also takes into account introductions (for IntroductionAwareMethodMatchers).
+ * @param advisor the advisor to check
+ * @param targetClass class we're testing
+ * @param hasIntroductions whether or not the advisor chain for this bean includes
+ * any introductions
+ * @return whether the pointcut can apply on any method
+ */
+public static boolean canApply(Advisor advisor, Class<?> targetClass, boolean hasIntroductions) {
+   if (advisor instanceof IntroductionAdvisor) {
+      return ((IntroductionAdvisor) advisor).getClassFilter().matches(targetClass);
+   }
+   else if (advisor instanceof PointcutAdvisor) {
+      PointcutAdvisor pca = (PointcutAdvisor) advisor;
+      return canApply(pca.getPointcut(), targetClass, hasIntroductions);
+   }
+   else {
+      // It doesn't have a pointcut so we assume it applies.
+      return true;
+   }
+}
+```
+
+**AopUtils#canApply**
+
+```java
+/**
+ * Can the given pointcut apply at all on the given class?
+ * <p>This is an important test as it can be used to optimize
+ * out a pointcut for a class.
+ * @param pc the static or dynamic pointcut to check
+ * @param targetClass the class to test
+ * @param hasIntroductions whether or not the advisor chain
+ * for this bean includes any introductions
+ * @return whether the pointcut can apply on any method
+ */
+public static boolean canApply(Pointcut pc, Class<?> targetClass, boolean hasIntroductions) {
+   Assert.notNull(pc, "Pointcut must not be null");
+   if (!pc.getClassFilter().matches(targetClass)) {
+      return false;
+   }
+
+   MethodMatcher methodMatcher = pc.getMethodMatcher();
+   if (methodMatcher == MethodMatcher.TRUE) {
+      // No need to iterate the methods if we're matching any method anyway...
+      return true;
+   }
+
+   IntroductionAwareMethodMatcher introductionAwareMethodMatcher = null;
+   if (methodMatcher instanceof IntroductionAwareMethodMatcher) {
+      introductionAwareMethodMatcher = (IntroductionAwareMethodMatcher) methodMatcher;
+   }
+
+   Set<Class<?>> classes = new LinkedHashSet<>();
+   if (!Proxy.isProxyClass(targetClass)) {
+      classes.add(ClassUtils.getUserClass(targetClass));
+   }
+   classes.addAll(ClassUtils.getAllInterfacesForClassAsSet(targetClass));
+
+   for (Class<?> clazz : classes) {
+      Method[] methods = ReflectionUtils.getAllDeclaredMethods(clazz);
+      for (Method method : methods) {
+         if (introductionAwareMethodMatcher != null ?
+               introductionAwareMethodMatcher.matches(method, targetClass, hasIntroductions) :
+               methodMatcher.matches(method, targetClass)) {
+            return true;
+         }
+      }
+   }
+
+   return false;
+}
+```
+
+# 创建代理
+
+**AbstractAutoProxyCreator#createProxy**
+
+```java
+/**
+ * Create an AOP proxy for the given bean.
+ * @param beanClass the class of the bean
+ * @param beanName the name of the bean
+ * @param specificInterceptors the set of interceptors that is
+ * specific to this bean (may be empty, but not null)
+ * @param targetSource the TargetSource for the proxy,
+ * already pre-configured to access the bean
+ * @return the AOP proxy for the bean
+ * @see #buildAdvisors
+ */
+protected Object createProxy(Class<?> beanClass, @Nullable String beanName,
+      @Nullable Object[] specificInterceptors, TargetSource targetSource) {
+
+   if (this.beanFactory instanceof ConfigurableListableBeanFactory) {
+      AutoProxyUtils.exposeTargetClass((ConfigurableListableBeanFactory) this.beanFactory, beanName, beanClass);
+   }
+
+   ProxyFactory proxyFactory = new ProxyFactory();
+    // 获取当前类中相关属性
+   proxyFactory.copyFrom(this);
+	// 决定对于给定的 bean 是否应该使用 targetClass 而不是它的接口代理
+    // 检查 proxyTragetClass 设置以及 preserveTargetClass 属性
+   if (!proxyFactory.isProxyTargetClass()) {
+      if (shouldProxyTargetClass(beanClass, beanName)) {
+         proxyFactory.setProxyTargetClass(true);
+      }
+      else {
+          // 评估代理接口，并且评估通过就给添加代理接口
+         evaluateProxyInterfaces(beanClass, proxyFactory);
+      }
+   }
+
+   Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
+    // 加入增强器
+   proxyFactory.addAdvisors(advisors);
+    // 设置要代理的类
+   proxyFactory.setTargetSource(targetSource);
+	// 定制代理
+   customizeProxyFactory(proxyFactory);
+	// 是否冻结，东来控制代理工厂被配置之后，是否还允许修改通知
+    // 缺省值为 false
+   proxyFactory.setFrozen(this.freezeProxy);
+   if (advisorsPreFiltered()) {
+      proxyFactory.setPreFiltered(true);
+   }
+
+   return proxyFactory.getProxy(getProxyClassLoader());
+}
+```
+
+对于代理类的创建及处理，Spring 委托给了 ProxyFactory 去处理，而在此函数中主要是对 ProxyFactory 的初始化操作，进而对真正的创建代理做准备。初始化操作包括如下：
+
+1. 获取当前类中的属性。
+2. 添加代理接口。
+3. 封装 Advisor 并加入到 ProxyFactory 中。
+4. 设置要代理的类。
+5. 还为子类提供了定制的函数 customizeProxyFactory，子类可以在此函数中进行对 ProxyFactory 的进一步封装。
+6. 进行获取代理操作。
+
+其中，封装 Advisor 并加入到 ProxyFactory 中以及创建代理是两个相对繁琐的过程，可以通过 ProxyFactory 提供的 addAdvisors 方法直接将增强器置入代理创建工厂中，
+
+**AbstractAutoProxyCreator#buildAdvisors**
+
+```java
+/**
+ * Determine the advisors for the given bean, including the specific interceptors
+ * as well as the common interceptor, all adapted to the Advisor interface.
+ * @param beanName the name of the bean
+ * @param specificInterceptors the set of interceptors that is
+ * specific to this bean (may be empty, but not null)
+ * @return the list of Advisors for the given bean
+ */
+protected Advisor[] buildAdvisors(@Nullable String beanName, @Nullable Object[] specificInterceptors) {
+   // Handle prototypes correctly...
+   Advisor[] commonInterceptors = resolveInterceptorNames();
+
+   List<Object> allInterceptors = new ArrayList<>();
+   if (specificInterceptors != null) {
+       // 加入拦截器
+      allInterceptors.addAll(Arrays.asList(specificInterceptors));
+      if (commonInterceptors.length > 0) {
+         if (this.applyCommonInterceptorsFirst) {
+            allInterceptors.addAll(0, Arrays.asList(commonInterceptors));
+         }
+         else {
+            allInterceptors.addAll(Arrays.asList(commonInterceptors));
+         }
+      }
+   }
+   if (logger.isTraceEnabled()) {
+      int nrOfCommonInterceptors = commonInterceptors.length;
+      int nrOfSpecificInterceptors = (specificInterceptors != null ? specificInterceptors.length : 0);
+      logger.trace("Creating implicit proxy for bean '" + beanName + "' with " + nrOfCommonInterceptors +
+            " common interceptors and " + nrOfSpecificInterceptors + " specific interceptors");
+   }
+
+   Advisor[] advisors = new Advisor[allInterceptors.size()];
+   for (int i = 0; i < allInterceptors.size(); i++) {
+       // 下面的方法
+      advisors[i] = this.advisorAdapterRegistry.wrap(allInterceptors.get(i));
+   }
+   return advisors;
+}
+```
+
+**DefaultAdvisorAdapterRegistry#wrap**
+
+```java
+@Override
+public Advisor wrap(Object adviceObject) throws UnknownAdviceTypeException {
+   if (adviceObject instanceof Advisor) {
+      return (Advisor) adviceObjec t;
+   }
+   if (!(adviceObject instanceof Advice)) {
+      throw new UnknownAdviceTypeException(adviceObject);
+   }
+   Advice advice = (Advice) adviceObject;
+   if (advice instanceof MethodInterceptor) {
+      // So well-known it doesn't even need an adapter.
+      return new DefaultPointcutAdvisor(advice);
+   }
+   for (AdvisorAdapter adapter : this.adapters) {
+      // Check that it is supported.
+      if (adapter.supportsAdvice(advice)) {
+         return new DefaultPointcutAdvisor(advice);
+      }
+   }
+   throw new UnknownAdviceTypeException(advice);
+}
+```
+
+### 1. 创建代理
+
+**ProxyFactory#getProxy**
+
+```java
+/**
+ * Create a new proxy according to the settings in this factory.
+ * <p>Can be called repeatedly. Effect will vary if we've added
+ * or removed interfaces. Can add and remove interceptors.
+ * <p>Uses the given class loader (if necessary for proxy creation).
+ * @param classLoader the class loader to create the proxy with
+ * (or {@code null} for the low-level proxy facility's default)
+ * @return the proxy object
+ */
+public Object getProxy(@Nullable ClassLoader classLoader) {
+   return createAopProxy().getProxy(classLoader);
+}
+```
+
+**ProxyCreatorSupport#createAopProxy**
+
+```java
+/**
+ * Subclasses should call this to get a new AOP proxy. They should <b>not</b>
+ * create an AOP proxy with {@code this} as an argument.
+ */
+protected final synchronized AopProxy createAopProxy() {
+   if (!this.active) {
+      activate();
+   }
+    // getProxyFactory 就是获取当前的 proxyFactory，没有什么特殊的地方  		return this.aopProxyFactory;
+
+   return getAopProxyFactory().createAopProxy(this);
+}
+```
+
+**DefaultAopProxyFactory#createAopProxy**
+
+```java
+@Override
+public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
+   if (config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config)) {
+      Class<?> targetClass = config.getTargetClass();
+      if (targetClass == null) {
+         throw new AopConfigException("TargetSource cannot determine target class: " +
+               "Either an interface or a target is required for proxy creation.");
+      }
+      if (targetClass.isInterface() || Proxy.isProxyClass(targetClass)) {
+         return new JdkDynamicAopProxy(config);
+      }
+      return new ObjenesisCglibAopProxy(config);
+   }
+   else {
+      return new JdkDynamicAopProxy(config);
+   }
+}
+```
+
+从 if 中的判断条件可以看到 3 个方面影响着 Spring 的判断。
+
++ optimize：用来控制通过 CGLIB 创建的代理是否使用激进的优化策略，除非完全了解 AOP 代理如何处理优化，否则不推荐用户使用这个设置。目前这个属性仅用于 CGLIB 代理，对于 JDK 动态代理（缺省代理）无效。
++ proxyTargetClass：这个属性为 true 时，目标类本身被代理而不是目标类的接口。如果这个属性值被设为 true，CGLIB 代理将被创建，设置方式：`<aop:aspectj-autoproxy proxy-target-class="true">`
++ hasNoUserSuppliedProxyInterfaces：是否存在代理接口。
+
+总结：
+
++ 如果目标对象实现了接口，默认情况下会采用 JDK 的动态代理实现 AOP。
++ 如果目标对象实现了接口，可以强制使用 CGLIB 实现 AOP。
++ 如果目标对象没有实现了接口，必须采用 CGLIB 库，Spring 会自动在 JDK 动态代理和 CGLIB 之间转换。
+
+如何强制使用 CGLIB 实现 AOP？
+
++ 添加 CGLIB 库，SPRING_HOME/cglib/*.jar。
++ 在 Spring 配置文件中加入`<aop:aspectj-autoproxy proxy-target-class="true">`
+
+JDK 动态代理和 CGLIB 字节码生成的区别。
+
++ JDK 动态代理只能对实现了接口的类生成大力，而不能针对类。
++ CGLIB 时针对类实现代理，主要是对指定的类生成一个子类，覆盖其中的方法，因为是集成，所以 final 方法不会被代理。
+
+# 创建 AOP 静态代理
 
