@@ -1366,3 +1366,421 @@ JDK 动态代理和 CGLIB 字节码生成的区别。
 
 # 创建 AOP 静态代理
 
+CGLIB 执行拦截器链，关于 CGLIB 及动态代理内容中文解释可以详细参考美团的一篇文章。当然也可以翻官网。
+
+
+
+**JdkDynamicAopProxy#getProxy**
+
+```java
+@Override
+public Object getProxy() {
+   return getProxy(ClassUtils.getDefaultClassLoader());
+}
+
+@Override
+public Object getProxy(@Nullable ClassLoader classLoader) {
+   if (logger.isTraceEnabled()) {
+      logger.trace("Creating JDK dynamic proxy: " + this.advised.getTargetSource());
+   }
+   Class<?>[] proxiedInterfaces = AopProxyUtils.completeProxiedInterfaces(this.advised, true);
+   findDefinedEqualsAndHashCodeMethods(proxiedInterfaces);
+   return Proxy.newProxyInstance(classLoader, proxiedInterfaces, this);
+}
+```
+
+最下面就是调用 Proxy 来创建 JDK 动态代理，把当前类传入进去，当前类也就是 JdkDynamicAopProxy 实现了 InvocationHandler 接口，实现了它的接口方法 invoke，如下：
+
+```java
+/**
+ * Implementation of {@code InvocationHandler.invoke}.
+ * <p>Callers will see exactly the exception thrown by the target,
+ * unless a hook method throws an exception.
+ */
+@Override
+@Nullable
+public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+   Object oldProxy = null;
+   boolean setProxyContext = false;
+
+   TargetSource targetSource = this.advised.targetSource;
+   Object target = null;
+
+   try {
+      if (!this.equalsDefined && AopUtils.isEqualsMethod(method)) {
+         // The target does not implement the equals(Object) method itself.
+         return equals(args[0]);
+      }
+      else if (!this.hashCodeDefined && AopUtils.isHashCodeMethod(method)) {
+         // The target does not implement the hashCode() method itself.
+         return hashCode();
+      }
+      else if (method.getDeclaringClass() == DecoratingProxy.class) {
+         // There is only getDecoratedClass() declared -> dispatch to proxy config.
+         return AopProxyUtils.ultimateTargetClass(this.advised);
+      }
+       // Class 类的 isAssignableFrom 如果调用这个方法的 class 或接口与参数 cls 表示的类或接口相同，或者是参数
+       // cls 表示的是的类或接口的父类，则返回 true
+       // Object.class.isAssignableFrom(ArrayList.class);  true
+       // ArrayList.class.isAssignableFrom(Object.class);  false
+      else if (!this.advised.opaque && method.getDeclaringClass().isInterface() &&
+            method.getDeclaringClass().isAssignableFrom(Advised.class)) {
+         // Service invocations on ProxyConfig with the proxy config...
+         return AopUtils.invokeJoinpointUsingReflection(this.advised, method, args);
+      }
+
+      Object retVal;
+
+      if (this.advised.exposeProxy) {
+         // Make invocation available if necessary.
+         oldProxy = AopContext.setCurrentProxy(proxy);
+         setProxyContext = true;
+      }
+
+      // Get as late as possible to minimize the time we "own" the target,
+      // in case it comes from a pool.
+      target = targetSource.getTarget();
+      Class<?> targetClass = (target != null ? target.getClass() : null);
+
+      // Get the interception chain for this method.  !!!
+      List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
+
+      // Check whether we have any advice. If we don't, we can fallback on direct
+      // reflective invocation of the target, and avoid creating a MethodInvocation.
+       // 如果没有发现任何拦截器那么直接调用切点方法
+      if (chain.isEmpty()) {
+         // We can skip creating a MethodInvocation: just invoke the target directly
+         // Note that the final invoker must be an InvokerInterceptor so we know it does
+         // nothing but a reflective operation on the target, and no hot swapping or fancy proxying.
+         Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
+         retVal = AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse);
+      }
+      else {
+          // 不为空，则创建 invocation
+         // We need to create a method invocation...
+         MethodInvocation invocation =
+               new ReflectiveMethodInvocation(proxy, target, method, args, targetClass, chain);
+         // Proceed to the joinpoint through the interceptor chain.
+          // 执行拦截器链
+          // 锚点
+         retVal = invocation.proceed();
+      }
+
+      // Massage return value if necessary.
+      Class<?> returnType = method.getReturnType();
+      if (retVal != null && retVal == target &&
+            returnType != Object.class && returnType.isInstance(proxy) &&
+            !RawTargetAccess.class.isAssignableFrom(method.getDeclaringClass())) {
+         // Special case: it returned "this" and the return type of the method
+         // is type-compatible. Note that we can't help if the target sets
+         // a reference to itself in another returned object.
+         retVal = proxy;
+      }
+      else if (retVal == null && returnType != Void.TYPE && returnType.isPrimitive()) {
+         throw new AopInvocationException(
+               "Null return value from advice does not match primitive return type for: " + method);
+      }
+      return retVal;
+   }
+   finally {
+      if (target != null && !targetSource.isStatic()) {
+         // Must have come from TargetSource.
+         targetSource.releaseTarget(target);
+      }
+      if (setProxyContext) {
+         // Restore old proxy.
+         AopContext.setCurrentProxy(oldProxy);
+      }
+   }
+}
+```
+
+**ReflectiveMethodInvocation#proceed**
+
+```java
+// 锚点
+@Override
+@Nullable
+public Object proceed() throws Throwable {
+   // We start with an index of -1 and increment early.
+   if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
+      return invokeJoinpoint();
+   }
+	// 获取下一个要执行的拦截器
+   Object interceptorOrInterceptionAdvice =
+         this.interceptorsAndDynamicMethodMatchers.get(++this.currentInterceptorIndex);
+    // 动态匹配
+   if (interceptorOrInterceptionAdvice instanceof InterceptorAndDynamicMethodMatcher) {
+      // Evaluate dynamic method matcher here: static part will already have
+      // been evaluated and found to match.
+      InterceptorAndDynamicMethodMatcher dm =
+            (InterceptorAndDynamicMethodMatcher) interceptorOrInterceptionAdvice;
+      Class<?> targetClass = (this.targetClass != null ? this.targetClass : this.method.getDeclaringClass());
+      if (dm.methodMatcher.matches(this.method, targetClass, this.arguments)) {
+         return dm.interceptor.invoke(this);
+      }
+      else {
+         // Dynamic matching failed.
+         // Skip this interceptor and invoke the next in the chain.
+          // 不匹配则不执行拦截器
+         return proceed();
+      }
+   }
+   else {
+      // It's an interceptor, so we just invoke it: The pointcut will have
+      // been evaluated statically before this object was constructed.
+       // 普通拦截器，直接调用拦截器，比如：
+       // ExposeInvocationInterceptor
+       // DelegatePerTargetObjectIntroductionInterceptor
+       // MethodBeforeAdviceInterceptor
+       // AspectJAroundAdvice
+       // AspectJAfterAdivice
+      return ((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(this);
+   }
+}
+```
+
+1. ReflectiveMethodInvocation 中的主要职责是维护了链接调用的计数器，记录着当前调用链接的位置，以便链可以有序地进行下去，各个工作委托给了各个增强器，使各个增强器在内部进行逻辑实现。
+2. CGLIB 使用示例：
+
+```java
+public class CglibDemo {
+
+    public static void main(String[] args) {
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(CglibDemo.class);
+        enhancer.setCallback((MethodInterceptor) (o, method, objects, methodProxy) -> {
+            System.err.println("Before invoke " + method);
+            Object result = methodProxy.invokeSuper(o, objects);
+            System.err.println("After invoke" + method);
+            return result;
+        });
+
+        CglibDemo cglibDemo = (CglibDemo) enhancer.create();
+        cglibDemo.test();
+        //System.out.println(cglibDemo.toString());
+    }
+
+    public void test() {
+        System.out.println("I'm test method");
+    }
+    
+}
+```
+
+**CglibAopProxy#getProxy**
+
+```java
+@Override
+public Object getProxy() {
+   return getProxy(null);
+}
+
+@Override
+public Object getProxy(@Nullable ClassLoader classLoader) {
+   if (logger.isTraceEnabled()) {
+      logger.trace("Creating CGLIB proxy: " + this.advised.getTargetSource());
+   }
+
+   try {
+      Class<?> rootClass = this.advised.getTargetClass();
+      Assert.state(rootClass != null, "Target class must be available for creating a CGLIB proxy");
+
+      Class<?> proxySuperClass = rootClass;
+      if (rootClass.getName().contains(ClassUtils.CGLIB_CLASS_SEPARATOR)) {
+         proxySuperClass = rootClass.getSuperclass();
+         Class<?>[] additionalInterfaces = rootClass.getInterfaces();
+         for (Class<?> additionalInterface : additionalInterfaces) {
+            this.advised.addInterface(additionalInterface);
+         }
+      }
+
+      // Validate the class, writing log messages as necessary.
+      validateClassIfNecessary(proxySuperClass, classLoader);
+
+      // Configure CGLIB Enhancer...
+      Enhancer enhancer = createEnhancer();
+      if (classLoader != null) {
+         enhancer.setClassLoader(classLoader);
+         if (classLoader instanceof SmartClassLoader &&
+               ((SmartClassLoader) classLoader).isClassReloadable(proxySuperClass)) {
+            enhancer.setUseCache(false);
+         }
+      }
+      enhancer.setSuperclass(proxySuperClass);
+      enhancer.setInterfaces(AopProxyUtils.completeProxiedInterfaces(this.advised));
+      enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
+      enhancer.setStrategy(new ClassLoaderAwareGeneratorStrategy(classLoader));
+		// 设置拦截器
+      Callback[] callbacks = getCallbacks(rootClass);
+      Class<?>[] types = new Class<?>[callbacks.length];
+      for (int x = 0; x < types.length; x++) {
+         types[x] = callbacks[x].getClass();
+      }
+      // fixedInterceptorMap only populated at this point, after getCallbacks call above
+      enhancer.setCallbackFilter(new ProxyCallbackFilter(
+            this.advised.getConfigurationOnlyCopy(), this.fixedInterceptorMap, this.fixedInterceptorOffset));
+      enhancer.setCallbackTypes(types);
+
+      // Generate the proxy class and create a proxy instance.
+      return createProxyClassAndInstance(enhancer, callbacks);
+   }
+   catch (CodeGenerationException | IllegalArgumentException ex) {
+      throw new AopConfigException("Could not generate CGLIB subclass of " + this.advised.getTargetClass() +
+            ": Common causes of this problem include using a final class or a non-visible class",
+            ex);
+   }
+   catch (Throwable ex) {
+      // TargetSource.getTarget() failed
+      throw new AopConfigException("Unexpected AOP exception", ex);
+   }
+}
+```
+
+**CglibAopProxy#getCallbacks**
+
+```java
+private Callback[] getCallbacks(Class<?> rootClass) throws Exception {
+   // Parameters used for optimization choices...
+   boolean exposeProxy = this.advised.isExposeProxy();
+   boolean isFrozen = this.advised.isFrozen();
+   boolean isStatic = this.advised.getTargetSource().isStatic();
+    // 锚点
+	// 将拦截器封装在 DynamicAdvisedInterceptor
+   // Choose an "aop" interceptor (used for AOP calls).
+   Callback aopInterceptor = new DynamicAdvisedInterceptor(this.advised);
+
+   // Choose a "straight to target" interceptor. (used for calls that are
+   // unadvised but can return this). May be required to expose the proxy.
+   Callback targetInterceptor;
+   if (exposeProxy) {
+      targetInterceptor = (isStatic ?
+            new StaticUnadvisedExposedInterceptor(this.advised.getTargetSource().getTarget()) :
+            new DynamicUnadvisedExposedInterceptor(this.advised.getTargetSource()));
+   }
+   else {
+      targetInterceptor = (isStatic ?
+            new StaticUnadvisedInterceptor(this.advised.getTargetSource().getTarget()) :
+            new DynamicUnadvisedInterceptor(this.advised.getTargetSource()));
+   }
+
+   // Choose a "direct to target" dispatcher (used for
+   // unadvised calls to static targets that cannot return this).
+   Callback targetDispatcher = (isStatic ?
+         new StaticDispatcher(this.advised.getTargetSource().getTarget()) : new SerializableNoOp());
+	// 将拦截器链加入 Callback 中
+   Callback[] mainCallbacks = new Callback[] {
+         aopInterceptor,  // for normal advice
+         targetInterceptor,  // invoke target without considering advice, if optimized
+         new SerializableNoOp(),  // no override for methods mapped to this
+         targetDispatcher, this.advisedDispatcher,
+         new EqualsInterceptor(this.advised),
+         new HashCodeInterceptor(this.advised)
+   };
+
+   Callback[] callbacks;
+
+   // If the target is a static one and the advice chain is frozen,
+   // then we can make some optimizations by sending the AOP calls
+   // direct to the target using the fixed chain for that method.
+   if (isStatic && isFrozen) {
+      Method[] methods = rootClass.getMethods();
+      Callback[] fixedCallbacks = new Callback[methods.length];
+      this.fixedInterceptorMap = new HashMap<>(methods.length);
+
+      // TODO: small memory optimization here (can skip creation for methods with no advice)
+      for (int x = 0; x < methods.length; x++) {
+         Method method = methods[x];
+         List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, rootClass);
+         fixedCallbacks[x] = new FixedChainStaticTargetInterceptor(
+               chain, this.advised.getTargetSource().getTarget(), this.advised.getTargetClass());
+         this.fixedInterceptorMap.put(method, x);
+      }
+
+      // Now copy both the callbacks from mainCallbacks
+      // and fixedCallbacks into the callbacks array.
+      callbacks = new Callback[mainCallbacks.length + fixedCallbacks.length];
+      System.arraycopy(mainCallbacks, 0, callbacks, 0, mainCallbacks.length);
+      System.arraycopy(fixedCallbacks, 0, callbacks, mainCallbacks.length, fixedCallbacks.length);
+      this.fixedInterceptorOffset = mainCallbacks.length;
+   }
+   else {
+      callbacks = mainCallbacks;
+   }
+   return callbacks;
+}
+```
+
+**DynamicAdvisedInterceptor**
+
+```java
+/**
+ * General purpose AOP callback. Used when the target is dynamic or when the
+ * proxy is not frozen.
+ */
+private static class DynamicAdvisedInterceptor implements MethodInterceptor, Serializable {
+
+   private final AdvisedSupport advised;
+
+   public DynamicAdvisedInterceptor(AdvisedSupport advised) {
+      this.advised = advised;
+   }
+
+   @Override
+   @Nullable
+   public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
+      Object oldProxy = null;
+      boolean setProxyContext = false;
+      Object target = null;
+      TargetSource targetSource = this.advised.getTargetSource();
+      try {
+         if (this.advised.exposeProxy) {
+            // Make invocation available if necessary.
+            oldProxy = AopContext.setCurrentProxy(proxy);
+            setProxyContext = true;
+         }
+         // Get as late as possible to minimize the time we "own" the target, in case it comes from a pool...
+         target = targetSource.getTarget();
+         Class<?> targetClass = (target != null ? target.getClass() : null);
+         List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
+         Object retVal;
+         // Check whether we only have one InvokerInterceptor: that is,
+         // no real advice, but just reflective invocation of the target.
+         if (chain.isEmpty() && Modifier.isPublic(method.getModifiers())) {
+            // We can skip creating a MethodInvocation: just invoke the target directly.
+            // Note that the final invoker must be an InvokerInterceptor, so we know
+            // it does nothing but a reflective operation on the target, and no hot
+            // swapping or fancy proxying.
+             // 如果拦截器链为空则直接激活原方法
+            Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
+            retVal = methodProxy.invoke(target, argsToUse);
+         }
+         else {
+             // 进入拦截器链
+            // We need to create a method invocation...
+            retVal = new CglibMethodInvocation(proxy, target, method, args, targetClass, chain, methodProxy).proceed();
+         }
+         retVal = processReturnType(proxy, target, method, retVal);
+         return retVal;
+      }
+      finally {
+         if (target != null && !targetSource.isStatic()) {
+            targetSource.releaseTarget(target);
+         }
+         if (setProxyContext) {
+            // Restore old proxy.
+            AopContext.setCurrentProxy(oldProxy);
+         }
+      }
+   }
+    // 省略 hashcode 和 equals 方法
+}
+```
+
+# 静态 AOP 使用示例
+
+加载时织入（Load-Time Weaving，LTW）
+
+-javaagents：
+
+破解的时候经常要加这个

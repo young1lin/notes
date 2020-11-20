@@ -1,4 +1,4 @@
-package me.young1lin.spring.in.action.proxy;
+package me.young1lin.spring.core.resolve.proxy;
 
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.MethodInterceptor;
@@ -28,4 +28,5 @@ public class CglibDemo {
     public void test() {
         System.out.println("I'm test method");
     }
+
 }

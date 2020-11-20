@@ -1,4 +1,4 @@
-package me.young1lin.spring.core.resolve.rmi.proxy;
+package me.young1lin.spring.core.resolve.proxy;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -48,6 +48,7 @@ class ProxyClass implements ProxyClassInterface{
     public void println() {
         System.out.println("输出一段话");
     }
+
 }
 
 /**
@@ -66,4 +67,5 @@ class ProxyInvocationInterceptor implements MethodInterceptor {
         System.out.println(methodName+"方法执行后");
         return proxyObj;
     }
+
 }
