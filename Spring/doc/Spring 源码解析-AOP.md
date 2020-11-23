@@ -1781,6 +1781,9 @@ private static class DynamicAdvisedInterceptor implements MethodInterceptor, Ser
 
 加载时织入（Load-Time Weaving，LTW）
 
--javaagents：
+-javaagent：
 
 破解的时候经常要加这个
+
+LoadTimeWeaverAwareProcessor 是 BeanPostProcessor 接口的实现类。
+

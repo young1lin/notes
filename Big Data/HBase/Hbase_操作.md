@@ -1006,3 +1006,9 @@ WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,f:q1,f:q2#b");
   }
 ```
 
+# 设置本地模式
+
+
+
+set ngmr.exec.mode=local；
+
