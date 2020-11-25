@@ -31,7 +31,7 @@ class AspectJAutoProxyBeanDefinitionParser implements BeanDefinitionParser {}
 
 根本没有阀值这个词，只有阈值。阈值又叫临界值，是指一个效应能够产生的最低值或最高值。
 
-# 182x
+# 182
 
 ```java
 public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport implements SmartInstantiationAwareBeanPostProcessor, BeanFactoryAware {
@@ -54,8 +54,6 @@ moke -> mock
 书上是 /"leave
 实际是 \"leave
 ```
-
-
 
 # 222
 
