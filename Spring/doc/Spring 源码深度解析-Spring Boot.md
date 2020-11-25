@@ -11,6 +11,7 @@ public ConfigurableApplicationContext run(String... args) {
    StopWatch stopWatch = new StopWatch();
    stopWatch.start();
    ConfigurableApplicationContext context = null;
+    // 异常报告
    Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
    configureHeadlessProperty();
    SpringApplicationRunListeners listeners = getRunListeners(args);
@@ -18,7 +19,7 @@ public ConfigurableApplicationContext run(String... args) {
    try {
       // 这里是默认的应用参数给注入进去
       ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
-      // 提前准备好 Environment，
+      // 提前准备好 Environment，Apollo 就是根据这里来注入参数
       ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
       // 通过 enviroment 配置忽略某些 bean 的信息
       configureIgnoreBeanInfo(environment);
@@ -32,7 +33,7 @@ public ConfigurableApplicationContext run(String... args) {
             new Class[] { ConfigurableApplicationContext.class }, context);
       // 准备上下文信息，把环境，context 注入进去 
       prepareContext(context, environment, listeners, applicationArguments, printedBanner);
-      // 调用 ConfigurableApplication#refresh，实际是 AbstractApplicationContext#refresh，回到了 Spring 经典的 refresh 环节
+      // 调用 ConfigurableApplication#refresh，实际是 AbstractApplicationContext#refresh，回到了 Spring 的 refresh 环节
       // 2
       refreshContext(context);
       // 在 refresh 之后做一些操作

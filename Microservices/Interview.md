@@ -3124,7 +3124,7 @@ public void sort(int[] arr) {
 + ABAC：Attribute-Based Access Control，基于属性的权限控制。
 + PBAC：Policy-Based Access Control，基于策略的权限控制。
 
-ACL示例：Mysql，MongoDB，Hbase 都是以 ACL 作为权限控制思想，mysql 在赋予用户权限时，有个 acl_users 数组进行存储 all_user 信息（不仅在 mysql.user 这个表里加数据）。
+ACL示例：MySQL，MongoDB，HBase 都是以 ACL 作为权限控制思想，MySQL 在赋予用户权限时，有个 acl_users 数组进行存储 all_user 信息（不仅在 mysql.user 这个表里加数据）。
 
 RBAC示例：常见的权限系统，在 人员 1<-->n 角色 1<-->n 权限。
 
