@@ -208,3 +208,58 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
 16. Spring Bean 销毁阶段。
 17. Spring Bean 垃圾收集。
 
+
+
+
+
+1. 缓存中获取单例 Bean
+
+```java
+/** Cache of singleton objects: bean name to bean instance. */
+/** 缓存单例对象，beanName --> bean instance. */
+private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
+
+/** Cache of singleton factories: bean name to ObjectFactory. */
+/** 缓存 beanName --> ObjectFactory. */
+private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
+
+/** Cache of early singleton objects: bean name to bean instance. */
+/** 缓存早一步暴露的单例对象，解决循环引用的问题，当然，如果这个 bean 没有默认的构造方法，也是解决不了循环引用的问题 */
+private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
+
+/**
+ * Return the (raw) singleton object registered under the given name.
+ * <p>Checks already instantiated singletons and also allows for an early
+ * reference to a currently created singleton (resolving a circular reference).
+ * @param beanName the name of the bean to look for
+ * @param allowEarlyReference whether early references should be created or not
+ * @return the registered singleton object, or {@code null} if none found
+ */
+@Nullable
+protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+   Object singletonObject = this.singletonObjects.get(beanName);
+    // 如果这里为空（没有得到缓存），并且创建的时候是单例对象
+   if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
+       // 这里就锁住单例对象名称及实例映射
+      synchronized (this.singletonObjects) {
+          // 尝试在提前暴露的 SingletonObjects 获取
+         singletonObject = this.earlySingletonObjects.get(beanName);
+          // 如果为空，并且允许提前初始化（就是有默认构造方法且是单例模式）
+         if (singletonObject == null && allowEarlyReference) {
+             // 从 beanName -> BeanFactory 映射中获取 BeanFactory
+            ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
+             // 如果有这个 BeanFactory 才开始 get 这个 Bean 实例
+            if (singletonFactory != null) {
+               singletonObject = singletonFactory.getObject();
+                // 提前暴露的对象 名称 -> 实例 的映射中放入
+               this.earlySingletonObjects.put(beanName, singletonObject);
+                // 移除这个 BeanFactory
+               this.singletonFactories.remove(beanName);
+            }
+         }
+      }
+   }
+   return singletonObject;
+}
+```
+

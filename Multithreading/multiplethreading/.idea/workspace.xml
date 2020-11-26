@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2e3ae98e-8e3b-40c2-8167-239247296da8" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Spring/doc/Spring源码深度解析问题.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../Spring/doc/Spring源码深度解析问题.md" afterDir="false" />
-    </list>
+    <list default="true" id="2e3ae98e-8e3b-40c2-8167-239247296da8" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -61,7 +58,7 @@
       <workItem from="1605706482166" duration="449000" />
       <workItem from="1605742543542" duration="10000" />
       <workItem from="1605790883663" duration="1709000" />
-      <workItem from="1606314111649" duration="519000" />
+      <workItem from="1606314111649" duration="660000" />
     </task>
     <servers />
   </component>
