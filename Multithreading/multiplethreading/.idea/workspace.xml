@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2e3ae98e-8e3b-40c2-8167-239247296da8" name="Default Changelist" comment="" />
+    <list default="true" id="2e3ae98e-8e3b-40c2-8167-239247296da8" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/cancelled/PrimeGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -59,6 +62,8 @@
       <workItem from="1605742543542" duration="10000" />
       <workItem from="1605790883663" duration="1709000" />
       <workItem from="1606314111649" duration="660000" />
+      <workItem from="1606402173245" duration="528000" />
+      <workItem from="1606435058644" duration="8000" />
     </task>
     <servers />
   </component>

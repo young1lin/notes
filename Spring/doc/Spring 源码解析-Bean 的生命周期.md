@@ -107,6 +107,7 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
          if (mbd.isSingleton()) {
             sharedInstance = getSingleton(beanName, () -> {
                try {
+                   // 这里调用父类的 createBean 方法
                   return createBean(beanName, mbd, args);
                }
                catch (BeansException ex) {
@@ -210,9 +211,7 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
 
 
 
-
-
-1. 缓存中获取单例 Bean
+# 缓存中获取单例 Bean
 
 ```java
 /** Cache of singleton objects: bean name to bean instance. */
@@ -260,6 +259,198 @@ protected Object getSingleton(String beanName, boolean allowEarlyReference) {
       }
    }
    return singletonObject;
+}
+```
+
+# CreateBean 之前的后处理器应用
+
+## 创建 bean
+
+**AbstractAutowireCapableBeanFactory#createBean**
+
+```java
+@Override
+protected Object createBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
+      throws BeanCreationException {
+
+   if (logger.isTraceEnabled()) {
+      logger.trace("Creating instance of bean '" + beanName + "'");
+   }
+   RootBeanDefinition mbdToUse = mbd;
+
+   // Make sure bean class is actually resolved at this point, and
+   // clone the bean definition in case of a dynamically resolved Class
+   // which cannot be stored in the shared merged bean definition.
+   Class<?> resolvedClass = resolveBeanClass(mbd, beanName);
+   if (resolvedClass != null && !mbd.hasBeanClass() && mbd.getBeanClassName() != null) {
+      mbdToUse = new RootBeanDefinition(mbd);
+      mbdToUse.setBeanClass(resolvedClass);
+   }
+
+   // Prepare method overrides.
+   try {
+      mbdToUse.prepareMethodOverrides();
+   }
+   catch (BeanDefinitionValidationException ex) {
+      throw new BeanDefinitionStoreException(mbdToUse.getResourceDescription(),
+            beanName, "Validation of method overrides failed", ex);
+   }
+
+   try {
+      // Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+      Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
+      if (bean != null) {
+         return bean;
+      }
+   }
+   catch (Throwable ex) {
+      throw new BeanCreationException(mbdToUse.getResourceDescription(), beanName,
+            "BeanPostProcessor before instantiation of bean failed", ex);
+   }
+
+   try {
+      Object beanInstance = doCreateBean(beanName, mbdToUse, args);
+      if (logger.isTraceEnabled()) {
+         logger.trace("Finished creating instance of bean '" + beanName + "'");
+      }
+      return beanInstance;
+   }
+   catch (BeanCreationException | ImplicitlyAppearedSingletonException ex) {
+      // A previously detected exception with proper bean creation context already,
+      // or illegal singleton state to be communicated up to DefaultSingletonBeanRegistry.
+      throw ex;
+   }
+   catch (Throwable ex) {
+      throw new BeanCreationException(
+            mbdToUse.getResourceDescription(), beanName, "Unexpected exception during bean creation", ex);
+   }
+}
+```
+
+## 实例化前解析
+
+**AbstractAutowireCapableBeanFactory#resolveBeforeInstantiation**
+
+```java
+/**
+ * Apply before-instantiation post-processors, resolving whether there is a
+ * before-instantiation shortcut for the specified bean.
+ * @param beanName the name of the bean
+ * @param mbd the bean definition for the bean
+ * @return the shortcut-determined bean instance, or {@code null} if none
+ */
+@Nullable
+protected Object resolveBeforeInstantiation(String beanName, RootBeanDefinition mbd) {
+   Object bean = null;
+   if (!Boolean.FALSE.equals(mbd.beforeInstantiationResolved)) {
+      // Make sure bean class is actually resolved at this point.
+      if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
+         Class<?> targetType = determineTargetType(beanName, mbd);
+         if (targetType != null) {
+             // 锚点 1
+            bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
+            if (bean != null) {
+                // 锚点 2
+               bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
+            }
+         }
+      }
+      mbd.beforeInstantiationResolved = (bean != null);
+   }
+   return bean;
+}
+```
+
+**AbstracrtAutowireCapableBeanFactory#determineTargetType** 确定目标类型
+
+```java
+/**
+ * Determine the target type for the given bean definition.
+ * @param beanName the name of the bean (for error handling purposes)
+ * @param mbd the merged bean definition for the bean
+ * @param typesToMatch the types to match in case of internal type matching purposes
+ * (also signals that the returned {@code Class} will never be exposed to application code)
+ * @return the type for the bean if determinable, or {@code null} otherwise
+ */
+@Nullable
+protected Class<?> determineTargetType(String beanName, RootBeanDefinition mbd, Class<?>... typesToMatch) {
+   Class<?> targetType = mbd.getTargetType();
+    // 如果目标类型为空，则对他惊醒操作
+   if (targetType == null) {
+      targetType = (mbd.getFactoryMethodName() != null ?
+            getTypeForFactoryMethod(beanName, mbd, typesToMatch) :
+            resolveBeanClass(mbd, beanName, typesToMatch));
+      if (ObjectUtils.isEmpty(typesToMatch) || getTempClassLoader() == null) {
+         mbd.resolvedTargetType = targetType;
+      }
+   }
+   return targetType;
+}
+```
+
+## 实例化前的后处理器应用
+
+在这一步可以对 Bean 进行“救赎”，将 Bean 替换成你想替换的任何 Bean，可以动态代理生成，也可以通过其他方式生成。
+
+**AbstractAutowireCapableBeanFactory#applyBeanPostProcessorsBeforeInstantiation**
+
+```java
+// 锚点 1
+/**
+ * Apply InstantiationAwareBeanPostProcessors to the specified bean definition
+ * (by class and name), invoking their {@code postProcessBeforeInstantiation} methods.
+ * <p>Any returned object will be used as the bean instead of actually instantiating
+ * the target bean. A {@code null} return value from the post-processor will
+ * result in the target bean being instantiated.
+ * @param beanClass the class of the bean to be instantiated
+ * @param beanName the name of the bean
+ * @return the bean object to use instead of a default instance of the target bean, or {@code null}
+ * @see InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation
+ */
+@Nullable
+protected Object applyBeanPostProcessorsBeforeInstantiation(Class<?> beanClass, String beanName) {
+   for (BeanPostProcessor bp : getBeanPostProcessors()) {
+      if (bp instanceof InstantiationAwareBeanPostProcessor) {
+         InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+         Object result = ibp.postProcessBeforeInstantiation(beanClass, beanName);
+         if (result != null) {
+            return result;
+         }
+      }
+   }
+   return null;
+}
+```
+
+## 实例化后的后处理器应用
+
+如果这里不为空，就会到这里，因为 createBean 的后面的操作这个 Bean 都不参与了（详情见下面），所以这里需要进行最后的后置处理。
+
+```java
+AbstractAutowireCapableBeanFactory#createBean 
+Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
+if (bean != null) {
+   return bean;
+}
+```
+
+**AbstractAutowireCapableBeanFactory#applyBeanPostProcessorsAfterInitialization**
+
+```java
+@Override
+public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName)
+      throws BeansException {
+
+   Object result = existingBean;
+    // 来对实例化后的 Bean 进行各个后处理。
+   for (BeanPostProcessor processor : getBeanPostProcessors()) {
+      Object current = processor.postProcessAfterInitialization(result, beanName);
+      if (current == null) {
+         return result;
+      }
+      result = current;
+   }
+   return result;
 }
 ```
 
