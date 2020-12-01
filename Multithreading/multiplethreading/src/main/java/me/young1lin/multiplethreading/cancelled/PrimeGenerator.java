@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class PrimeGenerator implements Runnable {
 
-    private final List<BigInteger> primes = new ArrayList<BigInteger>();
+    private final List<BigInteger> primes = new ArrayList<>();
     private volatile boolean cancelled;
 
     @Override
@@ -30,7 +30,7 @@ public class PrimeGenerator implements Runnable {
     }
 
     public synchronized List<BigInteger> get() {
-        return new ArrayList<BigInteger>(primes);
+        return new ArrayList<>(primes);
     }
 
     public static void main(String[] args) throws InterruptedException {

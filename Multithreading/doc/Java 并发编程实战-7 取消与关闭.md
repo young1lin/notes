@@ -54,3 +54,21 @@ public class PrimeGenerator implements Runnable {
 
 ## 中断
 
+1. 中断线程
+
+Thread#interrupt
+
+2. 返回目标线程中断状态
+
+Thread#isInterrupted
+
+3. 清除当前线程的中断状态
+
+Thread#interrupted （静态方法）
+
+### 阻塞库方法
+
+Object#wait，Thread#sleep。（这两个的区别）
+
+
+
