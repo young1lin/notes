@@ -826,7 +826,7 @@ public void registerBeanDefinition(String beanName, BeanDefinition beanDefinitio
 ```
 
 
-一般是这个 GenericBeanDefinition 类，不管你是什么类，在我这，都叫 BeanDefinition ，而且在后面会有个 Merge 过程，将所有 BeanDefinition 再次转换成 `RootBeanDefinition` 然后命名为 mbd 进行各种操作。
+一般是这个 GenericBeanDefinition 类，不管你是什么类，都是 BeanDefinition ，而且在后面会有个 Merge 过程，将所有 BeanDefinition 再次转换成 `RootBeanDefinition` 然后命名为 mbd 进行各种操作。
 
 
 ### Spring Bean 元信息解析阶段
@@ -846,7 +846,7 @@ public void registerBeanDefinition(String beanName, BeanDefinition beanDefinitio
 	    + Bean 范围解析 - ScopeMetadataResolver
 	    + BeanDefinition 解析 - 内部 API 实现
 	    + BeanDefinition 处理 - AnnotationConfigUtils.processCommonDefinitionAnnotations
-	    + BeanDefinition 注册 - BeanDefinitionRegisty
+	    + BeanDefinition 注册 - BeanDefinitionRegistry
 
 ```java
 // 这个类没有子类，也不继承 Resource ,就是纯粹的解析注解的 BeanDefitionReader
@@ -2615,11 +2615,13 @@ DestructionAwareBeanPostProcessor#postProcessBeforeDestruction
 
 ## AOP原理
 
-java 的 Proxy，cglib（asm）动态代理，实现 aop，做方法前后等增强。
+Java 的 Proxy，cglib（asm）动态代理，实现 aop，做方法前后等增强。
 
 利用代理类，来增强原有类。
 
 https://juejin.im/post/5bf4fc84f265da611b57f906
+
+其实就是在 Bean 的实例化前对 Bean 进行了增强，并没有说非 Spring 管理的类也可以实现 AOP。
 
 ## JDK动态代理和cglib的实现的区别
 

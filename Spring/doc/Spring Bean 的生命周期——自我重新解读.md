@@ -1,17 +1,383 @@
-1. Spring 应用上下文启动准备阶段
-2. BeanFactory 创建阶段 
-3. BeanFactory 准备阶段
-4. BeanFactory 后置处理阶段
-5. BeanFactory 注册 BeanPostProcessor 阶段
-6. 初始化内建 Bean ：MessageSource
-7. 初始化内建 Bean ： Spring 事件广播器
-8. Spring 应用上下文刷新阶段
-9. Spring 事件监听器注册阶段
-10. BeanFactory 初始化完成阶段
-11. Spring 应用上下启动完成阶段
-12. Spring 应用上下文启动阶段
-13. Spring 应用上下文停止阶段
-14. Spring 应用上下文关闭阶段
+1. Spring Bean 元信息配置阶段
+2. Spring Bean元信息解析阶段
+3. Spring Bean注册阶段
+4. Spring Bean GenericBeanDefinition 合并成 RootBeanDefinition 阶段
+5. Spring Bean Class 加载阶段
+6. Spring Bean 实例化前阶段
+7. Spring Bean 实例化阶段
+8. Spring Bean 实例化后阶段
+9. Spring Bean 属性赋值阶段
+10. Spring Bean Aware 接口回调阶段
+11. Spring Bean 初始化前阶段
+12. Spring Bean 初始化阶段
+13. Spring Bean 初始化后阶段
+14. Spring Bean 初始化完成阶段啊
+15. Spring Bean 销毁前阶段
+16. Spring Bean 销毁阶段
+17. Spring Bean 垃圾收集
+
+# Spring Bean 元信息配置阶段
+
+## 基于 XML、Properties 配置
+
+XMLBeanDefinitionReader#loadBeanDefinitions(String resourceUrl);
+
+BeanDefinitionReader 的实现类
+
+AbstractBeanDefnitionReader 及其子类关系如下，分别对应着 XML、Properties、Groovy 文件读取方式。不过现在都不推荐用这几个。
+
+![image.png](https://i.loli.net/2020/12/02/ubN4vi5DnSLFX7U.png)
+
+## 基于注解配置（推荐）
+
+配置了 @Compment、@Bean 等注解来实现，@Service 和 @Repository 其实是为了配合 DDD 思想，@Compment 的衍生注解而已，功能一样。
+
+##  基于Spring API 配置
+
+DefaultListableBeanFactory 实现了 BeanRegistry 接口，其中 registerBeanDefnition 方法就是在这配置。
+
+```java
+public interface BeanDefinitionRegistry extends AliasRegistry {
+
+   /**
+    * Register a new bean definition with this registry.
+    * Must support RootBeanDefinition and ChildBeanDefinition.
+    * @param beanName the name of the bean instance to register
+    * @param beanDefinition definition of the bean instance to register
+    * @throws BeanDefinitionStoreException if the BeanDefinition is invalid
+    * @throws BeanDefinitionOverrideException if there is already a BeanDefinition
+    * for the specified bean name and we are not allowed to override it
+    * @see GenericBeanDefinition
+    * @see RootBeanDefinition
+    * @see ChildBeanDefinition
+    */
+   void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
+         throws BeanDefinitionStoreException;
+}
+```
+
+# Spring Bean 元信息解析阶段
+
+## 面向资源 BeanDefinition 解析
+
+### BeanDefinitionReader
+
+### XML 解析器 - BeanDefnitionParser
+
+## 面向注解 BeanDefinition 解析
+
+### AnnotatedBeanDefinitionReader
+
++ 资源
+  + 类对象 - java.lang.Class
++ 底层
+  + 条件评估 - ConditionEvaluator
+  + Bean 作用域范围解析 - ScopeMetadataResolver
+  + BeanDefnition 解析 - 内部 API 实现
+  + BeanDefinition 处理 - AnnotationConfigUtils#processCommonDefinitionAnnotations
+  + BeanDefinition 注册 - BeanDefinitionRegistry
+
+下面是 AnnotatedBeanDefinitionReader 类，是从 3.0 开始支持的。并且就是个单独的类。下面就有对 Primary 和 Lazy 的解析，是通过组合的方式，AnnotationConfigApplicationContext 内含此 Reader 来进行解析注解。
+
+在 Spring Boot 中就是通过 createApplicationContext 中来创建 AnnotationConfigServletWebServerApplicationContext 其中默认的构造器中就有下面这个 Reader。
+
+```java
+/**
+ * Convenient adapter for programmatic registration of bean classes.
+ *
+ * <p>This is an alternative to {@link ClassPathBeanDefinitionScanner}, applying
+ * the same resolution of annotations but for explicitly registered classes only.
+ *
+ * @author Juergen Hoeller
+ * @author Chris Beams
+ * @author Sam Brannen
+ * @author Phillip Webb
+ * @since 3.0
+ * @see AnnotationConfigApplicationContext#register
+ */
+public class AnnotatedBeanDefinitionReader {
+	// 这个的实现有 DefaultListableBeanFactory,AnnotationConfigServletWebApplicationContext等等
+  // 这也是个策略模式，通过构造器注入，使用不同 BeanDefinitionRegistry 来注册。
+   private final BeanDefinitionRegistry registry;
+    // 这里一般是 AnnotationBeanNameGenerator 以类名首字母小写生成 beanName
+   private BeanNameGenerator beanNameGenerator = AnnotationBeanNameGenerator.INSTANCE;
+	/** 解析元信息相关的数据，这是个接口，里面就一个方法，方法返回值是ScopeMetadata ，而ScopeMetadata包括 proxy 的一些信息 public enum ScopProxyMode {DEFAULT,NO,INTERFACE,TAGET_CLASS} */
+   private ScopeMetadataResolver scopeMetadataResolver = new AnnotationScopeMetadataResolver();
+	 // 这是做评估的 具体在它的 shouldSkip 方法是不是该跳过当前 Bean 注册与否 
+   private ConditionEvaluator conditionEvaluator;
+
+
+   /**
+    * Create a new {@code AnnotatedBeanDefinitionReader} for the given registry.
+    * <p>If the registry is {@link EnvironmentCapable}, e.g. is an {@code ApplicationContext},
+    * the {@link Environment} will be inherited, otherwise a new
+    * {@link StandardEnvironment} will be created and used.
+    * @param registry the {@code BeanFactory} to load bean definitions into,
+    * in the form of a {@code BeanDefinitionRegistry}
+    * @see #AnnotatedBeanDefinitionReader(BeanDefinitionRegistry, Environment)
+    * @see #setEnvironment(Environment)
+    */
+   public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry) {
+      this(registry, getOrCreateEnvironment(registry));
+   }
+
+   /**
+    * Create a new {@code AnnotatedBeanDefinitionReader} for the given registry,
+    * using the given {@link Environment}.
+    * @param registry the {@code BeanFactory} to load bean definitions into,
+    * in the form of a {@code BeanDefinitionRegistry}
+    * @param environment the {@code Environment} to use when evaluating bean definition
+    * profiles.
+    * @since 3.1
+    */
+   public AnnotatedBeanDefinitionReader(BeanDefinitionRegistry registry, Environment environment) {
+      Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
+      Assert.notNull(environment, "Environment must not be null");
+      this.registry = registry;
+      this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
+      AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
+   }
+
+
+   /**
+    * Get the BeanDefinitionRegistry that this reader operates on.
+    */
+   public final BeanDefinitionRegistry getRegistry() {
+      return this.registry;
+   }
+
+   /**
+    * Set the {@code Environment} to use when evaluating whether
+    * {@link Conditional @Conditional}-annotated component classes should be registered.
+    * <p>The default is a {@link StandardEnvironment}.
+    * @see #registerBean(Class, String, Class...)
+    */
+   public void setEnvironment(Environment environment) {
+      this.conditionEvaluator = new ConditionEvaluator(this.registry, environment, null);
+   }
+
+   /**
+    * Set the {@code BeanNameGenerator} to use for detected bean classes.
+    * <p>The default is a {@link AnnotationBeanNameGenerator}.
+    */
+   public void setBeanNameGenerator(@Nullable BeanNameGenerator beanNameGenerator) {
+      this.beanNameGenerator =
+            (beanNameGenerator != null ? beanNameGenerator : AnnotationBeanNameGenerator.INSTANCE);
+   }
+
+   /**
+    * Set the {@code ScopeMetadataResolver} to use for registered component classes.
+    * <p>The default is an {@link AnnotationScopeMetadataResolver}.
+    */
+   public void setScopeMetadataResolver(@Nullable ScopeMetadataResolver scopeMetadataResolver) {
+      this.scopeMetadataResolver =
+            (scopeMetadataResolver != null ? scopeMetadataResolver : new AnnotationScopeMetadataResolver());
+   }
+
+
+   /**
+    * Register one or more component classes to be processed.
+    * <p>Calls to {@code register} are idempotent; adding the same
+    * component class more than once has no additional effect.
+    * @param componentClasses one or more component classes,
+    * e.g. {@link Configuration @Configuration} classes
+    */
+   public void register(Class<?>... componentClasses) {
+      for (Class<?> componentClass : componentClasses) {
+         registerBean(componentClass);
+      }
+   }
+
+   /**
+    * Register a bean from the given bean class, deriving its metadata from
+    * class-declared annotations.
+    * @param beanClass the class of the bean
+    */
+   public void registerBean(Class<?> beanClass) {
+      doRegisterBean(beanClass, null, null, null, null);
+   }
+
+   /**
+    * Register a bean from the given bean class, deriving its metadata from
+    * class-declared annotations.
+    * @param beanClass the class of the bean
+    * @param name an explicit name for the bean
+    * (or {@code null} for generating a default bean name)
+    * @since 5.2
+    */
+   public void registerBean(Class<?> beanClass, @Nullable String name) {
+      doRegisterBean(beanClass, name, null, null, null);
+   }
+
+   /**
+    * Register a bean from the given bean class, deriving its metadata from
+    * class-declared annotations.
+    * @param beanClass the class of the bean
+    * @param qualifiers specific qualifier annotations to consider,
+    * in addition to qualifiers at the bean class level
+    */
+   @SuppressWarnings("unchecked")
+   public void registerBean(Class<?> beanClass, Class<? extends Annotation>... qualifiers) {
+      doRegisterBean(beanClass, null, qualifiers, null, null);
+   }
+
+   /**
+    * Register a bean from the given bean class, deriving its metadata from
+    * class-declared annotations.
+    * @param beanClass the class of the bean
+    * @param name an explicit name for the bean
+    * (or {@code null} for generating a default bean name)
+    * @param qualifiers specific qualifier annotations to consider,
+    * in addition to qualifiers at the bean class level
+    */
+   @SuppressWarnings("unchecked")
+   public void registerBean(Class<?> beanClass, @Nullable String name,
+         Class<? extends Annotation>... qualifiers) {
+
+      doRegisterBean(beanClass, name, qualifiers, null, null);
+   }
+
+   /**
+    * Register a bean from the given bean class, deriving its metadata from
+    * class-declared annotations, using the given supplier for obtaining a new
+    * instance (possibly declared as a lambda expression or method reference).
+    * @param beanClass the class of the bean
+    * @param supplier a callback for creating an instance of the bean
+    * (may be {@code null})
+    * @since 5.0
+    */
+   public <T> void registerBean(Class<T> beanClass, @Nullable Supplier<T> supplier) {
+      doRegisterBean(beanClass, null, null, supplier, null);
+   }
+
+   /**
+    * Register a bean from the given bean class, deriving its metadata from
+    * class-declared annotations, using the given supplier for obtaining a new
+    * instance (possibly declared as a lambda expression or method reference).
+    * @param beanClass the class of the bean
+    * @param name an explicit name for the bean
+    * (or {@code null} for generating a default bean name)
+    * @param supplier a callback for creating an instance of the bean
+    * (may be {@code null})
+    * @since 5.0
+    */
+   public <T> void registerBean(Class<T> beanClass, @Nullable String name, @Nullable Supplier<T> supplier) {
+      doRegisterBean(beanClass, name, null, supplier, null);
+   }
+
+   /**
+    * Register a bean from the given bean class, deriving its metadata from
+    * class-declared annotations.
+    * @param beanClass the class of the bean
+    * @param name an explicit name for the bean
+    * (or {@code null} for generating a default bean name)
+    * @param supplier a callback for creating an instance of the bean
+    * (may be {@code null})
+    * @param customizers one or more callbacks for customizing the factory's
+    * {@link BeanDefinition}, e.g. setting a lazy-init or primary flag
+    * @since 5.2
+    */
+   public <T> void registerBean(Class<T> beanClass, @Nullable String name, @Nullable Supplier<T> supplier,
+         BeanDefinitionCustomizer... customizers) {
+
+      doRegisterBean(beanClass, name, null, supplier, customizers);
+   }
+
+   /**
+    * Register a bean from the given bean class, deriving its metadata from
+    * class-declared annotations.
+    * @param beanClass the class of the bean
+    * @param name an explicit name for the bean
+    * @param qualifiers specific qualifier annotations to consider, if any,
+    * in addition to qualifiers at the bean class level
+    * @param supplier a callback for creating an instance of the bean
+    * (may be {@code null})
+    * @param customizers one or more callbacks for customizing the factory's
+    * {@link BeanDefinition}, e.g. setting a lazy-init or primary flag
+    * @since 5.0
+    */
+   private <T> void doRegisterBean(Class<T> beanClass, @Nullable String name,
+         @Nullable Class<? extends Annotation>[] qualifiers, @Nullable Supplier<T> supplier,
+         @Nullable BeanDefinitionCustomizer[] customizers) {
+
+      AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
+      if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
+         return;
+      }
+
+      abd.setInstanceSupplier(supplier);
+      ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd);
+      abd.setScope(scopeMetadata.getScopeName());
+      String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
+
+      AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);
+      if (qualifiers != null) {
+         for (Class<? extends Annotation> qualifier : qualifiers) {
+            if (Primary.class == qualifier) {
+               abd.setPrimary(true);
+            }
+            else if (Lazy.class == qualifier) {
+               abd.setLazyInit(true);
+            }
+            else {
+               abd.addQualifier(new AutowireCandidateQualifier(qualifier));
+            }
+         }
+      }
+      if (customizers != null) {
+         for (BeanDefinitionCustomizer customizer : customizers) {
+            customizer.customize(abd);
+         }
+      }
+
+      BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
+      definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
+      BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);
+   }
+
+
+   /**
+    * Get the Environment from the given registry if possible, otherwise return a new
+    * StandardEnvironment.
+    */
+   private static Environment getOrCreateEnvironment(BeanDefinitionRegistry registry) {
+      Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
+      if (registry instanceof EnvironmentCapable) {
+         return ((EnvironmentCapable) registry).getEnvironment();
+      }
+      return new StandardEnvironment();
+   }
+
+}
+```
+
+## Spring Boot createApplicationContext
+
+AnnotationConfigServletWebServerApplicationContext
+
+```java
+public class AnnotationConfigServletWebServerApplicationContext extends ServletWebServerApplicationContext
+      implements AnnotationConfigRegistry {
+	// 内含了这个，但是其实没什么用，用的一般是 scanner
+   private final AnnotatedBeanDefinitionReader reader;
+
+   private final ClassPathBeanDefinitionScanner scanner;
+
+   private final Set<Class<?>> annotatedClasses = new LinkedHashSet<>();
+
+   private String[] basePackages;
+}
+```
+
+## Java API 方式配置
+
+一定有 BeanDefinition 配置了。
+
+# Spring Bean 注册阶段
+
+
+
+
 
 ```java
 /**
@@ -186,6 +552,8 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
    return (T) bean;
 }
 ```
+
+##
 
 # 总览
 
