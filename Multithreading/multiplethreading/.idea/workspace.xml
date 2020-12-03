@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2e3ae98e-8e3b-40c2-8167-239247296da8" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/cancelled/ReaderThread.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/cancelled/TimeRun.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../doc/Java 并发编程实战-7 取消与关闭.md" beforeDir="false" afterPath="$PROJECT_DIR$/../doc/Java 并发编程实战-7 取消与关闭.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/cancelled/PrimeGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/cancelled/PrimeGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Spring/doc/Spring 源码解析-Bean 的生命周期.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../Spring/doc/Spring 源码解析-Bean 的生命周期.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,10 +68,16 @@
       <workItem from="1606435058644" duration="8000" />
       <workItem from="1606658408550" duration="347000" />
       <workItem from="1606779743804" duration="9000" />
+      <workItem from="1606915754014" duration="1124000" />
+      <workItem from="1606953965892" duration="9000" />
     </task>
     <servers />
   </component>
   <component name="WindowStateProjectService">
+    <state x="653" y="248" key="#com.intellij.ide.util.MemberChooser" timestamp="1606916602529">
+      <screen x="0" y="0" width="1680" height="1050" />
+    </state>
+    <state x="653" y="248" key="#com.intellij.ide.util.MemberChooser/0.0.1680.1050@0.0.1680.1050" timestamp="1606916602529" />
     <state x="505" y="248" key="run.anything.popup" timestamp="1606314578776">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
