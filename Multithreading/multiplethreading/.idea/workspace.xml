@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2e3ae98e-8e3b-40c2-8167-239247296da8" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/cancelled/ReaderThread.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/cancelled/TimeRun.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../doc/Java 并发编程实战-7 取消与关闭.md" beforeDir="false" afterPath="$PROJECT_DIR$/../doc/Java 并发编程实战-7 取消与关闭.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
@@ -70,6 +68,7 @@
       <workItem from="1606779743804" duration="9000" />
       <workItem from="1606915754014" duration="1124000" />
       <workItem from="1606953965892" duration="9000" />
+      <workItem from="1607000443160" duration="491000" />
     </task>
     <servers />
   </component>
@@ -82,9 +81,9 @@
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state x="505" y="248" key="run.anything.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1606314578776" />
-    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup" timestamp="1606314202691">
+    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup" timestamp="1607000880006">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1606314202691" />
+    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1607000880006" />
   </component>
 </project>

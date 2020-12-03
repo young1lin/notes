@@ -177,7 +177,74 @@ public class ReaderThread extends Thread {
 
 ## 采用 newTaskFor 来封装非标准的取消
 
+```java
+RunnableFuture<?> rFuture = thredPoolExecutor.newTaskFor(callable);
+```
 
+runnableFuture 实现了 Future 和 Runnable 接口，可以调用 Future#cancel
+
+# 停止基于线程的服务
+
+shutdown
+
+shutdownNow
+
+我懂
+
+## 毒丸对象
+
+毒丸-> Queue ->消费者停止消费，在关闭完成前完成毒丸对象前的所有工作。
+
+只有在生产者和消费者的数量都已知的情况下，才可以使用“毒丸”对象。只有在无界队列中，“毒丸”对象才能可靠地工作。
+
+# 未捕获异常
+
+RuntimeException 抛出后，能把当前线程退出。
+
+Thread#UncaughtExceptionHandler 接口
+
+```java
+@FunctionalInterface
+public interface UncaughtExceptionHandler {
+    /**
+     * Method invoked when the given thread terminates due to the
+     * given uncaught exception.
+     * <p>Any exception thrown by this method will be ignored by the
+     * Java Virtual Machine.
+     * @param t the thread
+     * @param e the exception
+     */
+    void uncaughtException(Thread t, Throwable e);
+}
+```
+
+捕捉线程异常。
+
+在运行时间较长的应用程序中，通常会为线程的未捕获异常制定同一个异常处理器，并且该处理器至少会将异常信息记录到日志中。
+
+execute 能捕捉异常。看源码就知道为什么了。
+
+submit 不能，异常是其中的一部分。
+
+# JVM 关闭
+
+Shutdown Hook
+
+Spring 中也有，注册 Shutdown Hook，优雅关闭 Gracefully。
+
+## 守护线程
+
+线程可分为两种：普通线程和守护线程。在 JVM 启动时创建的所有线程中，除了主线程以外，其他线程都是守护线程（例如垃圾回收器以及其他执行辅助工作的线程）。当创建一个新线程时，新线程将继承它的线程的守护状态，因此在默认的情况下，主线程创建的所有的线程都是普通线程。
+
+当一个线程退出时，JVM 会检查其他正在进行的线程，如果这些线程都是守护线程，那么 JVM 会正常退出操作。当 JVM停止时，所有仍然存在的守护线程都将被抛弃——既不会执行 finally 代码块，也不会执行回卷栈，而 JVM 只是直接退出。
+
+**守护线程通常不能用来替代应用程序管理程序中各个服务的生命周期**。
+
+## 终结器
+
+finaylize  方法。
+
+避免使用。
 
 ### 阻塞库方法
 
