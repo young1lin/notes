@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2e3ae98e-8e3b-40c2-8167-239247296da8" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../doc/Java 并发编程实战-7 取消与关闭.md" beforeDir="false" afterPath="$PROJECT_DIR$/../doc/Java 并发编程实战-7 取消与关闭.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -68,7 +67,7 @@
       <workItem from="1606779743804" duration="9000" />
       <workItem from="1606915754014" duration="1124000" />
       <workItem from="1606953965892" duration="9000" />
-      <workItem from="1607000443160" duration="491000" />
+      <workItem from="1607000443160" duration="583000" />
     </task>
     <servers />
   </component>
