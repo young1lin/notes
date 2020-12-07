@@ -2,6 +2,10 @@
 
 第二天 124 也就是 144。没有想做笔记的冲动。
 
+第三天 174 也就是 194。照旧
+
+# 第一天
+
 **关于 sun.net.www.protocol.*.Handler 的内容，在小马哥的极客时间课程里面也讲过，后者讲得更为详细，也有实际操作。**
 
 SpringBootConfiguration 派生自 Configuration
@@ -10,7 +14,25 @@ Configuration 派生自 Component
 
 其他 Repository、Service 、Controller 均派生自 Component
 
-
+# 第二天 
 
 CGLIB 会提升 @Configuration 的类，而不是 @Bean 的类。
+
+# 第三天
+
+Spring Cloud 核心特性
+
++ Distributed/versioned configuration（分布式配置）；
++ Service registration and discovery（服务注册与发现）；
++ Routing（路由）；
++ Service-to-services calls（服务调用）；
++ Load balancing（负载均衡）；
++ Circuit Breakers（熔断机制）；
++ Distributed messaginbg（分布式消息）。
+
+Bean 也是分角色的（）
+
+
+
+Spring 3.0 开始支持多层次 @Component 派生，2.5 并不支持
 
