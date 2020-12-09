@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="2e3ae98e-8e3b-40c2-8167-239247296da8" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Spring/doc/Spring Boot 编程思想.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../Spring/doc/Spring Boot 编程思想.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,7 +70,8 @@
       <workItem from="1606953965892" duration="9000" />
       <workItem from="1607000443160" duration="583000" />
       <workItem from="1607329509517" duration="11000" />
-      <workItem from="1607345602421" duration="603000" />
+      <workItem from="1607345602421" duration="901000" />
+      <workItem from="1607384851398" duration="4000" />
     </task>
     <servers />
   </component>
@@ -82,9 +84,9 @@
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state x="505" y="248" key="run.anything.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1606314578776" />
-    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup" timestamp="1607349455440">
+    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup" timestamp="1607349734414">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1607349455440" />
+    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1607349734414" />
   </component>
 </project>
