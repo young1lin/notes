@@ -8,7 +8,7 @@
 
 第五天 212 。两种解析注解元信息的类，一个 ASM 实现，一个 JDK 实现，执行效率在高负载下天差地别。解释隐形覆盖和显性覆盖，刚看到源码分析前面。有点拖沓其实。
 
-
+第六天 237 。主要是 @AliasFor 讲解以及 @Enable 模块
 
 # 第一天
 
@@ -238,5 +238,229 @@ Spring Framework 将注解属性抽象为 AnnotationAttributes 类，扩展了 L
 
 > Transitive Explicit Overrides: if attribute A in annotation @One is a explicit override for attribute B in annotation @Two and B is an explicit override for attribute C in annotation @Three, then A is a *transitive explicit override* for C follwing the law of transitivity.
 
+# 第六天
 
+`@AliasFor` 如果覆盖了一个，就要覆盖另一个，如果只覆盖一个就会报错 BeanDefinitionStoreException：Failed to parse configuration class，并且其默认值必须相等，不然也会报错。如下
+
+```java
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Mapping
+public @interface RequestMapping {
+	@AliasFor("path")
+    String[] value() default {};
+
+    @AliasFor("value")
+    String[] path() default {};
+}
+```
+
+多层次注解覆盖
+
+@GetMapping
+
+```java
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@RequestMapping(
+    method = {RequestMethod.GET}
+)
+public @interface GetMapping {
+    @AliasFor(
+        annotation = RequestMapping.class
+    )
+    String[] params() default {};
+}
+```
+
+@RequestMapping
+
+```java
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Mapping
+public @interface RequestMapping {
+    String[] params() default {};
+}
+```
+
+第八章 @Enable 模块驱动，由 Spring 3.1引入。
+
+无论是“注解驱动”和“接口编程”都需要理解 3.0 的 @Import ，@Import 引入一个或多个 ConfigurationClass，将其注册为 Spring Bean，不过在 3.0 版本有个缺陷，就是只能支持 @Configuration 标注的类。
+
+## 基于“注解驱动”实现的 @Enable 模块
+
+@**EnableWebMvc** 这个注释很不错
+
+```java
+/**
+ * Adding this annotation to an {@code @Configuration} class imports the Spring MVC
+ * configuration from {@link WebMvcConfigurationSupport}, e.g.:
+ *
+ * <pre class="code">
+ * &#064;Configuration
+ * &#064;EnableWebMvc
+ * &#064;ComponentScan(basePackageClasses = MyConfiguration.class)
+ * public class MyConfiguration {
+ *
+ * }
+ * </pre>
+ *
+ * <p>To customize the imported configuration, implement the interface
+ * {@link WebMvcConfigurer} and override individual methods, e.g.:
+ *
+ * <pre class="code">
+ * &#064;Configuration
+ * &#064;EnableWebMvc
+ * &#064;ComponentScan(basePackageClasses = MyConfiguration.class)
+ * public class MyConfiguration implements WebMvcConfigurer {
+ *
+ * 	   &#064;Override
+ * 	   public void addFormatters(FormatterRegistry formatterRegistry) {
+ *         formatterRegistry.addConverter(new MyConverter());
+ * 	   }
+ *
+ * 	   &#064;Override
+ * 	   public void configureMessageConverters(List&lt;HttpMessageConverter&lt;?&gt;&gt; converters) {
+ *         converters.add(new MyHttpMessageConverter());
+ * 	   }
+ *
+ * }
+ * </pre>
+ *
+ * <p><strong>Note:</strong> only one {@code @Configuration} class may have the
+ * {@code @EnableWebMvc} annotation to import the Spring Web MVC
+ * configuration. There can however be multiple {@code @Configuration} classes
+ * implementing {@code WebMvcConfigurer} in order to customize the provided
+ * configuration.
+ *
+ * <p>If {@link WebMvcConfigurer} does not expose some more advanced setting that
+ * needs to be configured consider removing the {@code @EnableWebMvc}
+ * annotation and extending directly from {@link WebMvcConfigurationSupport}
+ * or {@link DelegatingWebMvcConfiguration}, e.g.:
+ *
+ * <pre class="code">
+ * &#064;Configuration
+ * &#064;ComponentScan(basePackageClasses = { MyConfiguration.class })
+ * public class MyConfiguration extends WebMvcConfigurationSupport {
+ *
+ * 	   &#064;Override
+ *	   public void addFormatters(FormatterRegistry formatterRegistry) {
+ *         formatterRegistry.addConverter(new MyConverter());
+ *	   }
+ *
+ *	   &#064;Bean
+ *	   public RequestMappingHandlerAdapter requestMappingHandlerAdapter() {
+ *         // Create or delegate to "super" to create and
+ *         // customize properties of RequestMappingHandlerAdapter
+ *	   }
+ * }
+ * </pre>
+ *
+ * @author Dave Syer
+ * @author Rossen Stoyanchev
+ * @since 3.1
+ * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+ * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport
+ * @see org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Documented
+@Import(DelegatingWebMvcConfiguration.class)
+public @interface EnableWebMvc {
+}
+```
+
+**DelegatingWebMvcConfiguration**
+
+```java
+@Configuration
+public class DelegatingWebMvcConfiguration extends WebMvcConfigurationSupport {
+    
+}
+```
+
+根据源码说明上面的类是一个 @Configuration 类
+
+## 基于“接口编程”实现的 @Enable 模块
+
++ **ImportSelector**
+
+使用 Spring 注解元信息抽象 AnnotationMetadata 作为方法参数，该参数的内容为导入 ImportSelector 实现的 @Configuration 类元信息，进而动态地选择一个或多个其他 @Configuration 类进行导入。
+
+```java
+/**
+ * Register bean definitions as necessary based on the given annotation metadata of
+ * the importing {@code @Configuration} class.
+ * <p>Note that {@link BeanDefinitionRegistryPostProcessor} types may <em>not</em> be
+ * registered here, due to lifecycle constraints related to {@code @Configuration}
+ * class processing.
+ * @param importingClassMetadata annotation metadata of the importing class
+ * @param registry current bean definition registry
+ */
+public interface ImportBeanDefinitionRegistrar {
+	void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry);
+
+}
+
+public interface ImportSelector {
+
+   /**
+    * Select and return the names of which class(es) should be imported based on
+    * the {@link AnnotationMetadata} of the importing @{@link Configuration} class.
+    */
+   String[] selectImports(AnnotationMetadata importingClassMetadata);
+
+}
+```
+
++ **ImportBeanDefinitionRegistrar**
+
+除了 AnnotationMetadata，还将 BeanDefinitionRegistry 交给开发人员决定，
+
+```java
+public interface ImportBeanDefinitionRegistrar {
+
+   /**
+    * Register bean definitions as necessary based on the given annotation metadata of
+    * the importing {@code @Configuration} class.
+    * <p>Note that {@link BeanDefinitionRegistryPostProcessor} types may <em>not</em> be
+    * registered here, due to lifecycle constraints related to {@code @Configuration}
+    * class processing.
+    * @param importingClassMetadata annotation metadata of the importing class
+    * @param registry current bean definition registry
+    */
+   void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry);
+
+}
+```
+
+**CacheConfigurationSelector**
+
+```java
+/**
+ * Returns {@link ProxyCachingConfiguration} or {@code AspectJCachingConfiguration}
+ * for {@code PROXY} and {@code ASPECTJ} values of {@link EnableCaching#mode()},
+ * respectively. Potentially includes corresponding JCache configuration as well.
+ */
+@Override
+public String[] selectImports(AdviceMode adviceMode) {
+   switch (adviceMode) {
+      case PROXY:
+         return getProxyImports();
+      case ASPECTJ:
+         return getAspectJImports();
+      default:
+         return null;
+   }
+}
+```
+
+## @Enable 模块驱动原理
+
+### 1. 装载 @Configuration Class
 
