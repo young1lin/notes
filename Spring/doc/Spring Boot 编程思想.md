@@ -10,6 +10,8 @@
 
 第六天 237 。主要是 @AliasFor 讲解以及 @Enable 模块
 
+第七天 260。主要是 @Enable 模块装载 @Configuration Class，@ConfigurationClassPostProcessor 随着版本的变化而变化，来装载 @Configuration 和 @ImportSelector 和 ImportBeanDefinitionRegistrar。Spring Web 自动装配的前置知识。
+
 # 第一天
 
 **关于 sun.net.www.protocol.*.Handler 的内容，在小马哥的极客时间课程里面也讲过，后者讲得更为详细，也有实际操作。**
@@ -464,3 +466,34 @@ public String[] selectImports(AdviceMode adviceMode) {
 
 ### 1. 装载 @Configuration Class
 
+@Configuration 从 Spring Framework 3.0 开始引入，该版本还未引入 @ComponentScan，因此配套的导入注解是 @Import。ConfigurationClassPostProcessor 现在改成了最低优先级了，书上是最高优先级，实际是最低 Ordered.LOWEST_PRECEDENCE;
+
+ConfigurationClassPostProcessor#postProcessBeanFactory 处理 @Configuration 类和 @Bean 方法。
+
+
+
+ConfigurationClassPostProcessor 使用 CGLib 实现 ConfigurationClassEnhancer，用于提升 @Configuration Class：
+
+### 2. 装载 ImportSelector 和 ImportBeanDefinitionRegistrar 实现
+
+3.1 才引入。
+
+@ConfigruationClassPostProcessor 增加了@PropertySource 和 @ComponentScan 注解处理，并更新了 processImport(ConfigurationClass, String [], boolean)方法的实现。
+
+综上所述 ConfigurationClassPostProcessor 负责筛选 @Component Class、@Configruation Class 及 @Bean 方法定义（BeanDefinition），ConfigurationClassParser 则从候选的 Bean 定义中解析出 ConfigurationClass 集合，随后被 ConfigurationClassBeanDefinitionReader 转化并注册 BeanDefinition。
+
+
+
+## Spring Web 自动装配
+
+Servlet 3.0 规范
+
+需要支持 
+
+ServletContext#addServlet
+
+ServletContext#addFilter
+
+ServletContext#addListener
+
+正是因为 Servlet3.0 的规范，才让 Spring Web 有了自动装配的能力。
