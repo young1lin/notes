@@ -1,5 +1,6 @@
 package me.young1lin.spring.core.resolve.rmi.client;
 
+import me.young1lin.spring.core.resolve.rmi.server.RmiServiceConfig;
 import me.young1lin.spring.core.resolve.rmi.service.HelloRmiService;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -7,12 +8,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 
 /**
+ * First, startup {@link RmiServiceConfig}
+ *
  * @author young1lin
  * @version 1.0
  * @date 2020/10/22 8:15 上午
  */
 @Configuration
 public class RmiClientConfig {
+
     @Bean
     public RmiProxyFactoryBean myClient(){
         RmiProxyFactoryBean rmiProxyFactoryBean = new RmiProxyFactoryBean();
@@ -29,4 +33,5 @@ public class RmiClientConfig {
         HelloRmiService helloService = ctx.getBean("myClient",HelloRmiService.class);
         System.out.println(helloService.getMessage("\tWord!"));
     }
+
 }

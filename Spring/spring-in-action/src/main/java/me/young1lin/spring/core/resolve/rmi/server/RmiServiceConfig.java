@@ -39,4 +39,5 @@ public class RmiServiceConfig {
         ctx.scan(className.substring(0,className.lastIndexOf(".")));
         ctx.refresh();
     }
+    
 }
