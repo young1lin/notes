@@ -12,7 +12,13 @@
 
 第七天 260。主要是 @Enable 模块装载 @Configuration Class，@ConfigurationClassPostProcessor 随着版本的变化而变化，来装载 @Configuration 和 @ImportSelector 和 ImportBeanDefinitionRegistrar。Spring Web 自动装配的前置知识。
 
+第八天 284。Web 自动装配以及条件装配 @Profile、@Conditional
+
 # 第一天
+
+什么都没记，讲的都是最最基本的实战内容。
+
+# 第二天
 
 **关于 sun.net.www.protocol.*.Handler 的内容，在小马哥的极客时间课程里面也讲过，后者讲得更为详细，也有实际操作。**
 
@@ -22,11 +28,11 @@ Configuration 派生自 Component
 
 其他 Repository、Service 、Controller 均派生自 Component
 
-# 第二天 
+# 第三天
 
 CGLIB 会提升 @Configuration 的类，而不是 @Bean 的类。
 
-# 第三天
+# 第四天
 
 Spring Cloud 核心特性
 
@@ -42,7 +48,7 @@ Bean 也是分角色的（）
 
 Spring 3.0 开始支持多层次 @Component 派生，2.5 并不支持
 
-# 第四天
+# 第五天
 
 多层次派生原理
 
@@ -200,7 +206,7 @@ private void recursivelyCollectMetaAnnotations(Set<Annotation> visited, Annotati
 
 Spring 抽象出 MetadataReader 接口方便读取元信息。
 
-# 第五天
+# 第六天
 
 属性别名和覆盖
 
@@ -240,7 +246,7 @@ Spring Framework 将注解属性抽象为 AnnotationAttributes 类，扩展了 L
 
 > Transitive Explicit Overrides: if attribute A in annotation @One is a explicit override for attribute B in annotation @Two and B is an explicit override for attribute C in annotation @Three, then A is a *transitive explicit override* for C follwing the law of transitivity.
 
-# 第六天
+# 第七天
 
 `@AliasFor` 如果覆盖了一个，就要覆盖另一个，如果只覆盖一个就会报错 BeanDefinitionStoreException：Failed to parse configuration class，并且其默认值必须相等，不然也会报错。如下
 
@@ -482,8 +488,6 @@ ConfigurationClassPostProcessor 使用 CGLib 实现 ConfigurationClassEnhancer�
 
 综上所述 ConfigurationClassPostProcessor 负责筛选 @Component Class、@Configruation Class 及 @Bean 方法定义（BeanDefinition），ConfigurationClassParser 则从候选的 Bean 定义中解析出 ConfigurationClass 集合，随后被 ConfigurationClassBeanDefinitionReader 转化并注册 BeanDefinition。
 
-
-
 ## Spring Web 自动装配
 
 Servlet 3.0 规范
@@ -497,3 +501,127 @@ ServletContext#addFilter
 ServletContext#addListener
 
 正是因为 Servlet3.0 的规范，才让 Spring Web 有了自动装配的能力。
+
+# 第八天
+
+结合 Servlet 3.0 规范，当容器或者应用启动时，`ServletContainerInitializer#onStartup(Set<Class<?>>,ServletContext)` 方法将被回调，同时为了选择关心的类型，通过 @HandlesTypes 来进行过滤，即关心类型通过 @HandlesTypes#value 属性方法来指定。该类型的子类（含抽象类）候选为类集合`Set<Class<?>>`，作为 onStartup 方法的第一个入参。不过 ServletContainerInitializer 的一个或错个实现类需要存放在一个名为“javax.servlet.ServletContainerInitializer”的文本文件中，该文件存放在独立 JAR 包中的 “META-INF/services”目录下。
+
+**SpringServletContainerInitializer** Spring 3.0 引入的类。按照规范 WebApplicationInitializer 类的子类将会被引入`Set<Class<?>>`。
+
+```java
+@HandlesTypes({WebApplicationInitializer.class})
+public class SpringServletContainerInitializer implements ServletContainerInitializer {
+    	@Override
+	public void onStartup(@Nullable Set<Class<?>> webAppInitializerClasses, ServletContext servletContext)
+			throws ServletException {
+
+		List<WebApplicationInitializer> initializers = new LinkedList<>();
+
+		if (webAppInitializerClasses != null) {
+			for (Class<?> waiClass : webAppInitializerClasses) {
+				// Be defensive: Some servlet containers provide us with invalid classes,
+				// no matter what @HandlesTypes says...
+				if (!waiClass.isInterface() && !Modifier.isAbstract(waiClass.getModifiers()) &&
+						WebApplicationInitializer.class.isAssignableFrom(waiClass)) {
+					try {
+						initializers.add((WebApplicationInitializer)
+								ReflectionUtils.accessibleConstructor(waiClass).newInstance());
+					}
+					catch (Throwable ex) {
+						throw new ServletException("Failed to instantiate WebApplicationInitializer class", ex);
+					}
+				}
+			}
+		}
+
+		if (initializers.isEmpty()) {
+			servletContext.log("No Spring WebApplicationInitializer types detected on classpath");
+			return;
+		}
+
+		servletContext.log(initializers.size() + " Spring WebApplicationInitializers detected on classpath");
+		AnnotationAwareOrderComparator.sort(initializers);
+		for (WebApplicationInitializer initializer : initializers) {
+			initializer.onStartup(servletContext);
+		}
+	}
+}
+```
+
+关于 **WebApplicationInitializer** 的实现，Spring 3.2 引入了新的三种抽象实现。
+
+> AbstractContextLoaderInitializer
+>
+> ｜— AbstractDispatcherServletInitializer
+>
+> ​		｜— AbstractAnnotationConfigDispatcherServletInitializer
+
+简单介绍三种抽象类使用场景
+
++ AbstractContextLoaderInitializer——替代 web.xml
++ AbstractDispatcherServletInitializer——替代 web.xml 注册 DispatcherServlet，有必要的话，创建 Web Root 应用上下文（WebApplicationContext）
++ AbstractAnnotationConfigDispatcherServletInitializer——具备 Annotation 配置驱动能力的 AbstractDispatcherServletInitializer
+
+## AbstractContextLoaderInitializer 装配原理
+
+传统的 Spring Web 应用，有一个 ContextLoaderListener 和 DispathcerServlet 在 web.xml 里面配置。
+
+在 Servlet 3.0+ 环境时，web.xml 部署 ContextLoaderListener 的方式可替换为实现抽象类 AbstractContextLoaderInitalizer 来完成。通常情况下，子类只需要实现它的 createRootApplicationContext() 方法。
+
+讲了半天，没有讲装配原理。
+
+## AbstractDispatcherServletInitializer 
+
+还是没有讲具体的装配原理
+
+## AbstractAnnotationConfigDispatcherServletInitializer
+
+JSR 规范。
+
+## Spring 条件装配
+
+注解驱动 Bean 注册途径大致如下表所示。
+
+|       注解驱动 Bean 注册方式       |     使用场景说明     |            Bean 注解元信息处理类            |
+| :--------------------------------: | :------------------: | :-----------------------------------------: |
+|           @ComponentScan           | 扫描 Spring 模式注解 | ClassPathScanningCandidateComponentProvider |
+| @Component 或 @Configuration Class |     @Import 导入     |       ConfigrationClassPostProcessor        |
+|               @Bean                |    @Bean 方法定义    |          ConfigurationClassParser           |
+| AnnotationConfigApplicationContext |   注册 Bean Class    |        AnnotatedBeanDefinitionReader        |
+
+从 Spring 3.1 开始，以上三种 Bean 注解元信息处理类均增加了 @Profile 的处理。
+
+### @Profile
+
+以上三个类均有实现该注解解析。
+
+### @Conditional
+
+实现 Condition 接口，matches 返回为 true 则注册。ConditionContext 包含 Spring 应用上下文相关：BeanDefinitionRegistry、ConfigurableListableBeanFactory、Enviroment、ResourceLoader 和 ClassLoader。
+
+```java
+@FunctionalInterface
+public interface Condition {
+    
+   boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata);
+
+}
+```
+
+**@ConditionalOnClass**
+
+```java
+@Conditional(OnClassCondition.class)
+public @interface ConditionalOnClass {
+    
+    Class<?>[] value() default {};
+
+	String[] name() default {};
+    
+}
+@Order(Ordered.HIGHEST_PRECEDENCE)
+class OnClassCondition extends FilteringSpringBootCondition {
+    // 间接实现了 Condition 接口
+}
+```
+
