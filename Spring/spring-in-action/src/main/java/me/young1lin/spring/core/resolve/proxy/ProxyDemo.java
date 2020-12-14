@@ -3,6 +3,7 @@ package me.young1lin.spring.core.resolve.proxy;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.util.ClassUtils;
 
 import java.lang.reflect.Method;
