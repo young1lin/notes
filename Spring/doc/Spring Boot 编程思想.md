@@ -502,7 +502,11 @@ ServletContext#addListener
 
 正是因为 Servlet3.0 的规范，才让 Spring Web 有了自动装配的能力。
 
+<<<<<<< HEAD
 # 第八天
+=======
+# 第七天
+>>>>>>> d726ababd5af9ceaeaec8c636999076341d07dde
 
 结合 Servlet 3.0 规范，当容器或者应用启动时，`ServletContainerInitializer#onStartup(Set<Class<?>>,ServletContext)` 方法将被回调，同时为了选择关心的类型，通过 @HandlesTypes 来进行过滤，即关心类型通过 @HandlesTypes#value 属性方法来指定。该类型的子类（含抽象类）候选为类集合`Set<Class<?>>`，作为 onStartup 方法的第一个入参。不过 ServletContainerInitializer 的一个或错个实现类需要存放在一个名为“javax.servlet.ServletContainerInitializer”的文本文件中，该文件存放在独立 JAR 包中的 “META-INF/services”目录下。
 
