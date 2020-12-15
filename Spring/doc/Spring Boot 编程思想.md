@@ -14,6 +14,8 @@
 
 第八天 284。Web 自动装配以及条件装配 @Profile、@Conditional
 
+第九天 300。Spring Boot @Conditional 注解以及部分自动装配原理
+
 # 第一天
 
 什么都没记，讲的都是最最基本的实战内容。
@@ -502,11 +504,7 @@ ServletContext#addListener
 
 正是因为 Servlet3.0 的规范，才让 Spring Web 有了自动装配的能力。
 
-<<<<<<< HEAD
 # 第八天
-=======
-# 第七天
->>>>>>> d726ababd5af9ceaeaec8c636999076341d07dde
 
 结合 Servlet 3.0 规范，当容器或者应用启动时，`ServletContainerInitializer#onStartup(Set<Class<?>>,ServletContext)` 方法将被回调，同时为了选择关心的类型，通过 @HandlesTypes 来进行过滤，即关心类型通过 @HandlesTypes#value 属性方法来指定。该类型的子类（含抽象类）候选为类集合`Set<Class<?>>`，作为 onStartup 方法的第一个入参。不过 ServletContainerInitializer 的一个或错个实现类需要存放在一个名为“javax.servlet.ServletContainerInitializer”的文本文件中，该文件存放在独立 JAR 包中的 “META-INF/services”目录下。
 
@@ -629,3 +627,185 @@ class OnClassCondition extends FilteringSpringBootCondition {
 }
 ```
 
+# 第九天
+
+## 自定义条件装配
+
+具体代码在` spring-in-action/me/young1lin/spring/boot/thinking/conditional` 下。
+
+**@ConditionalOnSystemProperty**
+
+```java
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Conditional(OnSystemPropertyCondition.class)
+public @interface ConditionalOnSystemProperty {
+
+    /**
+     * @return System property name
+     */
+    String name();
+
+    /**
+     * @return System property value
+     */
+    String value();
+    
+}
+```
+
+**OnSystemPropertyCondition**
+
+```java
+public class OnSystemPropertyCondition implements Condition {
+
+    @Override
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+        // get all of ConditionalOnSystemProperty method attribute value
+        MultiValueMap<String, Object> attributes = metadata.getAllAnnotationAttributes(ConditionalOnSystemProperty.class.getName());
+        // get all of ConditionalOnSystemProperty#name value
+        String propertyName = (String) attributes.getFirst("name");
+        // get all of ConditionalOnSystemProperty#value value
+        String propertyValue = (String) attributes.getFirst("value");
+        // get SystemProperty value
+        String systemPropertyValue = System.getProperty(propertyName);
+        // match SystemPropertyValue and ConditionalOnSystemProperty#value is equals
+        if (Objects.equals(systemPropertyValue, propertyValue)) {
+            System.out.printf("SystemProperty [name: %s] find match [value: %s\n]", propertyName, propertyValue);
+            return true;
+        }
+        return false;
+    }
+
+}
+```
+
+**ConditionalMessageConfiguration**
+
+```java
+@Configuration
+public class ConditionalMessageConfiguration {
+
+    @ConditionalOnSystemProperty(name = "language", value = "Chinese")
+    @Bean("message")
+    public String chineseMessage() {
+        return "你好，世界";
+    }
+
+    @ConditionalOnSystemProperty(name = "language", value = "English")
+    @Bean("message")
+    public String englishMessage() {
+        return "Hello World";
+    }
+
+}
+```
+
+**ConditionOnSystemPropertyBootstrap**
+
+```java
+public class ConditionOnSystemPropertyBootstrap {
+
+    public static void main(String[] args) {
+        System.setProperty("language", "Chinese");
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+        context.register(ConditionalMessageConfiguration.class);
+        context.refresh();
+        String message = context.getBean("message", String.class);
+        System.out.printf("message bean object is  %s", message);
+    }
+
+}
+```
+
+**ConditionEvaluator** 这个类的 shouldSkip 来评估 Condition 接口实现类是否该跳过。然后 Condition 实现类根据 @Order 来排序。
+
+```java
+public boolean shouldSkip(@Nullable AnnotatedTypeMetadata metadata, @Nullable ConfigurationPhase phase) {
+   if (metadata == null || !metadata.isAnnotated(Conditional.class.getName())) {
+      return false;
+   }
+
+   if (phase == null) {
+      if (metadata instanceof AnnotationMetadata &&
+            ConfigurationClassUtils.isConfigurationCandidate((AnnotationMetadata) metadata)) {
+         return shouldSkip(metadata, ConfigurationPhase.PARSE_CONFIGURATION);
+      }
+      return shouldSkip(metadata, ConfigurationPhase.REGISTER_BEAN);
+   }
+
+   List<Condition> conditions = new ArrayList<>();
+   for (String[] conditionClasses : getConditionClasses(metadata)) {
+      for (String conditionClass : conditionClasses) {
+         Condition condition = getCondition(conditionClass, this.context.getClassLoader());
+         conditions.add(condition);
+      }
+   }
+	// 这里有个排序
+   AnnotationAwareOrderComparator.sort(conditions);
+
+   for (Condition condition : conditions) {
+      ConfigurationPhase requiredPhase = null;
+      if (condition instanceof ConfigurationCondition) {
+         requiredPhase = ((ConfigurationCondition) condition).getConfigurationPhase();
+      }
+      if ((requiredPhase == null || requiredPhase == phase) && !condition.matches(this.context, metadata)) {
+         return true;
+      }
+   }
+
+   return false;
+}
+```
+
+## Spring Boot 自动装配
+
+// 扫描默认根包
+
+`@ComponentScan(basePackages="")` 不建议这么使用
+
+**@EnableAutoConfiguration**
+
+```java
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@AutoConfigurationPackage
+@Import(AutoConfigurationImportSelector.class)
+public @interface EnableAutoConfiguration {
+    
+    String ENABLED_OVERRIDE_PROPERTY = "spring.boot.enableautoconfiguration";
+    
+	Class<?>[] exclude() default {};
+
+	String[] excludeName() default {};
+
+}
+```
+
+## 使 Spring Boot 自动装配失效
+
++ 代码配置方式
+  + EnableAutoConfiguration#exclude
+  + EnableAutoConfiguration#excludeName
++ 外部化配置方式
+  + spring.autoconfigure.exclude
+
+类似黑名单（有歧视意义，应该改成 Blocklist 禁止名单）的配置方式。
+
+```java
+public class AutoConfigurationImportSelector implements DeferredImportSelector, BeanClassLoaderAware,
+      	ResourceLoaderAware, BeanFactoryAware, EnvironmentAware, Ordered {
+    // 省略一大部分代码
+	@Override
+	public String[] selectImports(AnnotationMetadata annotationMetadata) {
+		if (!isEnabled(annotationMetadata)) {
+			return NO_IMPORTS;
+		}
+		AutoConfigurationEntry autoConfigurationEntry = getAutoConfigurationEntry(annotationMetadata);
+		return StringUtils.toStringArray(autoConfigurationEntry.getConfigurations());
+	}
+}
+```
