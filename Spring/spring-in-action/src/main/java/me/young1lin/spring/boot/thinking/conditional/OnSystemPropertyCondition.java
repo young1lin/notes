@@ -3,7 +3,6 @@ package me.young1lin.spring.boot.thinking.conditional;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.MultiValueMap;
 
@@ -14,8 +13,7 @@ import java.util.Objects;
  * @version 1.0
  * @since 2020/12/15 7:46 上午
  */
-@Order(Ordered.HIGHEST_PRECEDENCE)
-public class OnSystemPropertyCondition implements Condition {
+public class OnSystemPropertyCondition implements Condition, Ordered {
 
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
@@ -33,6 +31,11 @@ public class OnSystemPropertyCondition implements Condition {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 
 }
