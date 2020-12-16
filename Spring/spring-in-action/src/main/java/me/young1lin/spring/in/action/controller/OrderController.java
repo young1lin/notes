@@ -20,11 +20,13 @@ import javax.validation.Valid;
 @Controller
 @RequestMapping("/orders")
 public class OrderController {
+
     @GetMapping("/current")
     public String orderForm(Model model){
         model.addAttribute("order",new Order());
         return "orderForm";
     }
+
     @PostMapping
     public String processOrder(@Valid Order order, Errors errors){
         if(errors.hasErrors()){
@@ -33,4 +35,5 @@ public class OrderController {
         log.info("Order submitted:[{}]",order);
         return "redirect:/";
     }
+
 }

@@ -28,12 +28,4 @@ public class MergeSubClass extends MergeClass{
 
     private String address = "杭州";
 
-    public static void main(String[] args) {
-        JButton jButton = new JButton();
-        jButton.addActionListener((e)->{
-
-        });
-        HashMap<String, Object> map = new HashMap<>(16);
-        new JmsTemplate();
-    }
 }

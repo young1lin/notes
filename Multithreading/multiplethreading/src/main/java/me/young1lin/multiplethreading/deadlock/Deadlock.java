@@ -13,7 +13,7 @@ import java.lang.annotation.*;
 public @interface Deadlock {
 
     /**
-     * @return is deadlock
+     * @return just tag it
      */
     boolean value() default true;
 

@@ -8,49 +8,54 @@ package me.young1lin.multiplethreading.deadlock;
 @Deadlock
 public class DynamicSequenceDeadlock {
 
-    public void transferMoney(Account fromAccount, Account toAccount, DollarAmount amount) {
+	public void transferMoney(Account fromAccount, Account toAccount, DollarAmount amount) {
 
-        synchronized (fromAccount) {
-            synchronized (toAccount) {
-                if (fromAccount.getBalance().compareTo(amount) < 0) {
-                    throw new RuntimeException("balance not allow");
-                } else {
-                    fromAccount.debit(amount);
-                    toAccount.credit(amount);
-                }
-            }
-        }
-    }
+		synchronized (fromAccount) {
+			synchronized (toAccount) {
+				if (fromAccount.getBalance().compareTo(amount) < 0) {
+					throw new RuntimeException("balance not allow");
+				}
+				else {
+					fromAccount.debit(amount);
+					toAccount.credit(amount);
+				}
+			}
+		}
+	}
 
 }
 
-
 class Account {
 
-    private DollarAmount balance;
+	private DollarAmount balance;
 
 
-    public DollarAmount getBalance() {
-        return balance;
-    }
+	public DollarAmount getBalance() {
+		return balance;
+	}
 
-    public void setBalance(DollarAmount balance) {
-        this.balance = balance;
-    }
+	public void setBalance(DollarAmount balance) {
+		this.balance = balance;
+	}
 
-    public void debit(DollarAmount amount) {
-    }
+	public void debit(DollarAmount amount) {
+	}
 
-    public void credit(DollarAmount amount) {
-    }
+	public void credit(DollarAmount amount) {
+	}
 
 }
 
 class DollarAmount implements Comparable<DollarAmount> {
 
-    @Override
-    public int compareTo(DollarAmount o) {
-        return 0;
-    }
+
+	public DollarAmount(){}
+
+	public DollarAmount(int balance){}
+
+	@Override
+	public int compareTo(DollarAmount o) {
+		return 0;
+	}
 
 }
