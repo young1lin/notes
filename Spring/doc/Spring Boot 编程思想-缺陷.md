@@ -11,3 +11,12 @@
  tranactionalServic eBean
 
 c 和 e 多了个空格。
+
+
+
+# 303
+
+实现类全类名？
+
+为什么不是全限定名？
+

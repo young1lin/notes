@@ -14,7 +14,9 @@
 
 第八天 284。Web 自动装配以及条件装配 @Profile、@Conditional
 
-第九天 300。Spring Boot @Conditional 注解以及部分自动装配原理
+第九天 300。Spring Boot @Conditional 注解以及部分自动装配原理。
+
+第十天 315。Spring Boot @EnableAutoConfiguration 部分实现自动装配方法。
 
 # 第一天
 
@@ -809,3 +811,145 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 	}
 }
 ```
+
+# 第十天
+
+## Spring Boot 自动装配原理
+
+**@EnableAutoConfiguration**
+
+```java
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@AutoConfigurationPackage
+@Import(AutoConfigurationImportSelector.class)
+public @interface EnableAutoConfiguration {
+    
+}
+```
+
+**@AutoConfigurationPackage**
+
+```java
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@Import(AutoConfigurationPackages.Registrar.class)
+public @interface AutoConfigurationPackage {
+    String[] basePackages() default {};
+    Class<?>[] basePackageClasses() default {};
+}
+```
+
+**AutoConfigruationImportSelector#getAutoConfigurationEntry** 在 selectImports 方法里面
+
+```java
+protected AutoConfigurationEntry getAutoConfigurationEntry(AnnotationMetadata annotationMetadata) {
+   if (!isEnabled(annotationMetadata)) {
+      return EMPTY_ENTRY;
+   }
+   AnnotationAttributes attributes = getAttributes(annotationMetadata);
+   List<String> configurations = getCandidateConfigurations(annotationMetadata, attributes);
+   configurations = removeDuplicates(configurations);
+   Set<String> exclusions = getExclusions(annotationMetadata, attributes);
+   checkExcludedClasses(configurations, exclusions);
+   configurations.removeAll(exclusions);
+   configurations = getConfigurationClassFilter().filter(configurations);
+   fireAutoConfigurationImportEvents(configurations, exclusions);
+   return new AutoConfigurationEntry(configurations, exclusions);
+}
+```
+
+### 获取候选装配组件 getCandidateConfigurations
+
+**AutoConfigruationImportSelector#getCandidateConfigurations**
+
+```java
+protected List<String> getCandidateConfigurations(AnnotationMetadata metadata, AnnotationAttributes attributes) {
+   List<String> configurations = SpringFactoriesLoader.loadFactoryNames(getSpringFactoriesLoaderFactoryClass(),
+         getBeanClassLoader());
+   Assert.notEmpty(configurations, "No auto configuration classes found in META-INF/spring.factories. If you "
+         + "are using a custom packaging, make sure that file is correct.");
+   return configurations;
+}
+```
+
+**AutoConfigruationImportSelector#getSpringFactoriesLoaderFactoryClass**
+
+```java
+protected Class<?> getSpringFactoriesLoaderFactoryClass() {
+    return EnableAutoConfiguration.class;
+}
+```
+
+**SpringFactoriesLoader#loadFactoryNames** 重点，这里就是加载 spring.factories
+
+```java
+public static List<String> loadFactoryNames(Class<?> factoryType, @Nullable ClassLoader classLoader) {
+   String factoryTypeName = factoryType.getName();
+   return loadSpringFactories(classLoader).getOrDefault(factoryTypeName, Collections.emptyList());
+}
+```
+
+**SpringFactoriesLoader#loadSpringFactories**
+
+```java
+private static Map<String, List<String>> loadSpringFactories(@Nullable ClassLoader classLoader) {
+   MultiValueMap<String, String> result = cache.get(classLoader);
+   if (result != null) {
+      return result;
+   }
+
+   try {
+      Enumeration<URL> urls = (classLoader != null ?
+            classLoader.getResources(FACTORIES_RESOURCE_LOCATION) :
+            ClassLoader.getSystemResources(FACTORIES_RESOURCE_LOCATION));
+      result = new LinkedMultiValueMap<>();
+      while (urls.hasMoreElements()) {
+         URL url = urls.nextElement();
+         UrlResource resource = new UrlResource(url);
+         Properties properties = PropertiesLoaderUtils.loadProperties(resource);
+         for (Map.Entry<?, ?> entry : properties.entrySet()) {
+            String factoryTypeName = ((String) entry.getKey()).trim();
+            for (String factoryImplementationName : StringUtils.commaDelimitedListToStringArray((String) entry.getValue())) {
+               result.add(factoryTypeName, factoryImplementationName.trim());
+            }
+         }
+      }
+      cache.put(classLoader, result);
+      return result;
+   }
+   catch (IOException ex) {
+      throw new IllegalArgumentException("Unable to load factories from location [" +
+            FACTORIES_RESOURCE_LOCATION + "]", ex);
+   }
+}
+```
+
+加载 spring.factories 步骤。
+
+1. 搜索指定 ClassLoader 下所有的 META-INF/spring.factories 资源内容（可能存在多个）。
+2. 将一个或多个 META-INF/spring.factories 资源内容作为 Properties 文件读取，合并为一个 Key 为接口的全限定名，Value 时实现类全限定名列表的 Map，作为 loadSpringFactories(ClassLoader)方法的返回值。
+3. 再从上一步返回的 Map 中查找并返回方法指定全限定名所映射的实现类类全限定名列表。
+
+因为 spring.factories 中可能会存在重复的定义，所以要去重，去完重再进行执行排除操作。
+
+## 排除自动装配组件 @EnableAutoConfiguration
+
+简单的排除 List、exclusions
+
+## 过滤自动装配组件 @EnableAutoConfiguration
+
+AutoConfigurationImportFilter 实际上是过滤 META-INF/spring.factories 资源中那些当前 ClassLoader 不存在的 Class。
+
+## AutoConfigurationImportSelector 读取自动装配 Class 的流程
+
+1. 通过 SpringFactoriesLoader#loadFactoryNames(Class,ClassLoader) 方法读取所有 META-INF/spring.factories 资源中 @EnableAutoConfiguartion 所关联的自动装配 Class 集合。
+2. 读取当前配置类所标注的 @EnableAutoConfiguration 属性 exclude 和 excludeName，并与 spring.autoconfigure.exclude 配置属性合并为自动装配 Class 集合。
+3. 检查自动装配 Class 排除集合是否合法。
+4. 排除候选自动装配 Class 集合中的排除名单。
+5. 再次过滤后选自动装配 Class 集合中 Class 不存在的成员。
+
