@@ -1,2 +1,6 @@
+# for spring.core.resolve
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 me.young1lin.spring.core.resolve.auto.configuration.HelloServiceAutoConfiguration
+
+org.springframework.boot.autoconfigure.AutoConfigurationImportListener=\
+  me.young1lin.spring.boot.thinking.autoconfig.DefaultAutoConfigurationImportListener

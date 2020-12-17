@@ -18,6 +18,8 @@
 
 第十天 315。Spring Boot @EnableAutoConfiguration 部分实现自动装配方法。
 
+第十一天 326。Spring Boot @EnableAutoConfiguration 实现自动装配事件、生命周期、排序。
+
 # 第一天
 
 什么都没记，讲的都是最最基本的实战内容。
@@ -953,3 +955,206 @@ AutoConfigurationImportFilter 实际上是过滤 META-INF/spring.factories 资�
 4. 排除候选自动装配 Class 集合中的排除名单。
 5. 再次过滤后选自动装配 Class 集合中 Class 不存在的成员。
 
+# 第十一天
+
+## @EnableAutoConfiguration 自动装配事件
+
+**AutoConfigurationImportSelector#fireAutoConfigurationImportEvents**
+
+```java
+private void fireAutoConfigurationImportEvents(List<String> configurations, Set<String> exclusions) {
+   List<AutoConfigurationImportListener> listeners = getAutoConfigurationImportListeners();
+   if (!listeners.isEmpty()) {
+      AutoConfigurationImportEvent event = new AutoConfigurationImportEvent(this, configurations, exclusions);
+      for (AutoConfigurationImportListener listener : listeners) {
+         invokeAwareMethods(listener);
+         listener.onAutoConfigurationImportEvent(event);
+      }
+   }
+}
+
+protected List<AutoConfigurationImportListener> getAutoConfigurationImportListeners() {
+    return SpringFactoriesLoader.loadFactories(AutoConfigurationImportListener.class, this.beanClassLoader);
+}
+```
+
+实际例子，参照 `me.young1lin.spring.boot.thinking.autoconfig` 下面的类，以及 `META-INF/spring.factories`
+
+## @EnableAutoConfiguration 自动装配生命周期
+
+AutoConfigurationImportSelector 实现了 DeferredImportSelector 接口，这个接口由 Spring 4.0 引入，主要目的是在于在 @Configuration Bean 处理完毕后才运作。它在 @Conditional 场景中尤其有用，同时实现 Order 接口来台哦正其优先执行顺序。
+
+![image.png](https://i.loli.net/2020/12/17/5zdvpfSbB9ZGyXK.png)
+
+**ConfigurationClassParser#processImports** 在这之前，是处理 @ComponnetScan、@Component、@PropertySources
+
+```java
+// Process any @Import annotations
+private void processImports(ConfigurationClass configClass, SourceClass currentSourceClass,
+      Collection<SourceClass> importCandidates, Predicate<String> exclusionFilter,
+      boolean checkForCircularImports) {
+
+   if (importCandidates.isEmpty()) {
+      return;
+   }
+
+   if (checkForCircularImports && isChainedImportOnStack(configClass)) {
+      this.problemReporter.error(new CircularImportProblem(configClass, this.importStack));
+   }
+   else {
+      this.importStack.push(configClass);
+      try {
+         for (SourceClass candidate : importCandidates) {
+            if (candidate.isAssignable(ImportSelector.class)) {
+               // Candidate class is an ImportSelector -> delegate to it to determine imports
+               Class<?> candidateClass = candidate.loadClass();
+               ImportSelector selector = ParserStrategyUtils.instantiateClass(candidateClass, ImportSelector.class,
+                     this.environment, this.resourceLoader, this.registry);
+               Predicate<String> selectorFilter = selector.getExclusionFilter();
+               if (selectorFilter != null) {
+                  exclusionFilter = exclusionFilter.or(selectorFilter);
+               }
+               if (selector instanceof DeferredImportSelector) {
+                  this.deferredImportSelectorHandler.handle(configClass, (DeferredImportSelector) selector);
+               }
+               else {
+                  String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
+                  Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames, exclusionFilter);
+                  processImports(configClass, currentSourceClass, importSourceClasses, exclusionFilter, false);
+               }
+            }
+            else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {
+               // Candidate class is an ImportBeanDefinitionRegistrar ->
+               // delegate to it to register additional bean definitions
+               Class<?> candidateClass = candidate.loadClass();
+               ImportBeanDefinitionRegistrar registrar =
+                     ParserStrategyUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class,
+                           this.environment, this.resourceLoader, this.registry);
+               configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
+            }
+            else {
+               // Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->
+               // process it as an @Configuration class
+               this.importStack.registerImport(
+                     currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());
+               processConfigurationClass(candidate.asConfigClass(configClass), exclusionFilter);
+            }
+         }
+      }
+      catch (BeanDefinitionStoreException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         throw new BeanDefinitionStoreException(
+               "Failed to process import candidates for configuration class [" +
+               configClass.getMetadata().getClassName() + "]", ex);
+      }
+      finally {
+         this.importStack.pop();
+      }
+   }
+}
+```
+
+**ConfigurationClassParser#parse**
+
+```java
+public void parse(Set<BeanDefinitionHolder> configCandidates) {
+   for (BeanDefinitionHolder holder : configCandidates) {
+      BeanDefinition bd = holder.getBeanDefinition();
+      try {
+         if (bd instanceof AnnotatedBeanDefinition) {
+            parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
+         }
+         else if (bd instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) bd).hasBeanClass()) {
+            parse(((AbstractBeanDefinition) bd).getBeanClass(), holder.getBeanName());
+         }
+         else {
+            parse(bd.getBeanClassName(), holder.getBeanName());
+         }
+      }
+      catch (BeanDefinitionStoreException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         throw new BeanDefinitionStoreException(
+               "Failed to parse configuration class [" + bd.getBeanClassName() + "]", ex);
+      }
+   }
+
+   this.deferredImportSelectorHandler.process();
+}
+```
+
+**ConfigurationClassParser.DeferredImportSelectorHandler#process**
+
+```java
+public void process() {
+   List<DeferredImportSelectorHolder> deferredImports = this.deferredImportSelectors;
+   this.deferredImportSelectors = null;
+   try {
+      if (deferredImports != null) {
+         DeferredImportSelectorGroupingHandler handler = new DeferredImportSelectorGroupingHandler();
+         deferredImports.sort(DEFERRED_IMPORT_COMPARATOR);
+         deferredImports.forEach(handler::register);
+         handler.processGroupImports();
+      }
+   }
+   finally {
+      this.deferredImportSelectors = new ArrayList<>();
+   }
+}
+```
+
+在 Spring 5.0 DeferredImportSelector.Group 接口辅助处理 DeferredImportSelector 导入的 Configuration Class
+
+后面的内容比较简单。
+
+**AutoConfigurationImportSelector#getImportGroup**
+
+```java
+@Override
+public Class<? extends Group> getImportGroup() {
+   return AutoConfigurationGroup.class;
+}
+```
+
+## 排序自动装配组件 @EnableAutoConfiguration
+
+两种自动装配组件的顺序手段
+
++ 绝对自动装配顺序——@AutoCofingureOrder；
++ 相对自动装配顺序——@AutoConfigureBefore 和 @AutoConfigureAfter。
+
+上面三个注解的实现在 AutoConfigurationGroup#selectImports 方法实现中：
+
+**AutoConfigurationGroup#selectImports**
+
+```java
+@Override
+public Iterable<Entry> selectImports() {
+   if (this.autoConfigurationEntries.isEmpty()) {
+      return Collections.emptyList();
+   }
+   Set<String> allExclusions = this.autoConfigurationEntries.stream()
+         .map(AutoConfigurationEntry::getExclusions).flatMap(Collection::stream).collect(Collectors.toSet());
+   Set<String> processedConfigurations = this.autoConfigurationEntries.stream()
+         .map(AutoConfigurationEntry::getConfigurations).flatMap(Collection::stream)
+         .collect(Collectors.toCollection(LinkedHashSet::new));
+   processedConfigurations.removeAll(allExclusions);
+
+   return sortAutoConfigurations(processedConfigurations, getAutoConfigurationMetadata()).stream()
+         .map((importClassName) -> new Entry(this.entries.get(importClassName), importClassName))
+         .collect(Collectors.toList());
+}
+```
+
+**AutoConfigurationGroup#selectImports**
+
+```java
+private List<String> sortAutoConfigurations(Set<String> configurations,
+      AutoConfigurationMetadata autoConfigurationMetadata) {
+   return new AutoConfigurationSorter(getMetadataReaderFactory(), autoConfigurationMetadata)
+         .getInPriorityOrder(configurations);
+}
+```

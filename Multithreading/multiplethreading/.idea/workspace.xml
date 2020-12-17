@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2e3ae98e-8e3b-40c2-8167-239247296da8" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/deadlock/DemonstrateDeadLock.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/deadlock/Deadlock.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/deadlock/Deadlock.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/deadlock/DynamicSequenceDeadlock.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/deadlock/DynamicSequenceDeadlock.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Spring/spring-in-action&amp;ex/spring-bean-ex/src/main/java/me/younglin/springex/bean/MergeSubClass.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Spring/spring-in-action&amp;ex/spring-bean-ex/src/main/java/me/younglin/springex/bean/MergeSubClass.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Spring/spring-in-action/src/main/java/me/young1lin/spring/in/action/controller/OrderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Spring/spring-in-action/src/main/java/me/young1lin/spring/in/action/controller/OrderController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Spring/doc/Spring Boot 编程思想.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../Spring/doc/Spring Boot 编程思想.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +76,8 @@
       <workItem from="1607607153764" duration="1274000" />
       <workItem from="1607643932390" duration="163000" />
       <workItem from="1608046362202" duration="793000" />
-      <workItem from="1608125859880" duration="2214000" />
+      <workItem from="1608125859880" duration="2283000" />
+      <workItem from="1608162344882" duration="20000" />
     </task>
     <servers />
   </component>
@@ -93,9 +90,9 @@
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state x="505" y="248" key="run.anything.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1606314578776" />
-    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup" timestamp="1607607167166">
+    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup" timestamp="1608162361219">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
-    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1607607167166" />
+    <state x="505" y="233" width="670" height="676" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1608162361219" />
   </component>
 </project>
