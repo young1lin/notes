@@ -30,9 +30,9 @@ public class DefaultAutoConfigurationImportListener implements AutoConfiguration
 		System.out.printf("自动装配 Class 名单 - 候选数量：%d，排除数量：%s\n",
 				candidates.size(), exclusions.size());
 		// 输出实际和排除的自动装配的 Class 名单
-		event.getCandidateConfigurations().forEach(System.out::println);
+		configurations.forEach(System.out::println);
 		System.out.println("=====排除的自动装配的名单");
-		event.getExclusions().forEach(System.out::println);
+		exclusions.forEach(System.out::println);
 	}
 
 }

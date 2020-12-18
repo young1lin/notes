@@ -1,0 +1,10 @@
+spring:
+  profiles:
+    active: dev
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+resolve:
+  enable: true

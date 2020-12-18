@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  * @date 2020/8/27 7:15 下午
  */
 @Controller
-public class HomeController {
+public class HomeController extends BaseController {
 
     @GetMapping("/")
     public String home(){

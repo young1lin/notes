@@ -20,6 +20,8 @@
 
 第十一天 326。Spring Boot @EnableAutoConfiguration 实现自动装配事件、生命周期、排序。
 
+第十二天 342。Spring @EnableAutoConfiguration 排序相关，BasePackage 相关，以及自定义Spring Boot Starter 需要遵守的不成文的规约。
+
 # 第一天
 
 什么都没记，讲的都是最最基本的实战内容。
@@ -1149,7 +1151,7 @@ public Iterable<Entry> selectImports() {
 }
 ```
 
-**AutoConfigurationGroup#selectImports**
+**AutoConfigurationGroup#sortAutoConfigurations**
 
 ```java
 private List<String> sortAutoConfigurations(Set<String> configurations,
@@ -1158,3 +1160,179 @@ private List<String> sortAutoConfigurations(Set<String> configurations,
          .getInPriorityOrder(configurations);
 }
 ```
+
+# 第十二天
+
+META-INF/spring-autoconfigure-metadata.properties 可认为是自动装配 Class 预处理元信息配置的资源。当该资源文件存在自动装配 Class 的注解元信息配置事，自动装配 Class 无须 ClassLoader 加载，即可得到所需的元信息，减少了运行时的计算消耗。所以相较于 1.5 有所提升。
+
+AutoConfigurationMetadata 作为上述 metadata 资源的封装对象，再次在 sortAutoConfigurations 方法中加载，它与 MetadataReaderFactory 对象同时作为 AutoConfigurationSorter 构造参数，辅助 AutoConfigurationSorter#getInPriorityOrder(Collection)方法对自动装配 Class 进入进行排序。
+
+```java
+class AutoConfigurationSorter {
+
+   private final MetadataReaderFactory metadataReaderFactory;
+
+   private final AutoConfigurationMetadata autoConfigurationMetadata;
+
+   AutoConfigurationSorter(MetadataReaderFactory metadataReaderFactory,
+         AutoConfigurationMetadata autoConfigurationMetadata) {
+      Assert.notNull(metadataReaderFactory, "MetadataReaderFactory must not be null");
+      this.metadataReaderFactory = metadataReaderFactory;
+      this.autoConfigurationMetadata = autoConfigurationMetadata;
+   }
+    List<String> getInPriorityOrder(Collection<String> classNames) {
+        AutoConfigurationClasses classes = new AutoConfigurationClasses(
+            this.metadataReaderFactory,this.autoConfigurationMetadata, classNames);
+        List<String> orderedClassNames = new ArrayList<>(classNames);
+        // Initially sort alphabetically
+        Collections.sort(orderedClassNames);
+        // Then sort by order
+        orderedClassNames.sort((o1, o2) -> {
+            int i1 = classes.get(o1).getOrder();
+            int i2 = classes.get(o2).getOrder();
+            return Integer.compare(i1, i2);
+        });
+        // Then respect @AutoConfigureBefore @AutoConfigureAfter
+        orderedClassNames = sortByAnnotation(classes, orderedClassNames);
+        return orderedClassNames;
+	}
+}
+```
+
+// TODO 中间比较繁杂，跳过，以后补充。
+
+@AutoConfigureAfter 和 @AutoConfigureBefore 尽可能用 name 而不是 value，后者有坑。
+
+## 自动装配 BasePackage
+
+Spring Boot 1.3 开始，@EnableAutoConfiguration 元标注新注解 @AutoConfigurationPackage。
+
+ConfigurationClassPostProcessor 提供递归处理配置 Class 和 元注解的能力。
+
+```java
+public abstract class AutoConfigurationPackages {
+    	/**
+	 * {@link ImportBeanDefinitionRegistrar} to store the base package from the importing
+	 * configuration.
+	 */
+	static class Registrar implements ImportBeanDefinitionRegistrar, DeterminableImports {
+
+		@Override
+		public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
+			register(registry, new PackageImports(metadata).getPackageNames().toArray(new String[0]));
+		}
+
+		@Override
+		public Set<Object> determineImports(AnnotationMetadata metadata) {
+			return Collections.singleton(new PackageImports(metadata));
+		}
+
+	}
+	// 注册 BeanDefinition
+	public static void register(BeanDefinitionRegistry registry, String... packageNames) {
+		if (registry.containsBeanDefinition(BEAN)) {
+			BeanDefinition beanDefinition = registry.getBeanDefinition(BEAN);
+			ConstructorArgumentValues constructorArguments = beanDefinition.getConstructorArgumentValues();
+			constructorArguments.addIndexedArgumentValue(0, addBasePackages(constructorArguments, packageNames));
+		}
+		else {
+			GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+			beanDefinition.setBeanClass(BasePackages.class);
+			beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0, packageNames);
+			beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+			registry.registerBeanDefinition(BEAN, beanDefinition);
+		}
+	}
+    
+	/**
+	 * Wrapper for a package import.
+	 */
+	private static final class PackageImports {
+
+		private final List<String> packageNames;
+
+		PackageImports(AnnotationMetadata metadata) {
+			AnnotationAttributes attributes = AnnotationAttributes
+					.fromMap(metadata.getAnnotationAttributes(AutoConfigurationPackage.class.getName(), false));
+			List<String> packageNames = new ArrayList<>();
+			for (String basePackage : attributes.getStringArray("basePackages")) {
+				packageNames.add(basePackage);
+			}
+			for (Class<?> basePackageClass : attributes.getClassArray("basePackageClasses")) {
+				packageNames.add(basePackageClass.getPackage().getName());
+			}
+			if (packageNames.isEmpty()) {
+				packageNames.add(ClassUtils.getPackageName(metadata.getClassName()));
+			}
+			this.packageNames = Collections.unmodifiableList(packageNames);
+		}
+
+		List<String> getPackageNames() {
+			return this.packageNames;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == null || getClass() != obj.getClass()) {
+				return false;
+			}
+			return this.packageNames.equals(((PackageImports) obj).packageNames);
+		}
+
+		@Override
+		public int hashCode() {
+			return this.packageNames.hashCode();
+		}
+
+		@Override
+		public String toString() {
+			return "Package Imports " + this.packageNames;
+		}
+	}
+    
+	/**
+	 * Holder for the base package (name may be null to indicate no scanning).
+	 */
+	static final class BasePackages {
+
+		private final List<String> packages;
+
+		private boolean loggedBasePackageInfo;
+
+		BasePackages(String... names) {
+			List<String> packages = new ArrayList<>();
+			for (String name : names) {
+				if (StringUtils.hasText(name)) {
+					packages.add(name);
+				}
+			}
+			this.packages = packages;
+		}
+
+		List<String> get() {
+			if (!this.loggedBasePackageInfo) {
+				if (this.packages.isEmpty()) {
+					if (logger.isWarnEnabled()) {
+						logger.warn("@EnableAutoConfiguration was declared on a class "
+								+ "in the default package. Automatic @Repository and "
+								+ "@Entity scanning is not enabled.");
+					}
+				}
+				else {
+					if (logger.isDebugEnabled()) {
+						String packageNames = StringUtils.collectionToCommaDelimitedString(this.packages);
+						logger.debug("@EnableAutoConfiguration was declared on a class in the package '" + packageNames
+								+ "'. Automatic @Repository and @Entity scanning is enabled.");
+					}
+				}
+				this.loggedBasePackageInfo = true;
+			}
+			return this.packages;
+		}
+
+	}
+}
+```
+
+## 自定义 Spring Boot Starter
+

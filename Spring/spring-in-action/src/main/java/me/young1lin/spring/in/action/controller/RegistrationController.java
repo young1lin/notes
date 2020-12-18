@@ -2,7 +2,6 @@ package me.young1lin.spring.in.action.controller;
 
 import me.young1lin.spring.in.action.repository.SysUserRepository;
 import me.young1lin.spring.in.action.form.RegistrationForm;
-import lombok.RequiredArgsConstructor;
 //import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,8 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @Controller
 @RequestMapping("/register")
-@RequiredArgsConstructor
-public class RegistrationController {
+public class RegistrationController extends BaseController{
 
     @Autowired
     private SysUserRepository sysUserRepository;

@@ -1,19 +1,16 @@
 package me.young1lin.spring.in.action.domain;
 
-import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author young1lin
  * @version 1.0
  * @date 2020/8/27 7:53 下午
  */
-@Data
 @Entity
 public class Taco {
     @Id
@@ -32,5 +29,43 @@ public class Taco {
     @PrePersist
     void createdAt(){
         this.createAt = new Date();
+    }
+
+    public Taco() {
+    }
+
+    public Taco(Long id, Date createAt, @NotNull @Size(min = 5, message = "Name must be at least 5 characters long") String name) {
+        this.id = id;
+        this.createAt = createAt;
+        this.name = name;
+    }
+
+    public Taco(Date createAt, @NotNull @Size(min = 5, message = "Name must be at least 5 characters long") String name) {
+        this.createAt = createAt;
+        this.name = name;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Date getCreateAt() {
+        return createAt;
+    }
+
+    public void setCreateAt(Date createAt) {
+        this.createAt = createAt;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

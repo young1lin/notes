@@ -4,7 +4,7 @@ import me.young1lin.spring.in.action.repository.JdbcIngredientRepository;
 import me.young1lin.spring.in.action.domain.Ingredient;
 import me.young1lin.spring.in.action.domain.Order;
 import me.young1lin.spring.in.action.domain.Taco;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,10 +25,9 @@ import java.util.stream.Collectors;
  * @date 2020/8/27 7:40 下午
  */
 
-@Slf4j
 @Controller
 @RequestMapping("/design")
-public class DesignTacoController {
+public class DesignTacoController extends BaseController{
 
     private final JdbcIngredientRepository jdbcIngredientRepository;
 

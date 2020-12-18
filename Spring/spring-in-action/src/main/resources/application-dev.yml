@@ -1,0 +1,20 @@
+spring:
+  thymeleaf:
+    cache: false
+  jpa:
+    show-sql: true
+  kafka:
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    template:
+      default-topic: topic_111
+    bootstrap-servers: localhost:9092,localhost:9093
+    properties:
+      spring.json.value.default.type: me.young1lin.spring.in.action.domain.Order
+      spring.json.type.mapping: "data:me.young1lin.spring.in.action.domain.Order"
+      spring.json.trusted.packages: "*"
+
