@@ -31,7 +31,7 @@ public class EchoServer {
      */
     public static void main(String[] args) {
         if (args.length != 1) {
-            System.err.println("Error");
+            System.err.println("Error, Please set port in args, or delete these code");
             return;
         }
         int port = Integer.parseInt(args[0]);
@@ -53,7 +53,7 @@ public class EchoServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) {
-                        // EchoServerHandler 被标注胃 @Shareable，所以总是可以使用同样的实例
+                        // EchoServerHandler 被标注为 @Shareable，所以总是可以使用同样的实例
                         socketChannel.pipeline().addLast(serverHandler);
                     }
                 });
