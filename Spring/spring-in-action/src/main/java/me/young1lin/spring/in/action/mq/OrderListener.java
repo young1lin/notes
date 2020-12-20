@@ -1,7 +1,6 @@
 package me.young1lin.spring.in.action.mq;
 
 import me.young1lin.spring.in.action.domain.Order;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

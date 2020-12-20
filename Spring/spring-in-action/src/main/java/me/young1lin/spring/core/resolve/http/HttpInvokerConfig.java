@@ -35,7 +35,6 @@ public class HttpInvokerConfig {
         String currentPackage = className.substring(0,className.lastIndexOf("."));
         ServletWebServerApplicationContext ctx = new AnnotationConfigServletWebServerApplicationContext(currentPackage);
         //ctx.setServletConfig(new TestDispatcherServlet());
-        //ctx.set
         //ctx.setParent();
     }
 }

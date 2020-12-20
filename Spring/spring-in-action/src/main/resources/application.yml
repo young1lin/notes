@@ -6,5 +6,12 @@ spring:
       ddl-auto: update
     open-in-view: false
 
+  datasource:
+    hikari:
+      idleTimeout: 30000
+      maxLifetime: 60000
+      minimumIdle: 0
+      maximumPoolSize: 20
+
 resolve:
   enable: true

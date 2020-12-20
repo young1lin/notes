@@ -1,4 +1,4 @@
-package me.young1lin.algorithm.filter;
+package me.young1lin.spring.cache;
 
 
 import java.nio.charset.StandardCharsets;
@@ -69,7 +69,7 @@ public class BloomFilter {
 	 * @param key key
 	 * @return true or false,true 表示可能含有这个值，false 表示一定不可能有这个值。
 	 */
-	public boolean contains(byte[] key) {
+	public boolean mightContain(byte[] key) {
 		assert result != null;
 
 		int h = Bytes.hash(key);
@@ -87,7 +87,7 @@ public class BloomFilter {
 	private static final class Bytes {
 
 		/**
-		 * copy hadoop HBase 的 Bytes
+		 * 复制的 hadoop HBase Bytes 哈希方法
 		 *
 		 * @param bytes to be hash bytes
 		 * @return hash value
@@ -104,28 +104,23 @@ public class BloomFilter {
 	}
 
 	public static void main(String[] args) {
-
-
 		byte[][] values = createTestArray();
+		printlnArray(values);
 
 		BloomFilter bf = new BloomFilter(3, 48);
-		printlnArray(values);
 		bf.generate(values);
+
 		System.out.println("\n--------------------------------------------------------");
-		System.out.println(bf.contains("480".getBytes(StandardCharsets.UTF_8)));
-		System.out.println(bf.contains("491".getBytes(StandardCharsets.UTF_8)));
-		System.out.println(bf.contains("60<".getBytes(StandardCharsets.UTF_8)));
-		System.out.println(bf.contains("33321;".getBytes(StandardCharsets.UTF_8)));
+		System.out.println(bf.mightContain("58:".getBytes(StandardCharsets.UTF_8)));
+		System.out.println(bf.mightContain("491".getBytes(StandardCharsets.UTF_8)));
+		System.out.println(bf.mightContain("60<".getBytes(StandardCharsets.UTF_8)));
+		System.out.println(bf.mightContain("33321;".getBytes(StandardCharsets.UTF_8)));
 	}
 
-	/**
-	 *
-	 * @return [480, 491, 502, 513, 524, 535, 546, 557, 568, 579, 58:,59;,60<,61=,62>,63?,64@,65A,66B,67C]
-	 */
 	private static byte[][] createTestArray() {
 		byte[][] values = new byte[20][];
-		// 这里的 low 代表从第几个 ASCII 值开始
-		int low = 48;
+		// 这里的 low 代表从 ASCII 值为多少开始
+		int low = 58;
 		int high = low + 20;
 		// ASCII 表见 https://tool.oschina.net/commons?type=4
 		for (int i = low; i < high; i++) {

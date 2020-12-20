@@ -18,6 +18,10 @@ public class KafkaOrderMessagingServiceImpl implements OrderMessagingService {
 
 	private final KafkaTemplate<String,Order> kafkaTemplate;
 
+	/**
+	 * 这里其实不用 @AutoWired Spring 会根据构造方法去 newInstance 自动注入 Bean
+	 * @param kafkaTemplate kafkaTemplate to send message
+	 */
 	public KafkaOrderMessagingServiceImpl(KafkaTemplate<String,Order> kafkaTemplate){
 		this.kafkaTemplate = kafkaTemplate;
 	}

@@ -23,6 +23,7 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
  * @version 1.0
  */
 @Configuration
+@Deprecated
 public class KafkaConfiguration {
 //
 //	@Value("${spring.kafka.bootstrap-servers}")
