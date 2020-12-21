@@ -1334,3 +1334,11 @@ public abstract class AutoConfigurationPackages {
 }
 ```
 
+
+
+## 第十三天
+
+## 自定义 Spring Boot Starter
+
+A fuul Spring Boot Starter for a library may contain the following components:
+
