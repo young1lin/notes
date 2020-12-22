@@ -20,3 +20,9 @@ c 和 e 多了个空格。
 
 为什么不是全限定名？
 
+# 390
+
+所以 AbstratApplication
+
+所以 AbstractApplication
+
