@@ -4,6 +4,8 @@
 
 第十四天，第 400 页，各种条件注解源码讲解。
 
+第十五天，第 422 页，SpringApplication 初始化阶段，以及部分 run 阶段的配置信息。
+
 ## 第十三天
 
 ## 自定义 Spring Boot Starter
@@ -86,5 +88,153 @@
 
 是一样的，对应的 Condition 类有个 wrapIfNecessary 方法加上这个表达式。
 
+# 第十五天
 
+## 理解 SpringApplication 初始化阶段
+
+构造方法总览
+
+```java
+@SuppressWarnings({ "unchecked", "rawtypes" })
+public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
+   this.resourceLoader = resourceLoader;
+   Assert.notNull(primarySources, "PrimarySources must not be null");
+   this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+   // <1>
+   this.webApplicationType = WebApplicationType.deduceFromClasspath();
+   // <2>
+   setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+   // <3>
+   setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+   // <4>
+   this.mainApplicationClass = deduceMainApplicationClass();
+}
+```
+
+### 1. 推断 Web 应用类型
+
+`webApplicationType = deduceFromClasspath.deduceFromClasspath();` 自动加载哪种类型的 webApplication
+
+```java
+static WebApplicationType deduceFromClasspath() {
+   if (ClassUtils.isPresent(WEBFLUX_INDICATOR_CLASS, null) && !ClassUtils.isPresent(WEBMVC_INDICATOR_CLASS, null)
+         && !ClassUtils.isPresent(JERSEY_INDICATOR_CLASS, null)) {
+      return WebApplicationType.REACTIVE;
+   }
+   for (String className : SERVLET_INDICATOR_CLASSES) {
+      if (!ClassUtils.isPresent(className, null)) {
+         return WebApplicationType.NONE;
+      }
+   }
+   return WebApplicationType.SERVLET;
+}
+```
+
+总结出：
+
+1. 当 DispatcherHandler 存在时，并且 DispatcherServlet 不存在时，这时为 Reactive 应用，就是仅依赖 WebFlux 时。
+2. 当 Servlet 和 ConfigurableWebApplicationContext 均不存在时，当前应用为非 Web 应用，即 WebApplicationType.NONE，因为这些是 Spring Web MVC 必需的依赖。
+3. 当 Spring WebFlux 和 Spring Web MVC 同时存在时，还是 Servlet 应用。
+
+## 2. 加载 Spring 应用上下文初始器
+
+ApplicationContextInitializer
+
+ `setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));`
+
+ApplicationContextInitializer 的实现必须拥有无参构造器。
+
+分两步
+
+1. **SpringApplication#getSpringFactoriesInstances**
+
+```java
+private <T> Collection<T> getSpringFactoriesInstances(Class<T> type) {
+   return getSpringFactoriesInstances(type, new Class<?>[] {});
+}
+
+private <T> Collection<T> getSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes, Object... args) {
+   ClassLoader classLoader = getClassLoader();
+   // Use names and ensure unique to protect against duplicates
+   Set<String> names = new LinkedHashSet<>(SpringFactoriesLoader.loadFactoryNames(type, classLoader));
+   List<T> instances = createSpringFactoriesInstances(type, parameterTypes, classLoader, args, names);
+   AnnotationAwareOrderComparator.sort(instances);
+   return instances;
+}
+
+private <T> List<T> createSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes,
+                                                   ClassLoader classLoader, Object[] args, Set<String> names) {
+    List<T> instances = new ArrayList<>(names.size());
+    for (String name : names) {
+        try {
+            Class<?> instanceClass = ClassUtils.forName(name, classLoader);
+            Assert.isAssignable(type, instanceClass);
+            Constructor<?> constructor = instanceClass.getDeclaredConstructor(parameterTypes);
+            T instance = (T) BeanUtils.instantiateClass(constructor, args);
+            instances.add(instance);
+        }
+        catch (Throwable ex) {
+            throw new IllegalArgumentException("Cannot instantiate " + type + " : " + name, ex);
+        }
+    }
+    return instances;
+}
+```
+
+2. **SpringApplication#setInitializers**
+
+```java
+public void setInitializers(Collection<? extends ApplicationContextInitializer<?>> initializers) {
+   this.initializers = new ArrayList<>();
+   this.initializers.addAll(initializers);
+}
+```
+
+### 3. 加载 Spring 应用时间监听器（ApplicationListener）
+
+   `setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));`
+
+和上面类似，都是覆盖性更新。
+
+```java
+public void setListeners(Collection<? extends ApplicationListener<?>> listeners) {
+   this.listeners = new ArrayList<>();
+   this.listeners.addAll(listeners);
+}
+```
+
+### 4. 推断应用引导类
+
+**SpringApplication#deduceMainApplicationClass**
+
+  `this.mainApplicationClass = deduceMainApplicationClass();`
+
+```java
+private Class<?> deduceMainApplicationClass() {
+   try {
+      StackTraceElement[] stackTrace = new RuntimeException().getStackTrace();
+      for (StackTraceElement stackTraceElement : stackTrace) {
+         if ("main".equals(stackTraceElement.getMethodName())) {
+            return Class.forName(stackTraceElement.getClassName());
+         }
+      }
+   }
+   catch (ClassNotFoundException ex) {
+      // Swallow and continue
+   }
+   return null;
+}
+```
+
+## SpringApplication 配置阶段
+
+1. 调整 SpringApplication 设置；
+2. 增加 SpringApplication 配置源；
+3. 调整 Spring Boot 外部化配置（Externalized Configuration）。
+
+### 调整 SpringApplication 设置
+
+可以调用 setBannerMode(Banner.Mode.OFF)，关闭其打印。
+
+### 增加 SpringApplication 配置源
 
