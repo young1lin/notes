@@ -1,4 +1,4 @@
-
+# 摘要
 
 第十三天，写了自定义 starter，介绍了 @Conditional\*Class、@Conditional\*Bean
 
@@ -6,7 +6,9 @@
 
 第十五天，第 422 页，SpringApplication 初始化阶段，以及部分 run 阶段的配置信息。
 
-## 第十三天
+第十六天，第 438 页，Spring Boot 运行阶段，部分 Spring 事件 以及 Spring Boot 事件。
+
+# 第十三天
 
 ## 自定义 Spring Boot Starter
 
@@ -238,3 +240,240 @@ private Class<?> deduceMainApplicationClass() {
 
 ### 增加 SpringApplication 配置源
 
+没什么好说的。
+
+# 第十六天
+
+## SpringApplication 运行阶段
+
+总览
+
++ SpringApplication 准备阶段
++ ApplicationContext 启动阶段
++ ApplicationContext 启动后阶段
+
+**SpringApplication#run**
+
+```java
+public ConfigurableApplicationContext run(String... args) {
+   StopWatch stopWatch = new StopWatch();
+   stopWatch.start();
+   ConfigurableApplicationContext context = null;
+   Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
+   configureHeadlessProperty();
+   // <1>
+   SpringApplicationRunListeners listeners = getRunListeners(args);
+   listeners.starting();
+   try {
+      ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+      ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
+      configureIgnoreBeanInfo(environment);
+      Banner printedBanner = printBanner(environment);
+      context = createApplicationContext();
+      exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
+            new Class[] { ConfigurableApplicationContext.class }, context);
+      prepareContext(context, environment, listeners, applicationArguments, printedBanner);
+      refreshContext(context);
+      afterRefresh(context, applicationArguments);
+      stopWatch.stop();
+      if (this.logStartupInfo) {
+         new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), stopWatch);
+      }
+      listeners.started(context);
+      callRunners(context, applicationArguments);
+   }
+   catch (Throwable ex) {
+      handleRunFailure(context, ex, exceptionReporters, listeners);
+      throw new IllegalStateException(ex);
+   }
+
+   try {
+      listeners.running(context);
+   }
+   catch (Throwable ex) {
+      handleRunFailure(context, ex, exceptionReporters, null);
+      throw new IllegalStateException(ex);
+   }
+   return context;
+}
+```
+
+
+
+## 理解 SpringApplicationRunListeners 及 SpringApplicationRunListener （两个不一样，少个 s ，不同类）
+
+**SpringApplication#getRunListeners**
+
+```java
+private SpringApplicationRunListeners getRunListeners(String[] args) {
+   Class<?>[] types = new Class<?>[] { SpringApplication.class, String[].class };
+   return new SpringApplicationRunListeners(logger,
+         getSpringFactoriesInstances(SpringApplicationRunListener.class, types, this, args));
+}
+```
+
+**SpringApplicationRunListeners** 组合模式，还是要理解 SpringApplicationRunListener
+
+```java
+class SpringApplicationRunListeners {
+
+   private final Log log;
+
+   private final List<SpringApplicationRunListener> listeners;
+
+   SpringApplicationRunListeners(Log log, Collection<? extends SpringApplicationRunListener> listeners) {
+      this.log = log;
+      this.listeners = new ArrayList<>(listeners);
+   }
+
+   public void starting() {
+      for (SpringApplicationRunListener listener : this.listeners) {
+         listener.starting();
+      }
+   }
+}
+```
+
+**SpringApplicationRunListener**
+
+可以理解为 Spring Boot 应用的运行时监听器，以下是它的方法以及对应的说明。
+
+|                     监听方法                     |                         运行阶段说明                         | Spring Boot 起始版本 |          Spring Boot 事件           |
+| :----------------------------------------------: | :----------------------------------------------------------: | :------------------: | :---------------------------------: |
+|                    starting()                    |                      Spring 应用刚启动                       |         1.0          |      ApplicationStartingEvent       |
+|   environmentPrepared(ConfigurableEnvironment)   |        ConfigurableEnvironment 准备妥当，允许将其调整        |         1.0          | ApplicationEnvironmentPreparedEvent |
+| contextPrepared(ConfigurableApplicationContext)  |    ConfigurableApplicationContext 准备妥当，允许将其调整     |         1.0          |                                     |
+|  contextLoaded(ConfigurableApplicationContext)   |      ConfigurableApplicationContext 已装载，但仍未启动       |         1.0          |      ApplicationPreparedEvent       |
+|     started(ConfigurableAPplicationContext)      | ConfigurableApplicationContext 已启动，此时 Spring Bean 已经初始化完成 |         2.0          |       ApplicationStartedEvent       |
+|     running(ConfigurableAPplicationContext)      |                     Spring 应用正在运行                      |         2.0          |        ApplicationReadyEvent        |
+| failed(ConfigurableAPplicationContext,Throwable) |                     Spring 应用运行失败                      |         2.0          |       ApplicationFailedEvent        |
+
+**EventPublishingRunListener**
+
+```java
+public class EventPublishingRunListener implements SpringApplicationRunListener, Ordered {
+
+   private final SpringApplication application;
+
+   private final String[] args;
+
+   private final SimpleApplicationEventMulticaster initialMulticaster;
+
+   public EventPublishingRunListener(SpringApplication application, String[] args) {
+      this.application = application;
+      this.args = args;
+      this.initialMulticaster = new SimpleApplicationEventMulticaster();
+      for (ApplicationListener<?> listener : application.getListeners()) {
+         this.initialMulticaster.addApplicationListener(listener);
+      }
+   }
+
+   @Override
+   public int getOrder() {
+      return 0;
+   }
+
+   @Override
+   public void starting() {
+      this.initialMulticaster.multicastEvent(new ApplicationStartingEvent(this.application, this.args));
+   }
+
+   @Override
+   public void environmentPrepared(ConfigurableEnvironment environment) {
+      this.initialMulticaster
+            .multicastEvent(new ApplicationEnvironmentPreparedEvent(this.application, this.args, environment));
+   }
+
+   @Override
+   public void contextPrepared(ConfigurableApplicationContext context) {
+      this.initialMulticaster
+            .multicastEvent(new ApplicationContextInitializedEvent(this.application, this.args, context));
+   }
+    
+    // ....... 省略一大段代码
+}
+```
+
+
+
+Spring Boot 事件和 Spring 事件还是有些差异的。
+
+Spring 事件是由 Spring 应用上下文 ApplicationContext 对象触发的。然而 Spring  Boot 的事件发布者则是 SpringApplication#initialMulticaster 属性（SimpleApplicationEventMulticaster 类型），并且 
+
+SimpleApplicationEventMulticaster 也来自 Spring Framework。下面讨论两者联系。
+
+
+
+## Spring Event & Spring Boot Event
+
+### 理解 Spring Event
+
+极客时间那个课讲过了。
+
+**事件对象应该遵守“默认”规则，继承 EventObject。**
+
+**同时事件监听者必须是 EventListener 实例，不过 EventListener 仅为标记接口，类似 Serializable。**
+
+泛型监听，极客时间的课程也讲了。
+
+3.0 之后还引入了 SmartApplicationListener
+
+### Spring 事件发布
+
+```java
+public interface ApplicationEventMulticaster {
+
+   /**
+    * Add a listener to be notified of all events.
+    * @param listener the listener to add
+    */
+   void addApplicationListener(ApplicationListener<?> listener);
+
+   /**
+    * Add a listener bean to be notified of all events.
+    * @param listenerBeanName the name of the listener bean to add
+    */
+   void addApplicationListenerBean(String listenerBeanName);
+
+   /**
+    * Remove a listener from the notification list.
+    * @param listener the listener to remove
+    */
+   void removeApplicationListener(ApplicationListener<?> listener);
+
+   /**
+    * Remove a listener bean from the notification list.
+    * @param listenerBeanName the name of the listener bean to add
+    */
+   void removeApplicationListenerBean(String listenerBeanName);
+
+   /**
+    * Remove all listeners registered with this multicaster.
+    * <p>After a remove call, the multicaster will perform no action
+    * on event notification until new listeners are being registered.
+    */
+   void removeAllListeners();
+
+   /**
+    * Multicast the given application event to appropriate listeners.
+    * <p>Consider using {@link #multicastEvent(ApplicationEvent, ResolvableType)}
+    * if possible as it provides a better support for generics-based events.
+    * @param event the event to multicast
+    */
+   void multicastEvent(ApplicationEvent event);
+
+   /**
+    * Multicast the given application event to appropriate listeners.
+    * <p>If the {@code eventType} is {@code null}, a default type is built
+    * based on the {@code event} instance.
+    * @param event the event to multicast
+    * @param eventType the type of event (can be null)
+    * @since 4.2
+    */
+   void multicastEvent(ApplicationEvent event, @Nullable ResolvableType eventType);
+
+}
+```
+
+1. ApplicationEventMulticaster 注册 ApplicationListener
+2. 

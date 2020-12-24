@@ -74,3 +74,7 @@ ls -als;
 vi /etc/hosts
 ```
 
+# 查看 cpu 架构 lscpu
+
+lscpu
+
