@@ -8,6 +8,8 @@
 
 第十六天，第 438 页，Spring Boot 运行阶段，部分 Spring 事件 以及 Spring Boot 事件。
 
+第十七天，第 457 页，Spring Boot
+
 # 第十三天
 
 ## 自定义 Spring Boot Starter
@@ -418,6 +420,8 @@ SimpleApplicationEventMulticaster 也来自 Spring Framework。下面讨论两�
 
 3.0 之后还引入了 SmartApplicationListener
 
+# 第十七天
+
 ### Spring 事件发布
 
 ```java
@@ -476,4 +480,228 @@ public interface ApplicationEventMulticaster {
 ```
 
 1. ApplicationEventMulticaster 注册 ApplicationListener
-2. 
+
+SimpleApplicationEventMulticaster 与 ApplicationListener 的关系图（非UML）。
+
+![SimpleApplicationEventMulticaster.png](https://i.loli.net/2020/12/25/PFNJjqEclYT4kDn.png)
+
+Spring Boot 时间监听器均经过排序。
+
+2. ApplicationEventMulticaster 广播事件。
+
+两个与广播事件相关的方法。
+
+**ApplicationEventMulticaster#multicastEvent(ApplicationEvent)**
+
+**ApplicationEventMulticaster#multicastEvent(ApplicationEvent,ResolvableType)**
+
+`SimpleApplicationEventMulticaster` 实现了上面两个方法，并且也是 Spring Framework 唯一实现。
+
+**SimpleApplicationEventMulticaster#multicastEvent**
+
+```java
+@Override
+public void multicastEvent(ApplicationEvent event) {
+   multicastEvent(event, resolveDefaultEventType(event));
+}
+
+@Override
+public void multicastEvent(final ApplicationEvent event, @Nullable ResolvableType eventType) {
+   ResolvableType type = (eventType != null ? eventType : resolveDefaultEventType(event));
+   Executor executor = getTaskExecutor();
+   for (ApplicationListener<?> listener : getApplicationListeners(event, type)) {
+      if (executor != null) {
+         executor.execute(() -> invokeListener(listener, event));
+      }
+      else {
+         invokeListener(listener, event);
+      }
+   }
+}
+```
+
+> 其中 ResolvableType 是 4.2 开始引入的。ResolvableType 是为简化 Java 反射 API 而提供的组件，能够轻松地获得泛型类型等。
+
+**SimpleApplicationEventMulticaster#invokerListener** 上面允许一步处理监听事件，不过无论是 Spring Framework 还是 Spring Boot 均未使用该方法来提升为异步执行，并且由于 EventPublishingRunListener 的封装，使得 Spring Boot 事件监听器无法异步执行。
+
+```java
+/**
+ * Invoke the given listener with the given event.
+ * @param listener the ApplicationListener to invoke
+ * @param event the current event to propagate
+ * @since 4.1
+ */
+protected void invokeListener(ApplicationListener<?> listener, ApplicationEvent event) {
+   ErrorHandler errorHandler = getErrorHandler();
+   if (errorHandler != null) {
+      try {
+         doInvokeListener(listener, event);
+      }
+      catch (Throwable err) {
+         errorHandler.handleError(err);
+      }
+   }
+   else {
+      doInvokeListener(listener, event);
+   }
+}
+
+@SuppressWarnings({"rawtypes", "unchecked"})
+private void doInvokeListener(ApplicationListener listener, ApplicationEvent event) {
+   try {
+      listener.onApplicationEvent(event);
+   }
+   catch (ClassCastException ex) {
+      String msg = ex.getMessage();
+      if (msg == null || matchesClassCastMessage(msg, event.getClass())) {
+         // Possibly a lambda-defined listener which we could not resolve the generic event type for
+         // -> let's suppress the exception and just log a debug message.
+         Log logger = LogFactory.getLog(getClass());
+         if (logger.isTraceEnabled()) {
+            logger.trace("Non-matching event type for listener: " + listener, ex);
+         }
+      }
+      else {
+         throw ex;
+      }
+   }
+}
+
+private boolean matchesClassCastMessage(String classCastMessage, Class<?> eventClass) {
+   // On Java 8, the message starts with the class name: "java.lang.String cannot be cast..."
+   if (classCastMessage.startsWith(eventClass.getName())) {
+      return true;
+   }
+   // On Java 11, the message starts with "class ..." a.k.a. Class.toString()
+   if (classCastMessage.startsWith(eventClass.toString())) {
+      return true;
+   }
+   // On Java 9, the message used to contain the module name: "java.base/java.lang.String cannot be cast..."
+   int moduleSeparatorIndex = classCastMessage.indexOf('/');
+   if (moduleSeparatorIndex != -1 && classCastMessage.startsWith(eventClass.getName(), moduleSeparatorIndex + 1)) {
+      return true;
+   }
+   // Assuming an unrelated class cast failure...
+   return false;
+}
+```
+
+3. ApplicationEventMulticaster 与 ApplicationContext 之间的关系
+
+可以使用 ApplicationEventPublisher 发布 ApplicationEvent。
+
+```java
+public interface ApplicationEventPublisher {
+    
+   default void publishEvent(ApplicationEvent event) {
+      publishEvent((Object) event);
+   }
+    
+   void publishEvent(Object event);
+
+}
+```
+
+**AbstractApplicationContext#prepareBeanFactory** refresh 方法
+
+```java
+/**
+ * Configure the factory's standard context characteristics,
+ * such as the context's ClassLoader and post-processors.
+ * @param beanFactory the BeanFactory to configure
+ */
+protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+   // Tell the internal bean factory to use the context's class loader etc.
+	// 省略........
+
+   // BeanFactory interface not registered as resolvable type in a plain factory.
+   // MessageSource registered (and found for autowiring) as a bean.
+   beanFactory.registerResolvableDependency(BeanFactory.class, beanFactory);
+   beanFactory.registerResolvableDependency(ResourceLoader.class, this);
+   // 1. 自己就是 ApplicationEventPublisher
+   beanFactory.registerResolvableDependency(ApplicationEventPublisher.class, this);
+   beanFactory.registerResolvableDependency(ApplicationContext.class, this);
+   // 2. 
+   // Register early post-processor for detecting inner beans as ApplicationListeners.
+   beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
+	// 省略........
+}
+```
+
+**AbstractApplicationContext#publishEvent**
+
+```java
+/**
+ * Publish the given event to all listeners.
+ * @param event the event to publish (may be an {@link ApplicationEvent}
+ * or a payload object to be turned into a {@link PayloadApplicationEvent})
+ * @param eventType the resolved event type, if known
+ * @since 4.2
+ */
+protected void publishEvent(Object event, @Nullable ResolvableType eventType) {
+   Assert.notNull(event, "Event must not be null");
+
+   // Decorate event as an ApplicationEvent if necessary
+   ApplicationEvent applicationEvent;
+   if (event instanceof ApplicationEvent) {
+      applicationEvent = (ApplicationEvent) event;
+   }
+   else {
+      applicationEvent = new PayloadApplicationEvent<>(this, event);
+      if (eventType == null) {
+         eventType = ((PayloadApplicationEvent<?>) applicationEvent).getResolvableType();
+      }
+   }
+
+   // Multicast right now if possible - or lazily once the multicaster is initialized
+   if (this.earlyApplicationEvents != null) {
+      this.earlyApplicationEvents.add(applicationEvent);
+   }
+   else {
+      getApplicationEventMulticaster().multicastEvent(applicationEvent, eventType);
+   }
+
+   // Publish event via parent context as well...
+   if (this.parent != null) {
+      if (this.parent instanceof AbstractApplicationContext) {
+         ((AbstractApplicationContext) this.parent).publishEvent(event, eventType);
+      }
+      else {
+         this.parent.publishEvent(event);
+      }
+   }
+}
+```
+
+开发只管 ApplicationEvent 类型以及对应的 ApplicationListener 的实现即可。
+
+## Spring 内建事件
+
++ ContextRefreshedEvent: ；
++ ContextStartedEvent：Spring 应用上下文启动事件；
++ ContextStoppedEvent：Spring 应用上下文停止事件；
++ ContextClosedEvent：Spring 应用上下文关闭事件。
+
+### Spring 应用上下文就绪事件——ContextRefreshedEvent
+
+当 ConfigurableApplicationContext#refresh 方法执行到finishRefresh 方法时，Spring 应用上下文发布 ContextRefreshedEvent：
+
+refresh 方法会调用这个。
+
+```java
+protected void finishRefresh() {
+
+   // Publish the final event.
+   publishEvent(new ContextRefreshedEvent(this));
+
+}
+```
+
+> 通常 `ApplicationListener<ContextRefreshedEvent>`实现类舰艇该事件，用于获取需要的 Bean，防止出现 Bean 提早初始化带来的潜在风险。
+>
+> 通常 BeanPostProceesor 也能用于获取指定的 Bean 对象，BeanFactory、ApplicationListener\<ContextRefreshedEvent\>选择后者是更安全的实践。
+
+### Spring 应用上下文启停事件
+
+# 第十八天
+
