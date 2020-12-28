@@ -8,7 +8,11 @@
 
 第十六天，第 438 页，Spring Boot 运行阶段，部分 Spring 事件 以及 Spring Boot 事件。
 
-第十七天，第 457 页，Spring Boot
+第十七天，第 457 页，Spring  AbstractApplicationContext 简单事件发布。
+
+第十八天，第 469 页，Spring 事件以及 Listener。
+
+第十九天。
 
 # 第十三天
 
@@ -682,6 +686,8 @@ protected void publishEvent(Object event, @Nullable ResolvableType eventType) {
 + ContextStoppedEvent：Spring 应用上下文停止事件；
 + ContextClosedEvent：Spring 应用上下文关闭事件。
 
+![image.png](https://i.loli.net/2020/12/28/z9ToG1SvHuZObMK.png)
+
 ### Spring 应用上下文就绪事件——ContextRefreshedEvent
 
 当 ConfigurableApplicationContext#refresh 方法执行到finishRefresh 方法时，Spring 应用上下文发布 ContextRefreshedEvent：
@@ -701,7 +707,247 @@ protected void finishRefresh() {
 >
 > 通常 BeanPostProceesor 也能用于获取指定的 Bean 对象，BeanFactory、ApplicationListener\<ContextRefreshedEvent\>选择后者是更安全的实践。
 
-### Spring 应用上下文启停事件
-
 # 第十八天
 
+### Spring 应用上下文启停事件——ContextStartedEvent 和 ContextStoppedEvent
+
+**AbstractApplicationContext**
+
+```java
+public abstract class AbstractApplicationContext extends DefaultResourceLoader
+		implements ConfigurableApplicationContext {
+    
+//---------------------------------------------------------------------
+// Implementation of Lifecycle interface
+//---------------------------------------------------------------------
+
+    @Override
+    public void start() {
+       getLifecycleProcessor().start();
+       publishEvent(new ContextStartedEvent(this));
+    }
+
+    @Override
+    public void stop() {
+       getLifecycleProcessor().stop();
+       publishEvent(new ContextStoppedEvent(this));
+    }
+    
+}
+```
+
+在绝大多数场景下，以上两个方法不会被调用。
+
+**RestartEndpoint**
+
+```java
+@Endpoint(
+    id = "restart",
+    enableByDefault = false
+)
+public class RestartEndpoint implements ApplicationListener<ApplicationPreparedEvent> {}
+
+@Endpoint(id = "pause")
+public class PauseEndpoint {
+    
+    public PauseEndpoint() {}
+    
+    @WriteOperation
+    public Boolean pause() {
+        if (RestartEndpoint.this.isRunning()) {
+            RestartEndpoint.this.doPause();
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+}
+public synchronized void doPause() {
+    if (this.context != null) {
+        this.context.stop();
+    }
+
+}
+@Endpoint(id = "resume")
+@ConfigurationProperties("management.endpoint.resume")
+public class ResumeEndpoint {
+    
+    public ResumeEndpoint() {
+    }
+
+    @WriteOperation
+    public Boolean resume() {
+        if (!RestartEndpoint.this.isRunning()) {
+            RestartEndpoint.this.doResume();
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+}
+```
+
+### Spring 应用上下文关闭事件——ContextClosedEvent
+
+ 
+
+```java
+/**
+ * Close this application context, destroying all beans in its bean factory.
+ * <p>Delegates to {@code doClose()} for the actual closing procedure.
+ * Also removes a JVM shutdown hook, if registered, as it's not needed anymore.
+ * @see #doClose()
+ * @see #registerShutdownHook()
+ */
+@Override
+public void close() {
+   synchronized (this.startupShutdownMonitor) {
+      doClose();
+      // If we registered a JVM shutdown hook, we don't need it anymore now:
+      // We've already explicitly closed the context.
+      if (this.shutdownHook != null) {
+         try {
+            Runtime.getRuntime().removeShutdownHook(this.shutdownHook);
+         }
+         catch (IllegalStateException ex) {
+            // ignore - VM is already shutting down
+         }
+      }
+   }
+}
+
+/**
+ * Actually performs context closing: publishes a ContextClosedEvent and
+ * destroys the singletons in the bean factory of this application context.
+ * <p>Called by both {@code close()} and a JVM shutdown hook, if any.
+ * @see org.springframework.context.event.ContextClosedEvent
+ * @see #destroyBeans()
+ * @see #close()
+ * @see #registerShutdownHook()
+ */
+protected void doClose() {
+    // Check whether an actual close attempt is necessary...
+    if (this.active.get() && this.closed.compareAndSet(false, true)) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Closing " + this);
+        }
+
+        LiveBeansView.unregisterApplicationContext(this);
+
+        try {
+            // Publish shutdown event.
+            publishEvent(new ContextClosedEvent(this));
+        }
+        catch (Throwable ex) {
+            logger.warn("Exception thrown from ApplicationListener handling ContextClosedEvent", ex);
+        }
+
+        // Stop all Lifecycle beans, to avoid delays during individual destruction.
+        if (this.lifecycleProcessor != null) {
+            try {
+                this.lifecycleProcessor.onClose();
+            }
+            catch (Throwable ex) {
+                logger.warn("Exception thrown from LifecycleProcessor on context close", ex);
+            }
+        }
+
+        // Destroy all cached singletons in the context's BeanFactory.
+        destroyBeans();
+
+        // Close the state of this context itself.
+        closeBeanFactory();
+
+        // Let subclasses do some final clean-up if they wish...
+        onClose();
+
+        // Reset local application listeners to pre-refresh state.
+        if (this.earlyApplicationListeners != null) {
+            this.applicationListeners.clear();
+            this.applicationListeners.addAll(this.earlyApplicationListeners);
+        }
+
+        // Switch to inactive.
+        this.active.set(false);
+    }
+}
+```
+
+在 Runtime 中移除 ShutdownHook 线程。
+
+### 4. Spring 应用上下文事件——ApplicationContextEvent
+
+自定义的
+
+```java
+package me.young1lin.spring.boot.thinking.event;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+
+/**
+ * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
+ * @since 2020/12/28 上午8:04
+ * @version 1.0
+ */
+public class CustomizeEvent extends ApplicationEvent implements ApplicationContextAware {
+
+   private final String address;
+
+   private final String test;
+
+   private ApplicationContext applicationContext;
+
+   /**
+    * Create a new {@code ApplicationEvent}.
+    * @param source the object on which the event initially occurred or with
+    * which the event is associated (never {@code null})
+    * @param address address
+    * @param test test
+    */
+   public CustomizeEvent(Object source, String address, String test) {
+      super(source);
+      this.address = address;
+      this.test = test;
+   }
+
+
+   @Override
+   public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+      this.applicationContext = applicationContext;
+   }
+
+   @PostConstruct
+   public void test(){
+      applicationContext.publishEvent(new CustomizeEvent("","",""));
+   }
+
+}
+```
+
+## 4. Spring 事件监听
+
+1. ApplicationListener 监听 Spring 内建事件
+
+2. ApplicationListener 监听自定义 Spring 泛型事件
+
+3. ApplicationListener 监听实现原理
+
+**AbstractApplicationContext#doClose**
+
+```java
+// Destroy all cached singletons in the context's BeanFactory.
+destroyBeans();
+
+protected void destroyBeans() {
+    getBeanFactory().destroySingletons();
+}
+
+
+```
