@@ -4,6 +4,8 @@
 
 第二十天。 497 Spring 事件/监听机制总结及其原理，Spring Boot 事件简单介绍。
 
+第二十一天。520 Spring 以及 Spring Boot 事件在不同版本的实现，以及 Spring 应用上下文的讲解。
+
 # 第十九天
 
 Spring 默认采用 SimpleApplicationEventMulticaster，该 Eventulticaster 默认采用同步广播事件的方式。
@@ -294,9 +296,7 @@ public void preInstantiateSingletons() throws BeansException {
 
 ## 12. EventListenerMethodProcessor 的实现原理
 
-
-
-
+**EventListenerMethodProcessor**
 
 ```java
 public class EventListenerMethodProcessor
@@ -457,3 +457,113 @@ ApplicationEvent 继承于 Java 规约 java.util.EventObject
 
 ## 理解 Spring Boot 事件/监听机制
 
+Listener 类的 hashCode 和 equals 方法不应该重写。
+
+Spring Boot 部分事件也能被 ApplicationListener 监听。之所以是部分，因为在某些 Spring Boot 事件初始化完成后，Spring 上下文才开始初始化。
+
+EventPublishingRunListener 与 Spring Boot 事件的关系，以及与 AbstractApplicationContext 调用的前后关系如下表所示。
+
+|      监听方法       | refresh 方法执行顺序 |          Spring Boot 事件           | Spring Boot 起始版本 |
+| :-----------------: | :------------------: | :---------------------------------: | :------------------: |
+|       started       |        调用前        |       ApplicationStartedEvent       |         1.0          |
+| environmentPrepared |        调用前        | ApplicationEnvironmentPreparedEvent |         1.0          |
+|    contextLoaded    |        调用前        |      ApplicationPreparedEvent       |         1.0          |
+|       running       |        调用后        |        ApplicationReadyEvent        |         1.3          |
+|       failed        |        调用后        |       ApplicationFailedEvent        |         1.0          |
+
+1. SmartApplicationListener 监听多 Spring Boot 事件
+
+Spring Boot 2.0 监听不到关闭事件（按照书上操作来）
+
+2. 当前的 Spring Boot 事件/监听机制
+
+各自为政，互不干扰。
+
+书上的和我实际跑出来的，不一样。
+
+```java
+public class SpringEventListenerBootstrap {
+
+   public static void main(String[] args) {
+      new SpringApplicationBuilder(Object.class)
+            .listeners(event -> {
+               System.out.println(event.getClass().getSimpleName());
+            })
+            .web(WebApplicationType.NONE)
+            .run(args)
+            .close();
+   }
+
+}
+```
+
+3. Spring Boot 内建事件监听器
+
+spring-boot 下的 META/INF/spring.factories 文件里的内建的事件
+
+```properties
+# Application Listeners
+org.springframework.context.ApplicationListener=\
+org.springframework.boot.ClearCachesApplicationListener,\
+org.springframework.boot.builder.ParentContextCloserApplicationListener,\
+org.springframework.boot.cloud.CloudFoundryVcapEnvironmentPostProcessor,\
+org.springframework.boot.context.FileEncodingApplicationListener,\
+org.springframework.boot.context.config.AnsiOutputApplicationListener,\
+org.springframework.boot.context.config.ConfigFileApplicationListener,\
+org.springframework.boot.context.config.DelegatingApplicationListener,\
+org.springframework.boot.context.logging.ClasspathLoggingApplicationListener,\
+org.springframework.boot.context.logging.LoggingApplicationListener,\
+org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener
+```
+
+## 装配 ApplicationArguments
+
+## 准备 ConfigurableEnvironment
+
+理解 Spring Boot Environment 生命周期展开讲
+
+## 创建 Spring 应用上下文
+
+一般是 AnnotationConfigServletWebServerApplicationContext
+
+1. 根据 WebApplicationType 创建 Spring 应用上下文。
+
+## Spring 应用上下文运行前准备
+
+**SpringApplication#prepareContext**
+
+```java
+private void prepareContext(ConfigurableApplicationContext context, ConfigurableEnvironment environment,
+      SpringApplicationRunListeners listeners, ApplicationArguments applicationArguments, Banner printedBanner) {
+   context.setEnvironment(environment);
+   postProcessApplicationContext(context);
+   applyInitializers(context);
+   listeners.contextPrepared(context);
+   if (this.logStartupInfo) {
+      logStartupInfo(context.getParent() == null);
+      logStartupProfileInfo(context);
+   }
+   // Add boot specific singleton beans
+   ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+   beanFactory.registerSingleton("springApplicationArguments", applicationArguments);
+   if (printedBanner != null) {
+      beanFactory.registerSingleton("springBootBanner", printedBanner);
+   }
+   if (beanFactory instanceof DefaultListableBeanFactory) {
+      ((DefaultListableBeanFactory) beanFactory)
+            .setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
+   }
+   if (this.lazyInitialization) {
+      context.addBeanFactoryPostProcessor(new LazyInitializationBeanFactoryPostProcessor());
+   }
+   // Load the sources
+   Set<Object> sources = getAllSources();
+   Assert.notEmpty(sources, "Sources must not be empty");
+   load(context, sources.toArray(new Object[0]));
+   listeners.contextLoaded(context);
+}
+```
+
+1. Environment 抽象的具体实现说明
+2. Spring 应用上下文后置处理
+3. 
