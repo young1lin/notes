@@ -6,6 +6,8 @@
 
 第二十一天。520 Spring 以及 Spring Boot 事件在不同版本的实现，以及 Spring 应用上下文的讲解。
 
+第二十二天。
+
 # 第十九天
 
 Spring 默认采用 SimpleApplicationEventMulticaster，该 Eventulticaster 默认采用同步广播事件的方式。
@@ -455,6 +457,8 @@ ApplicationEvent 继承于 Java 规约 java.util.EventObject
 
 默认情况下只提供第一种实现
 
+# 第二十一天
+
 ## 理解 Spring Boot 事件/监听机制
 
 Listener 类的 hashCode 和 equals 方法不应该重写。
@@ -535,18 +539,26 @@ org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener
 ```java
 private void prepareContext(ConfigurableApplicationContext context, ConfigurableEnvironment environment,
       SpringApplicationRunListeners listeners, ApplicationArguments applicationArguments, Banner printedBanner) {
+   // 1. Environment 抽象的具体实现说明；
    context.setEnvironment(environment);
+   // 2.  Spring 应用上下文后置处理；
    postProcessApplicationContext(context);
+   // 3. 运用 Spring 应用上下文初始化器；
    applyInitializers(context);
+   // 4. 执行 SpringApplicationRunListener#contextPrepared 方法回调。 
    listeners.contextPrepared(context);
+   // 打印 active 信息而已
    if (this.logStartupInfo) {
       logStartupInfo(context.getParent() == null);
       logStartupProfileInfo(context);
    }
-   // Add boot specific singleton beans
+   // Add boot specific singleton beans，这里如果没什么特殊情况，就是 GenericApplicationContext 的默认的构造方法
+   // 构建的 DefaultListableBeanFactory
    ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+   // #2. Spring 应用上下文装载阶段
    beanFactory.registerSingleton("springApplicationArguments", applicationArguments);
    if (printedBanner != null) {
+      // 注册 banner 对象。
       beanFactory.registerSingleton("springBootBanner", printedBanner);
    }
    if (beanFactory instanceof DefaultListableBeanFactory) {
@@ -564,6 +576,89 @@ private void prepareContext(ConfigurableApplicationContext context, Configurable
 }
 ```
 
-1. Environment 抽象的具体实现说明
-2. Spring 应用上下文后置处理
-3. 
+1. Environment 抽象的具体实现说明；
+2. Spring 应用上下文后置处理；
+3. 运用 Spring 应用上下文初始化器；
+4. 执行 SpringApplicationRunListener#contextPrepared 方法回调。
+
+# 第二十二天
+
+Spring 应用上下文的后置处理器 ConfigurationClassPostProcessor 这个影响注解驱动 Bean 名的生成。AnnotationConfigServletWebApplicationContext 和 GenericApplicationContext 关系如下。
+
+![image.png](https://i.loli.net/2021/01/03/gTetZ1xkJ5NHIru.png)
+
+**运用 Spring 应用上下文初始化器（ApplicationContextInitializer）**
+
+排序，去重。需要覆盖 hashcode 以及 equals 方法，如果没有，则会出现多次调用。
+
+**执行 SpringApplicationRunListener#contextPrepared 方法回调。**
+
+这个会在 Spring 应用上下文创建并准备完毕时，该方法会被回调，不过该方法在 AppplicationContext 加载“源”之前执行。源指的是配置源。
+
+## Spring 应用上下文装载阶段
+
+1. 注册 Spring Boot Bean；
+2. 合并 Spring 应用上下文配置源；
+3. 加载 Spring 应用上下文配置源；
+4. 执行 SpringApplicationRunListener#contextLoaded 方法回调。
+
+```java   // #2. Spring 应用上下文装载阶段
+private void prepareContext(ConfigurableApplicationContext context, ConfigurableEnvironment environment,
+      SpringApplicationRunListeners listeners, ApplicationArguments applicationArguments, Banner printedBanner) {
+   // 省略前面的代码。
+   // 1. 注册 Spring Boot Bean；
+   beanFactory.registerSingleton("springApplicationArguments", applicationArguments);
+   if (printedBanner != null) {
+      // 注册 banner 对象。
+      beanFactory.registerSingleton("springBootBanner", printedBanner);
+   }
+   if (beanFactory instanceof DefaultListableBeanFactory) {
+      ((DefaultListableBeanFactory) beanFactory)
+            .setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
+   }
+   if (this.lazyInitialization) {
+      context.addBeanFactoryPostProcessor(new LazyInitializationBeanFactoryPostProcessor());
+   }
+   // Load the sources
+    // 2. 合并 Spring 应用上下文配置源；
+   Set<Object> sources = getAllSources();
+   Assert.notEmpty(sources, "Sources must not be empty");
+   // 3. 加载 Spring 应用上下文配置源；
+   // 这里的关键是 BeanDefinitionLoader 可以加载注解，XML，Groovy
+   load(context, sources.toArray(new Object[0]));
+   // 4. 执行 SpringApplicationRunListener#contextLoaded 方法回调。
+   // 已知的 SpringApplicationRunListener 唯一的实现类 EventPublishingRunListener 
+   // 在此阶段讲 SpringApplication 关联的 ApplicationListener 追加到 Spring 应用上下文，随后发布  
+   // ApplicationPreparedEvent 事件。
+   listeners.contextLoaded(context);
+}
+```
+
+在此步骤，可以进行外部化配置扩展。
+
+## Spring 应用上下文启动阶段
+
+```java
+refreshContext(context);
+```
+
+其实就是套路 AbstractApplicationContext#refresh 而已。然后多了个 registerShutdownHook 注册关闭的勾子线程，实现优雅的 Spring Bean 销毁生命周期回调。这个应该是属于 JVM 的 shutdown hook 机制，具体执行并不由 Spring 应用上下文控制。
+
+## Spring 应用上下文启动后阶段
+
+```java
+afterRefresh(context, applicationArguments);
+
+/**
+ * Called after the context has been refreshed.
+ * @param context the application context
+ * @param args the application arguments
+ */
+protected void afterRefresh(ConfigurableApplicationContext context, ApplicationArguments args) {
+}
+```
+
+交给你来自己实现
+
+### afterRefresh 方法语义的变化
+
