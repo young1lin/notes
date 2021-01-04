@@ -26,7 +26,7 @@ Kafka 两种都支持。
 
 # Kafka 专用术语
 
-## Record 
+## Record
 
 Kafka 处理的主要对象。
 

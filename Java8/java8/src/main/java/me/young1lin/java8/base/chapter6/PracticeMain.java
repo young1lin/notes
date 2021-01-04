@@ -8,7 +8,6 @@ import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import me.young1lin.java8.base.chapter5.Dish;
 
@@ -51,10 +50,13 @@ public class PracticeMain {
 
 		System.out.println("===============");
 		// 寻找每个组热量最高的 dish。 这里的 groupingBy 仅为演示使用，正确用 toMap
-		Map<Dish.Type, Dish> dishMap = menu.stream().collect(groupingBy(Dish::getType, collectingAndThen(maxBy(Comparator.comparingInt(Dish::getCalories)), Optional::get)));
+		Map<Dish.Type, Dish> dishMap = menu.stream().
+				collect(
+						groupingBy(Dish::getType, collectingAndThen(
+								maxBy(Comparator.comparingInt(Dish::getCalories)), Optional::get)));
 		dishMap.forEach((k, v) -> System.out.println("k: [" + k + "v: " + v));
 
-		new Object();
+
 	}
 
 }
