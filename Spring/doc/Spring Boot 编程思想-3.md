@@ -598,9 +598,14 @@ Spring 应用上下文的后置处理器 ConfigurationClassPostProcessor 这个�
 ## Spring 应用上下文装载阶段
 
 1. 注册 Spring Boot Bean；
+
 2. 合并 Spring 应用上下文配置源；
+
 3. 加载 Spring 应用上下文配置源；
+
 4. 执行 SpringApplicationRunListener#contextLoaded 方法回调。
+
+   **SpringApplication#prepareContext** 		 				重点
 
 ```java   // #2. Spring 应用上下文装载阶段
 private void prepareContext(ConfigurableApplicationContext context, ConfigurableEnvironment environment,
@@ -660,5 +665,107 @@ protected void afterRefresh(ConfigurableApplicationContext context, ApplicationA
 
 交给你来自己实现
 
-### afterRefresh 方法语义的变化
+# 第二十三天
+
+## afterRefresh 方法语义的变化
+
+1.3 版本有调用 callRunners 方法，到1.5，2.0 又移除了。
+
+```java
+public ConfigurableApplicationContext run(String... args) {
+    // 。。。。。。。。省略一段代码
+    ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+    // 准备 Environment
+    ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
+    configureIgnoreBeanInfo(environment);
+    // 打印 banner 信息
+    Banner printedBanner = printBanner(environment);
+    // 根据导入的包，来反射创建 Spring 应用上下文
+    context = createApplicationContext();
+    // 从 spring.factories 文件中获得 SpringBootExceptionReporter
+    exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
+          new Class[] { ConfigurableApplicationContext.class }, context);
+    // 准备上下文
+    prepareContext(context, environment, listeners, applicationArguments, printedBanner);
+    // 刷新上下文
+    refreshContext(context);
+    // 刷新之后
+    afterRefresh(context, applicationArguments);
+    stopWatch.stop();
+    if (this.logStartupInfo) {
+       new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), stopWatch);
+    }
+    // SpringApplicationRunListener#started
+    listeners.started(context);
+    // callRunners 移到了这里，不再出现在 afterRefresh 方法里面，延迟了。
+    callRunners(context, applicationArguments);
+}
+```
+
+## Spring Boot 事件 ApplicationStartedEvent 语义的变化
+
+ApplicationStartingEvent 替换了 ApplicationStartedEvent （1.5 版本起）。
+
+当 Starting 事件被广播后，执行 callRunnenrs 方法。
+
+## 执行 CommandLineRunner 和 ApplicationRunner
+
+可以通过标注 @Order 注解的方式 来控制它们的执行顺序。
+
+## SpringApplication 结束阶段
+
+总的分为正常结束和异常结束。
+
+## 正常结束
+
+**SpringApplicationRunListener#running**
+
+作为 SpringApplicationRunListener 唯一的实现 **EventPublishingRunListener** ，仅仅是简单的广播 ApplicationReadyEvent。
+
+**EventPublishingRunListener#running**
+
+```java
+@Override
+public void running(ConfigurableApplicationContext context) {
+   context.publishEvent(new ApplicationReadyEvent(this.application, this.args, context));
+   AvailabilityChangeEvent.publish(context, ReadinessState.ACCEPTING_TRAFFIC);
+}
+```
+
+因为 SpringApplication 有 close 方法，所以在 finished 不仅调用了异常事件结束，还调用了所有的 Spring 应用的广播 **SpringApplicationEvent#finish** 事件。两者是 if else 关系。
+
+## 异常结束
+
+2.0 开始，调用 SpringApplicationEvent#failed 方法。
+
+### 故障分析器——FailureAnalyzers
+
+1.4 开始，是 FailureAnalyzer 的组合类。这有个坑，它只返回第一个错误，可能返回的错误并不是“精准”的。
+
+**FailureAnalyzers#reportException**
+
+```java
+@Override
+public boolean reportException(Throwable failure) {
+   FailureAnalysis analysis = analyze(failure, this.analyzers);
+   return report(analysis, this.classLoader);
+}
+
+private FailureAnalysis analyze(Throwable failure, List<FailureAnalyzer> analyzers) {
+   for (FailureAnalyzer analyzer : analyzers) {
+      try {
+         FailureAnalysis analysis = analyzer.analyze(failure);
+         if (analysis != null) {
+            return analysis;
+         }
+      }
+      catch (Throwable ex) {
+         logger.debug(LogMessage.format("FailureAnalyzer %s failed", analyzer), ex);
+      }
+   }
+   return null;
+}
+```
+
+## 错误分析报告器 —— FailureAnalysisReporter
 
