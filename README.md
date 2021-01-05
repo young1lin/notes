@@ -1,2 +1,2 @@
-# notes
-some notes 
+# 笔记
+一些读书笔记，避免版权问题的，在 master 分支的笔记。
