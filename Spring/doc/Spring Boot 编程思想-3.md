@@ -6,7 +6,11 @@
 
 第二十一天。520 Spring 以及 Spring Boot 事件在不同版本的实现，以及 Spring 应用上下文的讲解。
 
-第二十二天。
+第二十二天。540 Spring 应用上下文装载、启动、启动后阶段解释。
+
+第二十三天。560 Spring Application afterRegfresh 语义。以及 callRunners，还有正常结束和部分异常结束分析。
+
+第二十四天。580 Spring Boot 的 failureReporter 以及异常分析 failureAnalyzer 解释以及自定义。还有 Spring Boot 应用退出。正常退出，部分异常退出
 
 # 第十九天
 
@@ -767,5 +771,234 @@ private FailureAnalysis analyze(Throwable failure, List<FailureAnalyzer> analyze
 }
 ```
 
+# 第二十四天
+
 ## 错误分析报告器 —— FailureAnalysisReporter
+
+Spring Boot 有且默认只有一个实现，那就是 **LoggingFailureAnalysisReporter**，看到下面代码就知道了。
+
+**LoggingFailureAnalysisReporter**
+
+```java
+public final class LoggingFailureAnalysisReporter implements FailureAnalysisReporter {
+
+   private static final Log logger = LogFactory.getLog(LoggingFailureAnalysisReporter.class);
+
+   @Override
+   public void report(FailureAnalysis failureAnalysis) {
+      if (logger.isDebugEnabled()) {
+         logger.debug("Application failed to start due to an exception", failureAnalysis.getCause());
+      }
+      if (logger.isErrorEnabled()) {
+         logger.error(buildMessage(failureAnalysis));
+      }
+   }
+
+   private String buildMessage(FailureAnalysis failureAnalysis) {
+      StringBuilder builder = new StringBuilder();
+      builder.append(String.format("%n%n"));
+      builder.append(String.format("***************************%n"));
+      builder.append(String.format("APPLICATION FAILED TO START%n"));
+      builder.append(String.format("***************************%n%n"));
+      builder.append(String.format("Description:%n%n"));
+      builder.append(String.format("%s%n", failureAnalysis.getDescription()));
+      if (StringUtils.hasText(failureAnalysis.getAction())) {
+         builder.append(String.format("%nAction:%n%n"));
+         builder.append(String.format("%s%n", failureAnalysis.getAction()));
+      }
+      return builder.toString();
+   }
+
+}
+```
+
+与上面不同的是，FailureAnalyzer 的内建实现很多。
+
+下面是 spring-boot-autoconfigure 下的 spring.factories
+
+```properties
+# Failure analyzers
+org.springframework.boot.diagnostics.FailureAnalyzer=\
+org.springframework.boot.autoconfigure.data.redis.RedisUrlSyntaxFailureAnalyzer,\
+org.springframework.boot.autoconfigure.diagnostics.analyzer.NoSuchBeanDefinitionFailureAnalyzer,\
+org.springframework.boot.autoconfigure.flyway.FlywayMigrationScriptMissingFailureAnalyzer,\
+org.springframework.boot.autoconfigure.jdbc.DataSourceBeanCreationFailureAnalyzer,\
+org.springframework.boot.autoconfigure.jdbc.HikariDriverConfigurationFailureAnalyzer,\
+org.springframework.boot.autoconfigure.r2dbc.ConnectionFactoryBeanCreationFailureAnalyzer,\
+org.springframework.boot.autoconfigure.session.NonUniqueSessionRepositoryFailureAnalyzer
+```
+
+## 自定义实现 FailureAnalyzer 和 FailureAnalysisReporter
+
+详细代码在 `me.young1lin.spring.boot.thinking.fail` 包下
+
+##  Spring 2.0 重构 handleRunFailure 和 reportFailure 方法
+
+**SpringApplication#handleRunFailure** 传递的是更高层的抽象， SpringBootExceptionReport 的集合。
+
+```java
+private void handleRunFailure(ConfigurableApplicationContext context, Throwable exception,
+      Collection<SpringBootExceptionReporter> exceptionReporters, SpringApplicationRunListeners listeners) {
+   try {
+      try {
+         handleExitCode(context, exception);
+         if (listeners != null) {
+            listeners.failed(context, exception);
+         }
+      }
+      finally {
+         reportFailure(exceptionReporters, exception);
+         if (context != null) {
+            context.close();
+         }
+      }
+   }
+   catch (Exception ex) {
+      logger.warn("Unable to close ApplicationContext", ex);
+   }
+   ReflectionUtils.rethrowRuntimeException(exception);
+}
+```
+
+**SpringApplication#reportFailure**
+
+```java
+private void reportFailure(Collection<SpringBootExceptionReporter> exceptionReporters, Throwable failure) {
+   try {
+      for (SpringBootExceptionReporter reporter : exceptionReporters) {
+         if (reporter.reportException(failure)) {
+            registerLoggedException(failure);
+            return;
+         }
+      }
+   }
+   catch (Throwable ex) {
+      // Continue with normal handling of the original failure
+   }
+   if (logger.isErrorEnabled()) {
+      logger.error("Application run failed", failure);
+      registerLoggedException(failure);
+   }
+}
+```
+
+**SpringBootExceptionReporter** 在哪加载的？如下所示。
+
+```java
+public ConfigurableApplicationContext run(String... args) {
+    try{ 
+      // 省略一大段代码。。。。。。。。
+      // 没错，就是这里。第一个是要找的类的类型，第二个是注入的参数类型，第三个是注入的参数。
+      exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
+            new Class[] { ConfigurableApplicationContext.class }, context);
+     // 省略一大段代码
+   }
+   catch (Throwable ex) {
+      handleRunFailure(context, ex, exceptionReporters, listeners);
+      throw new IllegalStateException(ex);
+   }
+
+   try {
+      listeners.running(context);
+   }
+   catch (Throwable ex) {
+      handleRunFailure(context, ex, exceptionReporters, null);
+      throw new IllegalStateException(ex);
+   }
+   return context;
+}
+```
+
+**SpringBootExceptionReporter 的实现类的构造参数会默认传一个 ConfigurableApplicationContext 进去**
+
+它的内建实现为 FailureAnalyzers。
+
+run 方法结束了，可不是真的结束，它还是属于 JVM 管控的范畴。
+
+## Spring Boot 应用退出
+
+ExitCodeGenerator 接口，如果 Bean 实现了这个接口，可以自定义退出码。说明此时 SpringApplication 属于正常结束。
+
+### Spring Boot 应用正常退出
+
+**ExitCodeGeneratorBootstrap**
+
+```java
+package me.young1lin.spring.boot.thinking.exit;
+
+import org.springframework.boot.ExitCodeGenerator;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.annotation.Bean;
+
+/**
+ * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
+ * @since 2021/1/5 上午8:20
+ * @version 1.0
+ */
+@EnableAutoConfiguration
+public class ExitCodeGeneratorBootstrap {
+
+   @Bean
+   public ExitCodeGenerator exitCodeGenerator() {
+      System.out.println("ExitCodeGenerator Bean 创建.....");
+      return () -> {
+         System.out.println("执行退出码（88）生成");
+         return 88;
+      };
+   }
+
+   public static void main(String[] args) {
+//    new SpringApplicationBuilder(ExitCodeGeneratorBootstrap.class)
+//          .web(WebApplicationType.NONE)
+//          .run(args)
+//          .close();
+      // 重构后
+      SpringApplication.exit(new SpringApplicationBuilder(ExitCodeGeneratorBootstrap.class)
+            .web(WebApplicationType.NONE)
+            .run(args));
+   }
+
+}
+```
+
+ Spring Boot 需要显式地将该退出码传递到 System#exit(int) 方法中。退出码是一种约定，为非 0 值时，表示异常退出。
+
+### 退出码用处
+
+Spring Cloud Data Flow，以及用于  ExitCodeEvent 事件监听。
+
+在 exit 中有调用。只有异常的时候，才会发布这个事件。
+
+```java
+public static int exit(ApplicationContext context, ExitCodeGenerator... exitCodeGenerators) {
+   Assert.notNull(context, "Context must not be null");
+   int exitCode = 0;
+   try {
+      try {
+         ExitCodeGenerators generators = new ExitCodeGenerators();
+         Collection<ExitCodeGenerator> beans = context.getBeansOfType(ExitCodeGenerator.class).values();
+         generators.addAll(exitCodeGenerators);
+         generators.addAll(beans);
+         exitCode = generators.getExitCode();
+         if (exitCode != 0) {
+             // 在这
+            context.publishEvent(new ExitCodeEvent(context, exitCode));
+         }
+      }
+      finally {
+         close(context);
+      }
+   }
+   catch (Exception ex) {
+      ex.printStackTrace();
+      exitCode = (exitCode != 0) ? exitCode : 1;
+   }
+   return exitCode;
+}
+```
+
+### Spring Boot 应用异常退出
 

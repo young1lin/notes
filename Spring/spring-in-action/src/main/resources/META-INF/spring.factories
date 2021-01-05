@@ -4,3 +4,9 @@ me.young1lin.spring.core.resolve.auto.configuration.HelloServiceAutoConfiguratio
 
 org.springframework.boot.autoconfigure.AutoConfigurationImportListener=\
   me.young1lin.spring.boot.thinking.autoconfig.DefaultAutoConfigurationImportListener
+
+org.springframework.boot.diagnostics.FailureAnalyzer=\
+me.young1lin.spring.boot.thinking.fail.UnKnownErrorFailureAnalyzer
+
+org.springframework.boot.diagnostics.FailureAnalysisReporter=\
+me.young1lin.spring.boot.thinking.fail.ConsoleFailureAnalysisReporter
