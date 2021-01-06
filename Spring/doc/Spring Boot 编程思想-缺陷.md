@@ -28,7 +28,5 @@ c 和 e 多了个空格。
 
 应该是 listener.starting 不在 try catch 内，书上确实是指的 1.x 版本。
 
-started 在的
-
-// TODO 在 1.4 版本找找看
+started 并未移除，只是在 try catch 里面而已
 

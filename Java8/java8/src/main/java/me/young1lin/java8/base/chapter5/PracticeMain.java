@@ -115,9 +115,10 @@ public class PracticeMain {
 				.forEach(System.out::println);
 
 		System.out.println("==================");
-		IntSupplier fib = new IntSupplier(){
+		IntSupplier fib = new IntSupplier() {
 			private int previous = 0;
 			private int current = 1;
+
 			@Override
 			public int getAsInt() {
 				int oldPrevious = previous;
@@ -128,7 +129,6 @@ public class PracticeMain {
 			}
 		};
 		IntStream.generate(fib).limit(20).forEach(System.out::println);
-
 
 	}
 
