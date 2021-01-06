@@ -1000,5 +1000,148 @@ public static int exit(ApplicationContext context, ExitCodeGenerator... exitCode
 }
 ```
 
+# 第二十五天
+
 ### Spring Boot 应用异常退出
+
+> Also, the ExitCodeGenerator interface may be implemented by exceptions. When such an exception is encountered, Spring Boot returns the exit code provided by the implemented getExitCode() method.
+
+**SpringApplication#handleRunFailure**
+
+```java
+private void handleRunFailure(ConfigurableApplicationContext context, Throwable exception,
+      Collection<SpringBootExceptionReporter> exceptionReporters, SpringApplicationRunListeners listeners) {
+   try {
+      try {
+         // 进入方法
+         handleExitCode(context, exception);
+         if (listeners != null) {
+            listeners.failed(context, exception);
+         }
+      }
+      finally {
+         reportFailure(exceptionReporters, exception);
+         if (context != null) {
+            context.close();
+         }
+      }
+   }
+   catch (Exception ex) {
+      logger.warn("Unable to close ApplicationContext", ex);
+   }
+   ReflectionUtils.rethrowRuntimeException(exception);
+}
+```
+
+**SpringApplication#handleExitCode**
+
+```java
+private void handleExitCode(ConfigurableApplicationContext context, Throwable exception) {
+   int exitCode = getExitCodeFromException(context, exception);
+   if (exitCode != 0) {
+      if (context != null) {
+         context.publishEvent(new ExitCodeEvent(context, exitCode));
+      }
+      SpringBootExceptionHandler handler = getSpringBootExceptionHandler();
+      if (handler != null) {
+         handler.registerExitCode(exitCode);
+      }
+   }
+}
+```
+
+**SpringApplication#getExitCodeFromException**
+
+```java
+private int getExitCodeFromException(ConfigurableApplicationContext context, Throwable exception) {
+   int exitCode = getExitCodeFromMappedException(context, exception);
+   if (exitCode == 0) {
+      exitCode = getExitCodeFromExitCodeGeneratorException(exception);
+   }
+   return exitCode;
+}
+```
+
+**SpringApplication#getExitCodeFromExitCodeGeneratorException**
+
+```java
+private int getExitCodeFromExitCodeGeneratorException(Throwable exception) {
+   if (exception == null) {
+      return 0;
+   }
+   if (exception instanceof ExitCodeGenerator) {
+      return ((ExitCodeGenerator) exception).getExitCode();
+   }
+   // 这里是递归操作
+   return getExitCodeFromExitCodeGeneratorException(exception.getCause());
+}
+```
+
+## ExitCodeGenerator 异常使用场景
+
+SpringApplicationRunListeners#starting 不在 try catch 中，
+
+**SpringApplication#getExitCodeFromMappedException** 这里表示了，上下文未被初始化，或者未被启动，那么它就不能返回非 0 的返回码。
+
+```java
+private int getExitCodeFromMappedException(ConfigurableApplicationContext context, Throwable exception) {
+   if (context == null || !context.isActive()) {
+      return 0;
+   }
+   ExitCodeGenerators generators = new ExitCodeGenerators();
+   Collection<ExitCodeExceptionMapper> beans = context.getBeansOfType(ExitCodeExceptionMapper.class).values();
+   generators.addAll(exception, beans);
+   return generators.getExitCode();
+}
+```
+
+## ExitCodeExceptionMapper Bean 映射异常与退出码
+
+```java
+/**
+ * Strategy interface that can be used to provide a mapping between exceptions and exit
+ * codes.
+ *
+ * @author Phillip Webb
+ * @since 1.3.2
+ */
+@FunctionalInterface
+public interface ExitCodeExceptionMapper {
+
+   /**
+    * Returns the exit code that should be returned from the application.
+    * @param exception the exception causing the application to exit
+    * @return the exit code or {@code 0}.
+    */
+   int getExitCode(Throwable exception);
+
+}
+```
+
+SpringApplication 异常结束时，Spring Boot 提供两种退出码与异常类型关联的方式，
+
+1. Throwable 对象实现 ExitCodeGenerator 接口；
+2. ExitCodeExceptionMapper 实现退出码与 Throwable 的映射。
+
+第一种不依赖当前 context 是否活跃，后者依赖。
+
+先是要 context 执行，后是不要 context 的执行。详情如下所示。
+
+**SpringApplication#handleExitCode**
+
+```java
+private int getExitCodeFromException(ConfigurableApplicationContext context, Throwable exception) {
+   int exitCode = getExitCodeFromMappedException(context, exception);
+   if (exitCode == 0) {
+      exitCode = getExitCodeFromExitCodeGeneratorException(exception);
+   }
+   return exitCode;
+}
+```
+
+已完结。
+
+重复了讲了一些关于嵌入式容器和非嵌入式容器相关的内容。
+
+
 

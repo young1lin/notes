@@ -80,7 +80,7 @@ public ThreadPoolExecutor(int corePoolSize,
 ThreadPoolExecutor 允许提供一个 Blocking Queue 来保存等待执行的任务。
 
 1. 无界队列。LinkedBlockingQueue 默认的构造器就是无界的。`public LinkedBlockingQueue() { this(Integer.MAX_VALUE);}`
-2. 有界队列。ArrayBlockingQueue、有界的 LinkedBlockingQueue、PriorityBlockingQueue。
+   2. 有界队列。ArrayBlockingQueue、有界的 LinkedBlockingQueue、PriorityBlockingQueue。
 3. 同步移交。Synchronous Handoff。
 
 无界队列将不会执行拒绝策略，当然如果你的线程数大于了 Integer.MAX_VALUE 还是会执行的，前提是你到达这么多。一般情况就 OOM 了。所以《阿里巴巴 Java 开发规范》中不使用 Executors 创建线城池。
