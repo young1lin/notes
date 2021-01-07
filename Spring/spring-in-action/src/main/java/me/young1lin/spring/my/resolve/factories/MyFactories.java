@@ -1,4 +1,4 @@
-package me.young1lin.spring.boot.thinking.factories;
+package me.young1lin.spring.my.resolve.factories;
 
 /**
  * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>

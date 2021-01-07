@@ -5,14 +5,15 @@ import me.young1lin.spring.my.resolve.elatiscseach.Agg;
 
 /**
  * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
- * @since 2021/1/4 下午1:44
+ * @since 2021/1/4 下午1:48
  * @version 1.0
  */
-@EsFunctionType(FunctionType.COUNT)
-public class CountFunctionTypeResolver extends AbstractFunctionTypeResolver{
+@EsFunctionType(FunctionType.GROUP_BY)
+public class GroupByFunctionTypeResolver extends AbstractFunctionTypeResolver {
 
 	@Override
 	protected Agg doResolve(String[] columns) {
 		return null;
 	}
+
 }

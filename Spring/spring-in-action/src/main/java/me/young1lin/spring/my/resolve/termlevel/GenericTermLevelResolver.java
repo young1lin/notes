@@ -7,7 +7,7 @@ import me.young1lin.spring.my.resolve.annotation.EsTermLevel;
  * @since 2021/1/4 下午1:44
  * @version 1.0
  */
-@EsTermLevel(TermLevel.TERM)
+@EsTermLevel({TermLevel.TERM, TermLevel.PREFIX})
 public class GenericTermLevelResolver implements TermLevelResolver {
 
 	@Override

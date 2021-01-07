@@ -11,6 +11,8 @@ public enum FunctionType {
 	COUNT,
 
 	/** 分组 */
-	GROUP_BY
+	GROUP_BY,
+
+	RANGE,
 
 }

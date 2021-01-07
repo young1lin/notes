@@ -13,4 +13,7 @@ public enum TermLevel {
 	/** match all columns */
 	TERMS,
 
+	/** match prefix columns, like Chris*, search Chris1, Chris2 and so on*/
+	PREFIX,
+
 }
