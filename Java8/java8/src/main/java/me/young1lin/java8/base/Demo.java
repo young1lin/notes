@@ -70,7 +70,6 @@ public class Demo implements Order<Demo> {
 		Supplier<Demo> supplier = Demo::new;
 		System.out.println("-------" + supplier.get());
 
-
 	}
 
 	@Override
