@@ -35,6 +35,7 @@ public class Demo implements Order<Demo> {
 				.filter((Demo e) -> e.getOrder() > 11)
 				.collect(toList());
 		list1.forEach((e) -> System.out.println(e.toString()));
+
 		// 再次筛选 小于 11 大于 5 的
 		System.out.println("================");
 		List<Demo> list2 = list.stream()
@@ -42,10 +43,12 @@ public class Demo implements Order<Demo> {
 				.filter(e -> e.getOrder() > 5)
 				.collect(toList());
 		list2.forEach((e) -> System.out.println(e.toString()));
+
 		// 根据 compareTo 排序，也就是 order 大小进行排序
 		System.out.println("========");
 		list.sort(Demo::compareTo);
 		list.forEach((e) -> System.out.println(e.toString()));
+
 		// 对原始 list 进行去重、大于 2 的筛选以及最多 5 个 order
 		List<Integer> ll = list.stream()
 				.map(Demo::getOrder)
