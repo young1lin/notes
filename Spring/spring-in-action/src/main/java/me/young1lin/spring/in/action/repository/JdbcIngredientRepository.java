@@ -38,7 +38,6 @@ public class JdbcIngredientRepository {
         return jdbcTemplate.query("SELECT id,name,type FROM Ingredient", this::mapRowToIngredient);
     }
 
-
     public Ingredient findOne(String id) {
         return jdbcTemplate.queryForObject("SELECT id,name,type FROM Ingredient WHERE id=?", this::mapRowToIngredient, id);
     }
