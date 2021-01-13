@@ -4,6 +4,8 @@
 
 第二天 60 页，介绍云原生应用的十二要素，简单介绍 Spring Boot 项目，以及 Cloud Foundry。
 
+第三天 90 页，介绍 Pivotal Cloud Foundry 平台一些基本属性，以及 Enviroment 以及配置，还有部分测试内容。
+
 # 第一天
 
 目录（只挑看起来像是重点的内容）
@@ -166,3 +168,43 @@
 
 运行阶段（通常称为运行时）是指在可执行环境中运行一个指定的应用版本。
 
+# 第三天
+
+终于找到 CommandLineRunner 实际应用场景了，启动时，部署项目到  CloudFoundry 平台。
+
+**PropertyPlaceHolder** Spring Framework 2.5
+
+**@Value** Spring Framework 3.0
+
+**Environment**  Spring Framework 3.1
+
+@Value 还可以用在 setter 方法上面 
+
+@Profile 可以用 SPRING_PROFILE_ACTIVE 来指定当前 profile、JVM 属性（-Dspring.profiles.active=...）、Servlet 应用程序初始化参数，或者以编程的方式设置当前活动的 profile 来指定。
+
+从上到下，依次覆盖，越上面优先级越高
+
+- 命令行参数
+- 从 java:comp/env 获取到的 JNDI 属性
+- System.getProperties() 的属性
+- 操作系统的环境变量
+- 文件系统上的外部属性文件：（config /）？application.(yml.properties)
+- 归档（config /）? application.(yml.properties) 文件中的属性文件
+- 配置类上的 @PropertySourec 注解
+- SpringApplication#getDefaultProperties 提供的默认属性
+
+YAML 规范，大量层级化的配置项。
+
+Spring Cloud Config Server
+
+Spring Cloud Config Client
+
+**spring.application.name** 默认是去 bootstrap.yml 文件中找。
+
+@RefreshScope 标注了这个 Bean 是可刷新的。
+
+## 测试
+
+单元测试
+
+集成测试（需要 Spring ApplicationContext 内容）
