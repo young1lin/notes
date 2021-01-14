@@ -6,6 +6,8 @@
 
 第三天 90 页，介绍 Pivotal Cloud Foundry 平台一些基本属性，以及 Enviroment 以及配置，还有部分测试内容。
 
+第四天 121 页，介绍测试相关内容，没有实战，这个得下次来搞，还有迁移遗留程序到 Cloud Foundry 平台上，通过更改环境变量来达到无缝切换，一些中间件。
+
 # 第一天
 
 目录（只挑看起来像是重点的内容）
@@ -208,3 +210,38 @@ Spring Cloud Config Client
 单元测试
 
 集成测试（需要 Spring ApplicationContext 内容）
+
+# 第四天
+
+测试，端到端测试，Mock 测试，消费者驱动的契约测试等，之后自己动手写一下消费者驱动的契约测试。
+
+## 迁移遗留的应用程序
+
+Cloud Foundry 为在它之上运行之上的程序，提供了总所周知的运维优势（日志聚合、路由、自我修复、动态扩展和收缩、安全等方面）。
+
+**雪花式部署**
+
+// TODO 翻译 Snowflake 官网的雪花是式部署[第一篇文章](https://community.snowflake.com/s/article/Snowflake-CI-CD-using-Flyway-and-Azure-DevOps-Pipeline-Part-1)                
+
+[第二篇文章](https://www.snowflake.com/blog/embracing-agile-software-delivery-and-devops-with-snowflake/)
+
+[第三篇](https://medium.com/slalom-data-analytics/snowflake-deployment-options-key-factors-ab40d58bf986)
+
+[第四篇](https://docs.snowflake.com/en/user-guide/intro-key-concepts.html)
+
+
+
+**冒烟测试**
+
+>在[程序设计](https://zh.wikipedia.org/wiki/程序设计)和[软件测试](https://zh.wikipedia.org/wiki/软件测试)领域 ， **冒烟测试** （也包括**信心测试** 、**[健全性测试](https://zh.wikipedia.org/wiki/健全性测试)**、 [[1\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-ISTQB_glossary-1) **构建验证测试** （ **BVT** ） [[2\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-KanerBachPettichord2002-2) [[3\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-3)、**构建验收测试** ）是指初步地进行测试，并以此展示一些简单但足以影响发布软件版本的这一高级别的错误。 冒烟测试是[测试用例](https://zh.wikipedia.org/wiki/测试用例)的子集，测试主要为了覆盖了组件或系统的最重要功能，并用于辅助评价一个软件的主要功能是否正常运行。 [[4\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-DustinRashkaPaul1999-4) 当使用冒烟测试判断一个程序是否需要更深层次的、颗粒度更为细小的测试时，该测试也被称为**入门测试（intake test）** 。 或者，在测试部门对新版本程序进行测试之前，冒烟测试用于自动化测试新版本是否可以正常运行，是否值得测试。 [[5\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-MenakerGuttigoli2014-5) 在[DevOps](https://zh.wikipedia.org/wiki/DevOps)范例中，使用BVT步骤是[持续集成](https://zh.wikipedia.org/wiki/持續整合)成熟阶段的标志之一。 [[6\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-6)
+>
+>例如，冒烟测试可能会解决一些基本问题，例如“程序是否运行？”，“用户界面是否打开？”或“单击事件是否有效？”等。 冒烟测试的目的在于确认程序是否严重到，需要立即测试非必须的测试。 如《 *Lessons Learned in Software Testing》所写* [[7\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-7) ，“冒烟测试仅仅是在短时间广泛地覆盖产品功能。如果关键功能无法正常工作或关键bug尚未修复，那么你们的团队就不需要浪费更多时间去安装部署以及测试。，则烟雾测试将在有限的时间内广泛涵盖产品功能。不会浪费更多的时间来安装或测试”。 [[2\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-KanerBachPettichord2002-2)
+>
+>冒烟测试通常会快速地进行，好处就是反馈也是很快，相比之下，更为全面地[套件测试](https://zh.wikipedia.org/wiki/测试套件) 通常会花费更长的时间。
+>
+>每日构建和冒烟测试是工业界公认的[最佳实践](https://zh.wikipedia.org/wiki/最佳实践)之一 。 [[8\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-8)[[需要引文](https://zh.wikipedia.org/wiki/Wikipedia:可供查证)] 测试人员在构建并更深一步的测试之前，有必要进行冒烟测试。 [微软](https://zh.wikipedia.org/wiki/微软)声称，“在[代码进行审查](https://zh.wikipedia.org/wiki/代码审查)之后，*冒烟测试*是识别并修复软件的性价比最高的方法”。 [[9\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-9)
+>
+>冒烟测试，可以是手动测试或[自动工具](https://zh.wikipedia.org/wiki/自动化测试)进行冒烟测试。 对于自动化工具测试，构建工程的程序通常会顺带进行该测试。[[来源请求\]](https://zh.wikipedia.org/wiki/Wikipedia:列明来源)
+>
+>冒烟测试可以是功能测试或者[单元测试](https://zh.wikipedia.org/wiki/单元测试) 。 功能测试通常会使用各种输入设备。从而执行完整的程序。 单元测试则是针对单一功能、子例程、对象的方法。功能测试可以是 脚本化的输入，也可以是自动化的鼠标事件。单元测试可以是实现代码内部独立功能，也可以是通过调用的方式进行测试。
+
