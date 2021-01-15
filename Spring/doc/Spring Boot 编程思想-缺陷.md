@@ -10,5 +10,9 @@ c 和 e 多了个空格。
 
 所以 AbstratApplication
 
-所以 AbstractApplication
+所以 AbstractApplicationContext
+
+
+
+已向小马哥反馈。
 
