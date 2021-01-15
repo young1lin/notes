@@ -229,8 +229,6 @@ Cloud Foundry 为在它之上运行之上的程序，提供了总所周知的运
 
 [第四篇](https://docs.snowflake.com/en/user-guide/intro-key-concepts.html)
 
-
-
 **冒烟测试**
 
 >在[程序设计](https://zh.wikipedia.org/wiki/程序设计)和[软件测试](https://zh.wikipedia.org/wiki/软件测试)领域 ， **冒烟测试** （也包括**信心测试** 、**[健全性测试](https://zh.wikipedia.org/wiki/健全性测试)**、 [[1\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-ISTQB_glossary-1) **构建验证测试** （ **BVT** ） [[2\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-KanerBachPettichord2002-2) [[3\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-3)、**构建验收测试** ）是指初步地进行测试，并以此展示一些简单但足以影响发布软件版本的这一高级别的错误。 冒烟测试是[测试用例](https://zh.wikipedia.org/wiki/测试用例)的子集，测试主要为了覆盖了组件或系统的最重要功能，并用于辅助评价一个软件的主要功能是否正常运行。 [[4\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-DustinRashkaPaul1999-4) 当使用冒烟测试判断一个程序是否需要更深层次的、颗粒度更为细小的测试时，该测试也被称为**入门测试（intake test）** 。 或者，在测试部门对新版本程序进行测试之前，冒烟测试用于自动化测试新版本是否可以正常运行，是否值得测试。 [[5\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-MenakerGuttigoli2014-5) 在[DevOps](https://zh.wikipedia.org/wiki/DevOps)范例中，使用BVT步骤是[持续集成](https://zh.wikipedia.org/wiki/持續整合)成熟阶段的标志之一。 [[6\]](https://zh.wikipedia.org/zh-cn/冒烟测试_(软件)#cite_note-6)
@@ -244,4 +242,74 @@ Cloud Foundry 为在它之上运行之上的程序，提供了总所周知的运
 >冒烟测试，可以是手动测试或[自动工具](https://zh.wikipedia.org/wiki/自动化测试)进行冒烟测试。 对于自动化工具测试，构建工程的程序通常会顺带进行该测试。[[来源请求\]](https://zh.wikipedia.org/wiki/Wikipedia:列明来源)
 >
 >冒烟测试可以是功能测试或者[单元测试](https://zh.wikipedia.org/wiki/单元测试) 。 功能测试通常会使用各种输入设备。从而执行完整的程序。 单元测试则是针对单一功能、子例程、对象的方法。功能测试可以是 脚本化的输入，也可以是自动化的鼠标事件。单元测试可以是实现代码内部独立功能，也可以是通过调用的方式进行测试。
+
+# 第五天
+
+## 用 Spring 实现服务平等
+
+简单介绍了 RMI 以及使用，HTTP 实现 RPC，还有 gRPC。
+
+Spring Session + Redis/Hazelcast 实现 Session 共享。
+
+使用 MongoDB 作为 FileSystem。
+
+还有发送 email。
+
+## REST API
+
+Representational State Transfer
+
+MVC 创建 REST API，线程池响应。
+
+简单介绍 Google Protocol Buffers，以及在 Spring MVC 中的使用。
+
+```protobuf
+package demo;
+
+option java_package = "demo";
+
+option java_outer_classname = "CustomerProtos";
+
+message Customer{
+	optional int64 id = 1;
+	required string firstName = 2;
+	required string lastName = 3;
+}
+
+message Customers{
+	repeated Customer customer = 1;
+}
+```
+
+
+
+```shell
+#!/bin/bash
+#autor:young1lin
+SRC_DIR='$pwd'
+DST_DIR='$pwd'/../src/main/
+
+echo source:           ${SRC_DIR}
+echo detination root:  ${DST_DIR}
+
+function ensure_implementations(){
+  gem list | grep ruby-protocol-buffers || sudo gem install ruby-protocol-buffers
+  go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+}
+
+function gen(){
+	D=$1
+	echo $D
+	OUT=$DST_DIR/$D
+	mkdir -p $OUT
+	protoc -I=$SRC_DIR --${D}_out=$OUT $SRC_DIR/customer.proto
+}
+
+ensure_implementations
+
+gen java
+gen python
+```
+
+
 
