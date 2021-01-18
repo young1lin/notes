@@ -8,6 +8,10 @@
 
 第四天 121 页，介绍测试相关内容，没有实战，这个得下次来搞，还有迁移遗留程序到 Cloud Foundry 平台上，通过更改环境变量来达到无缝切换，一些中间件。
 
+第五天 140 页，RMI、Google protocol buffer等，REST API 介绍
+
+第六天 160 页，服务发现路由，RestTemplate 等介绍。
+
 # 第一天
 
 目录（只挑看起来像是重点的内容）
@@ -311,5 +315,58 @@ gen java
 gen python
 ```
 
+# 第六天
 
+再提“鲁棒性”
+
+> 比如说，计算机软件在输入错误、磁盘故障、网络过载或有意攻击情况下，能否不死机、不崩溃，就是该软件的鲁棒性。 所谓“鲁棒性”，也是指控制系统在一定（结构，大小）的参数摄动下，维持其它某些性能的特性。 根据对性能的不同定义，可分为稳定鲁棒性和性能鲁棒性。
+
+Spring RESTDocs 相比于侵入式的 Swagger 更适合云原生应用。
+
+RestTemplate 介绍。
+
+路由（DiscoveryClient）Spring Cloud 提供的统一的抽象，用于提供服务路由。
+
+```java
+ * @author Olga Maciaszek-Sharma
+ */
+public interface DiscoveryClient extends Ordered {
+
+   int DEFAULT_ORDER = 0;
+
+   /**
+    * A human-readable description of the implementation, used in HealthIndicator.
+    *
+    * @return The description.
+    */
+   String description();
+
+   /**
+    * Gets all ServiceInstances associated with a particular serviceId.
+    *
+    * @param serviceId The serviceId to query.
+    * @return A List of ServiceInstance.
+    */
+   List<ServiceInstance> getInstances(String serviceId);
+
+   /**
+    * @return All known service IDs.
+    */
+   List<String> getServices();
+
+   /**
+    * Default implementation for getting order of discovery clients.
+    *
+    * @return order
+    */
+   @Override
+   default int getOrder() {
+      return DEFAULT_ORDER;
+   }
+}
+```
+
+又来了，开始介绍 Eureka、Robbin 以及它们的注解。@LoadBalanced
+
+## 边缘服务
 

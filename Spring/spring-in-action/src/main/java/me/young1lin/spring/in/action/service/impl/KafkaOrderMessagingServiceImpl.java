@@ -30,4 +30,5 @@ public class KafkaOrderMessagingServiceImpl implements OrderMessagingService {
 	public void sendOrder(Order order) {
 		kafkaTemplate.send("TacoCloud.orders.topic",order);
 	}
+
 }

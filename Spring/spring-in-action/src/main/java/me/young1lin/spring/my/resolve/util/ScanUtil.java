@@ -72,8 +72,7 @@ public class ScanUtil {
 						if (MapUtils.isEmpty(annotationAttributes)) {
 							errorMsg.append(resourceFileName).append(" don't have ").append(annotationName)
 									.append(" Annotation, ");
-						}
-						else {
+						}else {
 							// 获得解析器类的实例
 							V resolver = getResolverInstance(metadataReader);
 							// 获得对应解析器上的注解的值
@@ -81,8 +80,7 @@ public class ScanUtil {
 							if (Objects.isNull(value)) {
 								errorMsg.append(resourceFileName).append("'s ").append(annotationName)
 										.append(" annotation attribute is empty,");
-							}
-							else {
+							}else {
 								putResult(resultMap, value, resolver);
 							}
 						}
