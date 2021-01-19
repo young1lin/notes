@@ -176,7 +176,7 @@
 
 # 第三天
 
-终于找到 CommandLineRunner 实际应用场景了，启动时，部署项目到  CloudFoundry 平台。
+终于找到 CommandLineRunner 实际应用场景了，启动时，部署项目到  Cloud Foundry 平台。
 
 **PropertyPlaceHolder** Spring Framework 2.5
 
@@ -367,6 +367,8 @@ public interface DiscoveryClient extends Ordered {
 ```
 
 又来了，开始介绍 Eureka、Robbin 以及它们的注解。@LoadBalanced
+
+# 第七天
 
 ## 边缘服务
 

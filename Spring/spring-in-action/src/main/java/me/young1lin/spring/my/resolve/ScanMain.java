@@ -11,6 +11,8 @@ import me.young1lin.spring.my.resolve.termlevel.TermLevelResolver;
 import me.young1lin.spring.my.resolve.util.ScanUtil;
 
 /**
+ * 仅为演示使用，该如何进行抽象思维示例
+ *
  * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
  * @since 2021/1/4 下午1:41
  * @version 1.0

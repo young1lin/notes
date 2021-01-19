@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: eureka-service
+
+eureka:
+  client:
+    register-with-eureka: false # 不要注册自己
+    fetch-registry: false
+  server:
+    enable-self-preservation: false
+    # 如果 Eureka 检测到节点在指定时间阈值内没有响应，确保 Eureka 不会主动地缓存集群信息。开发环境方便，但生产环境不 ok
