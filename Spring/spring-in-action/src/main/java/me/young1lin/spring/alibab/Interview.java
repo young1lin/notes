@@ -39,7 +39,7 @@ class InterviewThread extends Thread {
 				System.out.println(msg);
 			}
 			catch (InterruptedException e) {
-				// 理论上来说，这里应该个
+				// 理论上来说，这里应该是 log
 				e.printStackTrace();
 			}
 		}else {

@@ -36,7 +36,6 @@ public class SpringInActionApplication extends SpringBootServletInitializer {
 //		DefaultListableBeanFactory listableBeanFactory = (DefaultListableBeanFactory)beanFactory;
 		// listableBeanFactory.set
 		ConfigurableApplicationContext cac = new SpringApplication(SpringInActionApplication.class).run(args);
-		// cac.
 		// 通过依赖查找，来找到 Bean
 		HelloService helloService = cac.getBean("helloService", HelloService.class);
 		// 这里输出的话，就已经自动装配成功了

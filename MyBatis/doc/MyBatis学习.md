@@ -1,3 +1,7 @@
+书籍[《MyBatis 3 源码深度解析》](https://weread.qq.com/web/reader/62c3207071a4957c62cf0b7)
+
+书上把 MyBatis 常用的内容讲了一遍，讲了它的源码是怎么做的。但是没有说，它为什么这么做，以及如何能做得更好。和《Spring 源码深度解析》一样，讲了它是怎么做的，而没讲如何做。
+
 # JDBC 核心 API
 
 java.sql.Array  接口
