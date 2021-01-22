@@ -16,6 +16,10 @@
 
 第八天 230 页，暂时跳过实战部分，先看些理论，因为我两年前学过。再看看 OAuth 部分和 Spring Security 部分。
 
+第九天 308 页，管道符才是我真的想起来的东西，其他的都是看过，写过的。
+
+第十天 
+
 # 第一天
 
 目录（只挑看起来像是重点的内容）
@@ -395,6 +399,41 @@ OAuth （简称“开放授权”）是互联网上基于令牌的授权标准�
 
 密码模式授权：用户会直接向授权服务器发送用户名和密码来换取访问令牌。
 
-## Spring Security 
+## Spring Security
 
 简单介绍了下，然后配合 Spring Data JPA 来简单演示了下如何交互授权。
+
+# 第九天
+
+没有看书，不在身边。
+
+OAuth2 和 SSO 怎么实现，加几个模块，然后写些 JS，用 Angular 框架。
+
+
+
+NoSQL
+
+Polyglot Persistence（异构持久性）用于描述使用多种数据库模型的体系结构。
+
+其实 DDD 的值对象之类的，更适合用 NoSQL 来解决，例如 MongoDB。
+
+
+
+域类
+
+库、仓储（Repository，我更喜欢叫它仓储）
+
+又讲了些业务相关的，这部分确实一般，只是个 Demo 而且还是过时的 DDD package 命名。
+
+## Spring Cache
+
+Redis 用作 Spring Cache
+
+## Spring Integration
+
+事件驱动架构。
+
+｜ 管道符。
+
+# 第十天
+
