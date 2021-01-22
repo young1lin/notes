@@ -19,4 +19,5 @@ public class ScopeConfig {
         customScopeConfigurer.addScope(ThreadLocalScope.SCOPE_NAME, new ThreadLocalScope());
         return customScopeConfigurer;
     }
+
 }
