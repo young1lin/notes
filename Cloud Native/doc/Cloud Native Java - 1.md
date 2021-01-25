@@ -16,9 +16,11 @@
 
 第八天 230 页，暂时跳过实战部分，先看些理论，因为我两年前学过。再看看 OAuth 部分和 Spring Security 部分。
 
-第九天 308 页，管道符才是我真的想起来的东西，其他的都是看过，写过的。
+第九天 
 
-第十天 
+第十天 308 页，管道符才是我真的想起来的东西，其他的都是看过，写过的。
+
+第十一天 334 页，Binder、MessageChannel、@MessagingGateway、@Gateway、ItemReader、ItemProcessor、ItemWriter、Spring Batch 的批处理概念等。
 
 # 第一天
 
@@ -407,17 +409,17 @@ OAuth （简称“开放授权”）是互联网上基于令牌的授权标准�
 
 没有看书，不在身边。
 
+
+
+# 第十天
+
 OAuth2 和 SSO 怎么实现，加几个模块，然后写些 JS，用 Angular 框架。
-
-
 
 NoSQL
 
 Polyglot Persistence（异构持久性）用于描述使用多种数据库模型的体系结构。
 
 其实 DDD 的值对象之类的，更适合用 NoSQL 来解决，例如 MongoDB。
-
-
 
 域类
 
@@ -435,5 +437,47 @@ Redis 用作 Spring Cache
 
 ｜ 管道符。
 
-# 第十天
+# 第十一天
+
+假如有一个产品目录。当向 ProductService 中添加新条目时，它可能会发布描述增量的事件。 SearchEngine 服务kennel会消费消息，然后更新本地绑定的 Elasticsearch 服务实例上的索引。InventoryService 可能会更新包含本地绑定的  RDBMS 服务实例中的数据。RecommendationService 可能决定更新本地绑定的 Neo4j 服务实例中的数据。这些系统不再需要询问 ProductiveService。
+
+**事件溯源**
+
+如果在有序日志中记录每个域事件，则可以通过在任何以前的时间点重新创建系统状态来执行临时查询。如果有任何服务失败，则其本地状态可以从日志中完全被重新创建。这种做法被称为事件溯源。
+
+## Spring Cloud Stream
+
+MessageChannel 
+
+Binding、Binder
+
+@MessagingGateway、@Gateway
+
+消费者
+
+SubscribeChannel
+
+配置中配置消费者组
+
+## 批处理
+
+批流一体——Flink。说实话，我还没怎么用过，就是用 Docker 启动过而已。
+
+### Spring Batch
+
+![Spring Batch 作业的域.png](https://i.loli.net/2021/01/25/5FY17Mnmo8UtjuW.png)
+
+@StepScope
+
+ItemReader
+
+ItemProcessor
+
+ItemWriter
+
+Spring Batch 的 Java 配置 DSL（*domain-specific language*）提供了方便的构建器 API 来配置常见的 ItemReader 和 ItemWriter 实现。
+
+## 配置批和流一体应用
+
+整合 Spring Batch 和 Spring Cloud Stream
 
