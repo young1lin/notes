@@ -1,6 +1,5 @@
 package me.young1lin.spring.boot.thinking.sorted;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
