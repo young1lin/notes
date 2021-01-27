@@ -24,6 +24,8 @@
 
 第十二天 371 页，Spring Cloud Task 简单介绍，工作流介绍（这个我大致扫过），分布式事务，以及故障隔离和 Hystrix，saga 模式（Microservice Patterns 里面有更详细介绍），CQRS。
 
+第十三天 418 页，Spring Cloud Data Flow，可观测的系统，Spring Boot Actuator。
+
 # 第一天
 
 目录（只挑看起来像是重点的内容）
@@ -142,7 +144,7 @@
 
 下面的图层描绘了不同抽象层次上的云服务类型。
 
-![云计算栈.png](https://i.loli.net/2021/01/11/bqsZcogu4mdvNwB.png)
+![云计算栈.png](https://i.loli.net/2021/01/27/rkcE1SQj2KRfhwD.png)
 
 # 第二天
 
@@ -538,3 +540,69 @@ saga 事务应该被设计成最多一次（at-most-once）语义，补偿性 sa
 ## CQRS（命令查询责任分离）
 
 将读取与写入分开。命令消息驱动服务中聚合的更新。如果你想问系统问题，只需要发送查询。通过视图（或查询模型）支持查询。查询返回结果，但没有任何可观察到的副作用。
+
+# 第十三天
+
+投诉 API
+
+Axon 实现。跳过，没什么用。
+
+## Spring Cloud Data Flow
+
+SEDA
+
+**Staged Event-Driven Architecture**
+
+> 将事件驱动的应用程序分解为一组由队列连接的阶段性的软件架构。它避免了与机遇线程的并发模型相关的高额开销，并将应用程序逻辑中的事件和线程调度分离开来。可以通过限制每个事件队列的传入负载保持服务可用，这样可以防止在需求超过服务容量时资源被过度使用。
+
+还是 Spring Cloud Stream 
+
+Spring Cloud Data Flow 提供了支持 Maven 存储库和 Docker 仓库查找等新实现。
+
+例如
+
+```properties
+source.account-web=maven://org.cnj:account-web:0.0.1-SNAPSHOT
+sink.account-worker=maven://org.cnj:account-worker:0.10.1-SNAPSHOT
+```
+
+Stream 是描述阶段式事件驱动架构（SEDA）的理想方法	
+
+## 任务
+
+Spring Cloud Data Flow 还可以管理基于 Spring Batch 的任务的生命周期和部署。
+
+## REST API
+
+不谈了。
+
+## 实现 Data Flow 客户端
+
+### Dashboard
+
+都是图
+
+## 可观测的系统
+
+建立一个有生产价值的系统有两个关键的技术方面：
+
+- 我们必须建立一个足够可扩展的系统，并且能够处理业务系统。
+- 我们必须建立一个系统，当事情不能按预期工作时系统可以做正确的事情（兜底）。
+
+## Spring Boot Actuator
+
+Actuator 默认的端点们
+
+| 端点                     | Description                                                  |
+| ------------------------ | ------------------------------------------------------------ |
+| /info                    | 公开有关当前服务的信息                                       |
+| /metrics                 | 公开有关服务的量化值                                         |
+| /beans                   | 公开 Spring Boot 为你创建的所有对象的图形。这个图形？        |
+| /configprops             | 公开有关可用于配制当前 Spring Boot 应用程序的所有属性的信息  |
+| /mappings                | 公开 Spring Boot 在这个应用程序中知道的所有 HTTP 端点以及任何其他元数据（例如 Spring MVC 映射中指定的内容类型或 HTTP 动词） |
+| /health                  | 系统中组件状态的描述：UP、DOWN等。同时返回 HTTP 状态码       |
+| /loggers                 | 显示和修改应用程序中的记录器                                 |
+| /auditevents             | 显示由 AuditEventRepository 记录的所有 AuditEvent 实例。它们将认证的 Principal 实体连接到系统中的事件。你也可以捕获并发送自定义事件 |
+| /cloudfoundryapplication | **太多了，不写了，有关 Cloud Foundry 的管理 UI 中的信息**    |
+| /env                     | 返回所有已知的环境属性，例如操作系统的环境变量或 System.getProperties() 的结果 |
+
