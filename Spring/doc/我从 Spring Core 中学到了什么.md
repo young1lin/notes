@@ -1,5 +1,7 @@
 # 代码书写
 
+让别人看代码，像看报纸一样，流畅一些。
+
 ## 类属性、方法顺序
 
 + public 方法早出现（可选，最好是同一访问权限的类变量和方法就近原则）。
@@ -126,17 +128,16 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// Allow for the collection of early ApplicationEvents,
 		// to be published once the multicaster is available...
 		this.earlyApplicationEvents = new LinkedHashSet<>();
-	}
-    // 方法与类之间留一行空格
+	}        // 方法与类之间留一行空格
     
 }
 ```
 
 ## 将复杂的代码块拆分成多个小的私有方法
 
-具体见各个版本的方法。
+具体见各个版本的方法。并且私有方法，不要有注释。
 
-例如**ClassPathScanningCandidateComponentProvider#findCandidateComponents** 在 3.0 版本，这个方法又臭又长。
+例如 **ClassPathScanningCandidateComponentProvider#findCandidateComponents** 在 3.0 版本，这个方法又臭又长。
 
 ```java
 /**
