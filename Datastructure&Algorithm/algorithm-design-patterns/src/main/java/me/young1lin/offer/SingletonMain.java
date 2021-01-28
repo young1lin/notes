@@ -8,7 +8,7 @@ package me.young1lin.offer;
 public class SingletonMain {
 
 	public static void main(String[] args) {
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 30; i++) {
 			Thread t1 = new Thread(() -> System.out.println(Singleton.getInstance()));
 			t1.start();
 		}

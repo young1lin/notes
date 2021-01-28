@@ -248,6 +248,6 @@ public class BinarySearch extends AbstractSearch {
         // new BinarySearch(8).print();
         // search 6
         int[] arr = new int[]{3, 5, 6, 8, 9, 10};
-        new BinarySearch(arr, 7).print();
+        new BinarySearch(arr, 8).print();
     }
 }

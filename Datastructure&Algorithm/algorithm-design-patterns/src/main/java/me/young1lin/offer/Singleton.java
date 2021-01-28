@@ -8,7 +8,7 @@ package me.young1lin.offer;
  */
 public class Singleton {
 
-	private static volatile Singleton INSTANCE;
+	private static Singleton INSTANCE;
 
 
 	private Singleton() {
