@@ -1,3 +1,8 @@
 spring:
   application:
     name: greeting-client
+zuul:
+  routes:
+    hi:
+      path: /lets/**
+      serviceId: greetings-service

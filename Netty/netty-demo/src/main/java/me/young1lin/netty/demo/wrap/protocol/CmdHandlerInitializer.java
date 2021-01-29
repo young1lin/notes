@@ -13,6 +13,7 @@ public class CmdHandlerInitializer extends ChannelInitializer<Channel> {
 
     static final byte SPACE = (byte) ' ';
 
+
     @Override
     protected void initChannel(Channel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
@@ -62,11 +63,11 @@ public class CmdHandlerInitializer extends ChannelInitializer<Channel> {
 
     public static final class CmdHandler extends SimpleChannelInboundHandler<Cmd>{
 
-
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Cmd msg) throws Exception {
             // 处理对象
         }
 
     }
+
 }

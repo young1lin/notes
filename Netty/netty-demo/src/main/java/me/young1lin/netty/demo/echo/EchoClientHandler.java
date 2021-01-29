@@ -44,4 +44,5 @@ public class EchoClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
         // 这里应该不是直接关闭，而是重试几次，如果是正常应用的话
         ctx.close();
     }
+
 }

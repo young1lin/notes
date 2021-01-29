@@ -8,11 +8,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
+ * 这里的 name 替换了原来的 serviceId
  * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
  * @since 2021/1/19 上午8:44
  * @version 1.0
  */
-@FeignClient(serviceId = "greetings-service")
+@FeignClient(name = "greetings-service")
 public interface GreetingsClient {
 
 	/**
