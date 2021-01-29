@@ -2,12 +2,20 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="11dabe15-2f2e-4afd-95ab-1e81a0cd5c8d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../../Spring/spring-in-action/src/main/java/me/young1lin/spring/alibab/Interview.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/sort/AbstractSort.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/sort/AbstractSort.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/sort/QuickSort.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/sort/QuickSort.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/offer/FuckingBinaryTree.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/offer/FuckingList.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/刷题/字节面试准备第四天.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/刷题/字节面试准备第四天.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/数据结构与算法之美.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/数据结构与算法之美.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeStyleSettingsInfer">
+    <option name="done" value="true" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
@@ -20,6 +28,9 @@
         <option name="userSettingsFile" value="$USER_HOME$/young1lin/soft/apache-maven-3.6.2/conf/settings.xml" />
       </MavenGeneralSettings>
     </option>
+  </component>
+  <component name="ProjectCodeStyleSettingsMigration">
+    <option name="version" value="1" />
   </component>
   <component name="ProjectId" id="1lwW5Y3B6Bp4LbnD9nJxIek0twe" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -51,6 +62,7 @@
       <workItem from="1610614517638" duration="3000" />
       <workItem from="1610614524207" duration="8000" />
       <workItem from="1611295947306" duration="10000" />
+      <workItem from="1611904175115" duration="15000" />
     </task>
     <servers />
   </component>

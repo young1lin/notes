@@ -3,6 +3,7 @@ package me.younglin.springex.service;
 import lombok.extern.slf4j.Slf4j;
 import me.younglin.springex.bean.GenericBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -13,7 +14,7 @@ import javax.annotation.PostConstruct;
  * @date 2020/7/22 11:43 下午
  */
 @Component("scopeService")
-//@Scope("thread-local")
+@Scope("thread-local")
 @Slf4j
 public class ScopeService {
 

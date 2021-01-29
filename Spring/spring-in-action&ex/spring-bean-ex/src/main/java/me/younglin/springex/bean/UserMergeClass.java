@@ -3,6 +3,7 @@ package me.younglin.springex.bean;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -10,11 +11,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * {@link @Lazy} 这里如果标明 Lazy 启动时不会报错，运行时，进行依赖查找时，会报错
+ * {@link @Lazy} 这里如果标明 Lazy 启动时不会报错，运行时，如果进行依赖查找，则会报错
  * @author young1lin
  * @version 1.0
  * @date 2020/8/6 2:01 下午
  */
+//@Lazy
 @Component
 @Slf4j
 public class UserMergeClass {

@@ -1,9 +1,10 @@
 package me.younglin.springex.bean.circle;
 
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 
 /**
  * @author young1lin
@@ -14,7 +15,7 @@ import javax.annotation.Resource;
 @Component("circleBeanOne")
 public class CircleBeanOne {
 
-    @Resource
+    @Autowired
     private CircleBeanTwo circleBeanTwo;
 
     public CircleBeanOne(){
@@ -28,4 +29,5 @@ public class CircleBeanOne {
                 "circleBeanTwo=" + circleBeanTwo +
                 '}';
     }
+
 }

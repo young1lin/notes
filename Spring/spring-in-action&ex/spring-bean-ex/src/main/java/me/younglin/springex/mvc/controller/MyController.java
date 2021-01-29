@@ -20,4 +20,5 @@ public class MyController {
     public String getStr(){
         return "Hello World";
     }
+
 }
