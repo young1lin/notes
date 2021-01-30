@@ -1,8 +1,7 @@
-package me.young1lin.offer;
+package me.young1lin.offer.list;
 
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * 从尾到头打印链表
@@ -14,7 +13,16 @@ import java.util.Queue;
  */
 public class FuckingList {
 
-	static class ListNode {
+	private static final ListNode HEAD = new ListNode();
+
+	private static final int LIST_LENGTH = 50;
+
+
+	static {
+		initListNode();
+	}
+
+	private static class ListNode {
 
 		int value;
 
@@ -22,15 +30,9 @@ public class FuckingList {
 
 	}
 
-	private static final ListNode prev = new ListNode();
-
-	static {
-		initListNode();
-	}
-
 	private static void initListNode() {
-		ListNode prev = FuckingList.prev;
-		for (int i = 0; i < 50; i++) {
+		ListNode prev = FuckingList.HEAD;
+		for (int i = 0; i < LIST_LENGTH; i++) {
 			ListNode tmp = new ListNode();
 			prev.value = i;
 			prev.next = tmp;
@@ -39,7 +41,7 @@ public class FuckingList {
 	}
 
 	public static void main(String[] args) {
-		ListNode next = prev;
+		ListNode next = HEAD;
 		while (next.next != null) {
 			System.out.println(next.value);
 			next = next.next;
@@ -47,7 +49,7 @@ public class FuckingList {
 		System.out.println("=======");
 		// 反向打印
 		Deque<Integer> stack = new LinkedList<>();
-		ListNode next2 = prev;
+		ListNode next2 = HEAD;
 		while (next2.next != null) {
 			stack.push(next2.value);
 			next2 = next2.next;
