@@ -17,7 +17,17 @@ public class TopK {
 	private final PriorityQueue<Integer> queue;
 
 	TopK(int k, int[] data) {
-		this.queue = new PriorityQueue<>();
+		this.queue = new PriorityQueue<>((o1, o2) -> {
+			// 其实这里不用写，默认就是这样的，默认维护一个小顶堆。如果需要改成大顶堆，那么就把 1 和 -1 互换就行了。
+			if (o1 > o2) {
+				return 1;
+			}
+			else if (o1 < o2) {
+				return -1;
+			}
+			return 0;
+		});
+		//this.queue = new PriorityQueue<>();
 		this.k = k;
 		initQueue(data);
 	}
@@ -28,11 +38,12 @@ public class TopK {
 				queue.add(tmp);
 			}
 			else {
-				// 这里报自动拆箱可能会为空，然后导致 NullPointException，不用管，一把梭。
-				int minValue = queue.peek();
-				if (minValue < tmp) {
-					queue.poll();
-					queue.add(tmp);
+				if (queue.peek() != null) {
+					int minValue = queue.peek();
+					if (minValue < tmp) {
+						queue.poll();
+						queue.add(tmp);
+					}
 				}
 			}
 		}
@@ -54,4 +65,5 @@ public class TopK {
 		int[] arr = topK.getTopK();
 		System.out.println(Arrays.toString(arr));
 	}
+
 }

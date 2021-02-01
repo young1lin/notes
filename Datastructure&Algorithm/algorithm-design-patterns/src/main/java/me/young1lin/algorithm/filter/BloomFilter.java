@@ -104,10 +104,7 @@ public class BloomFilter {
 	}
 
 	public static void main(String[] args) {
-
-
 		byte[][] values = createTestArray();
-
 		BloomFilter bf = new BloomFilter(3, 48);
 		printlnArray(values);
 		bf.generate(values);

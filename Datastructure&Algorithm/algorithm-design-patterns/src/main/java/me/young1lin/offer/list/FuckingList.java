@@ -7,6 +7,7 @@ import java.util.LinkedList;
  * 从尾到头打印链表
  * 不允许修改链表结构
  * 用栈来实现，LinkedList 就是默认的栈
+ *
  * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
  * @since 2021/1/28 下午11:40
  * @version 1.0
@@ -16,7 +17,6 @@ public class FuckingList {
 	private static final ListNode HEAD = new ListNode();
 
 	private static final int LIST_LENGTH = 50;
-
 
 	static {
 		initListNode();

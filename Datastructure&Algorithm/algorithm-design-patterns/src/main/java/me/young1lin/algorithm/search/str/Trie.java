@@ -41,7 +41,7 @@ public class Trie {
 	}
 
 	/**
-	 * 	在Trie树中查找一个字符串
+	 * 	在 Trie 树中查找一个字符串
 	 */
 	public static boolean find(char[] pattern) {
 		TrieNode p = ROOT;
