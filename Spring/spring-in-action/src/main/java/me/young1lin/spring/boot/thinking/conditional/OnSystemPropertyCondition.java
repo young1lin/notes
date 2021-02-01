@@ -17,6 +17,7 @@ public class OnSystemPropertyCondition implements Condition, Ordered {
 
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+        // maybe get null object, but who cares? 我管你呢
         // get all of ConditionalOnSystemProperty method attribute value
         MultiValueMap<String, Object> attributes = metadata.getAllAnnotationAttributes(ConditionalOnSystemProperty.class.getName());
         // get all of ConditionalOnSystemProperty#name value

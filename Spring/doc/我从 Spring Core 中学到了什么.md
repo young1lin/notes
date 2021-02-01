@@ -154,3 +154,139 @@ public Set<BeanDefinition> findCandidateComponents(String basePackage) {
    }
 }
 ```
+
+# 培养抽象思维
+
+Resource
+
+AutowireCandidateResolver
+
+BeanDefinitionRegistry
+
+BeanNameGenerator
+
+MergedBeanDefinitionPostProcessor（Bean 的生命周期有一个 BeanDefinition merge 的过程，调用的这个）
+
+Aware（意识，一般是用来注入各个其子类的，例如 ApplicationContextAware，ApplicationEventPublisherAware，后者其实一般还是 ApplicationContext，BeanFactoryAware）
+
+DisposableBean
+
+FactoryBean
+
+HierarchicalBeanFactory（层次性 BeanFactory，标记，然后可以获得具体的 parentBeanFactory）
+
+InitializingBean
+
+ListableBeanFactory（列表式的 BeanFactory）
+
+NamedBean（自定义 Bean 名称）
+
+ObjectFactory（对象工厂，其子类，DefaultListableBeanFactory）
+
+ObjectProvider（对象提供者，其子类，DefaultListableBeanFactory）
+
+SmartInitializingSingleton（这个在 DefaultListableBeanFactory 会有在获取 Bean 前进行一波操作的 ）
+
+BeanMetadataElement（其子类接口 BeanDefinition）
+
+BeanWrapper（增强 Bean 用的包装类）
+
+PropertyValues（典型的子类实现 MutablePropertyValues，其实就是套了多个 PropertyValue，多用于获取配置信息）
+
+Environment（所有环境配置的抽象，会覆盖掉）
+
+Cache（缓存抽象）
+
+CacheManager（管理缓存）
+
+ApplicationEventMulticaster（事件广播器）
+
+EventListenerFactory（事件监听工厂）
+LocaleContext（国际化支持上下文抽象）
+ApplicationContextAware（获取 ApplicationContext 引用）
+
+ApplicationEventPublisher（应用事件发布者，典型的实现为 AbstractApplicationContext）
+
+所以说 ApplicationContext 即是 ResourceLoder 也是事件发布者
+
+Lifecycle （一般是 ApplicationContext 的生命周期接口）
+
+MessageSource（消息源，一般也是 ApplicationContext）
+
+SmartLifecycle
+
+Formatter（日期，金额等等格式化的接口）
+
+JmxAttributeSource（JMX 想关的）
+
+RmiInvocationHandler（配置 Rmi 相关的）
+
+RemoteInvocationExecutor，
+
+RemoteInvocationFactory
+
+SchedulingTaskExecutor（定时任务相关）
+
+TaskScheduler 
+
+Trigger
+
+TriggerContext
+
+HierarchicalThemeSource（主题相关的，和 Spring MVC 相关，当然你做 GUI 项目，我也不拦着）
+
+ThemeSource，
+
+Theme
+
+Model（Spring validation 相关）
+
+Profiles
+
+PropertyResolver（Environment 相关）
+
+PropertySources
+
+WritableResource（继承自 Resource，主要是就是表明这是个可写的文件）
+
+MetadataReader（ASM 抽象的类的属性）
+
+BeanDefinition
+
+BeanFactory 
+
+ApplicationContext（增强版 BeanFactory）
+
+BeanPostProcessor
+
+BeanFactoryProcessor
+
+TransactionDefinition（事务抽象传播以及隔离级别，在这定义）
+
+AopProxyFactory（Aop 方面的接口）
+
+Advice（AfterAdvice，AfterReturningAdvice，BeforeAdvice 各种时候织入的接口）
+
+Advisor（例如 DefaultPointcutAdvisor）
+
+Scope（定义作用域的接口）
+
+JDK 自带的 EventListener
+
+大家默认继承这个，算是个遵守约定。
+
+
+
+
+
+
+
+```
+/**
+ * Simple facade for accessing class metadata,
+ * as read by an ASM {@link org.springframework.asm.ClassReader}.
+ *
+ * @author Juergen Hoeller
+ * @since 2.5
+ */
+```
