@@ -13,7 +13,7 @@ import org.springframework.context.support.AbstractApplicationContext;
 public abstract class BaseController {
 
 	/**
-	 *  @see {@link AbstractApplicationContext} logger field
+	 *  @see AbstractApplicationContext logger field
 	 */
 	protected final Logger log = LoggerFactory.getLogger(getClass());
 
