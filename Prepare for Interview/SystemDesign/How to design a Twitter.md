@@ -147,3 +147,68 @@ Hybrid Solution
 
 # Data Storage
 
+![Data Storage.png](https://i.loli.net/2021/02/04/gr7nbvujl8fEQVL.png)
+
+-  SQL database
+  - user table
+- NoSQL database
+  - timelines
+- File System
+  - Media file: image, audio, video
+
+# Scalability
+
+- Identify potential bottlenecks
+- Discussion solutions, focusing on tradeoffs
+  - Data sharding
+    - Data store, cache
+  - Load balancing
+    - E.g., user<->application server; application server<->cache server;application server<->db
+  - Data caching
+    - Read heavy
+
+## Sharding
+
+分库分表
+
+Horizontal scaling
+
+Option 1: Shard by tweet's creation time 
+
+Pros:
+
+	- Limited shards to query
+
+Cons:
+
+- Hot/Cold data issue
+- New shard fill up quickly
+
+Option2: Shard by hash(userId): store all the data of a user on a single shard
+
+Pros:
+
+- Simple
+- Query user timeline is straightforward
+
+Cons:
+
+- Home timeline still needs to query multiple shards
+- Non-uniform distribution of storage
+  - User data might not be able to fit into a single shard
+- Hot users
+- Availability
+
+Option 3: shard by hash(tweetId)
+
+Pros:
+
+- Uniform distribution
+- High availability
+
+Cons:
+
+- Need to query all shards in order to generrate user/home timeline
+
+# Caching
+
