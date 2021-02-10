@@ -78,3 +78,13 @@ vi /etc/hosts
 
 lscpu
 
+# echo
+
+回音
+
+Echo Yang
+
+```shell
+echo "JAVA_HOME is $JAVA_HOME"
+```
+

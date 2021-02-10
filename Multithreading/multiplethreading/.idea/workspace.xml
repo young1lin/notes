@@ -2,19 +2,24 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2e3ae98e-8e3b-40c2-8167-239247296da8" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/lock/ReentrantLockDemo.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/filter/BloomFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/filter/BloomFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/heap/TopK.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/heap/TopK.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/search/BinarySearch.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/search/BinarySearch.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/search/str/Trie.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/algorithm/search/str/Trie.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/offer/list/FuckingList.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/algorithm-design-patterns/src/main/java/me/young1lin/offer/list/FuckingList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/刷题/字节面试准备第五天.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../Datastructure&amp;Algorithm/刷题/字节面试准备第五天.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/safe/StandardEventSource.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/young1lin/multiplethreading/safe/StandardEventSource.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Netty/image/WebSocket 协议升级之前的 ChannelPipeline (1).png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Netty/image/WebSocket 协议升级之前的 ChannelPipeline.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Netty/image/通过 SslHandler 进行解密和加密的数据流.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Spring/spring-in-action/src/main/java/me/young1lin/spring/in/action/service/impl/KafkaOrderMessagingServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Spring/spring-in-action/src/main/java/me/young1lin/spring/in/action/service/impl/KafkaOrderMessagingServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Spring/spring-in-action/src/main/java/me/young1lin/spring/my/resolve/util/ScanUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/../../Spring/spring-in-action/src/main/java/me/young1lin/spring/my/resolve/util/ScanUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../Prepare for Interview/列出想去的公司.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../Prepare for Interview/列出想去的公司.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeStyleSettingsInfer">
+    <option name="done" value="true" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -35,6 +40,9 @@
         <option name="userSettingsFile" value="$USER_HOME$/young1lin/soft/apache-maven-3.6.2/conf/settings.xml" />
       </MavenGeneralSettings>
     </option>
+  </component>
+  <component name="ProjectCodeStyleSettingsMigration">
+    <option name="version" value="1" />
   </component>
   <component name="ProjectId" id="1kSufcm1xOHBChchvBX8JijdYIr" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
@@ -105,6 +113,7 @@
       <workItem from="1608125859880" duration="2283000" />
       <workItem from="1608162344882" duration="20000" />
       <workItem from="1610889803272" duration="1161000" />
+      <workItem from="1612172107970" duration="277000" />
     </task>
     <servers />
   </component>
