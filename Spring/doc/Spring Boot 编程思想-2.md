@@ -72,7 +72,11 @@
 1. 增加属性设置——`new SpringApplicationBuilder(CurrentClazz.class).properties("formatter.enable=true").run(args);`// “=”前后不能有空格。
 2. 调整 @ConditionalOnProperty#matchIfMissing 属性——`matchIfMissing = true` 表示当属性配置不存在时，同样视作匹配。
 
-三个 Environment 来源，会覆盖，优先级是 // TODO 写出优先级
+三个 Environment 来源，会覆盖，优先级依次向下，也就是说，1 会覆盖 2，2 会覆盖 3，3 优先级最低。
+
+1. 环境变量
+2. 启动时输入参数
+3. properties、yml 等配置
 
 ## Resource 条件注解
 

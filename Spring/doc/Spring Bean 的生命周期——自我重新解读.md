@@ -1,20 +1,24 @@
-1. Spring Bean 元信息配置阶段
-2. Spring Bean元信息解析阶段
-3. Spring Bean注册阶段
-4. Spring Bean GenericBeanDefinition 合并成 RootBeanDefinition 阶段
-5. Spring Bean Class 加载阶段
-6. Spring Bean 实例化前阶段
-7. Spring Bean 实例化阶段
-8. Spring Bean 实例化后阶段
-9. Spring Bean 属性赋值阶段
-10. Spring Bean Aware 接口回调阶段
-11. Spring Bean 初始化前阶段
-12. Spring Bean 初始化阶段
-13. Spring Bean 初始化后阶段
-14. Spring Bean 初始化完成阶段啊
-15. Spring Bean 销毁前阶段
-16. Spring Bean 销毁阶段
-17. Spring Bean 垃圾收集
+# 总览
+
+1. Spring Bean 的元信息配置。
+
+2. Spring Bean 的元信息解析。
+3. Spring Bean 注册。
+4. Spring BeanDefinition 合并（从 GenericBeanDefinition 合并成 RootBeanDefinition 方便后面操作）。
+5. Spring Bean Class 加载。
+6. Spring Bean 实例化前（实现了 SmartInstantiationAwareBeanPostProcessor 接口在 AbstractAutowireCapableBeanFactory#createBean -> doCreateBean -> createBeanInstance -> determineConstructorsFromBeanPostProcessors 这里检查相关实现的类）。
+
+7. Spring Bean 实例化。
+8. Spring Bean 实例化后。
+9. Spring Bean 属性填充之前。（AbstractAutowireCapableBeanFactory#populateBean  592 行代码）
+10. Spring Bean Aware 接口回调。（AbstractAutowireCapableBeanFactory#initializeBean -> invokeAwareMethods）
+11. Spring Bean 初始化阶段。(AbstractAutowireCapableBeanFactory#invokeInitMethods)
+12. Spring Bean 初始化阶段。
+13. Spring Bean 初始化后阶段。
+14. Spring Bean 初始化完成阶段。
+15. Spring Bean 销毁前阶段。
+16. Spring Bean 销毁阶段。
+17. Spring Bean 垃圾收集。
 
 # Spring Bean 元信息配置阶段
 
@@ -552,30 +556,6 @@ protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredTy
    return (T) bean;
 }
 ```
-
-##
-
-# 总览
-
-1. Spring Bean 的元信息配置。
-
-2. Spring Bean 的元信息解析。
-3. Spring Bean 注册。
-4. Spring BeanDefinition 合并（从 GenericBeanDefinition 合并成 RootBeanDefinition 方便后面操作）。
-5. Spring Bean Class 加载。
-6. Spring Bean 实例化前（实现了 SmartInstantiationAwareBeanPostProcessor 接口在 AbstractAutowireCapableBeanFactory#createBean -> doCreateBean -> createBeanInstance -> determineConstructorsFromBeanPostProcessors 这里检查相关实现的类）。
-
-7. Spring Bean 实例化。
-8. Spring Bean 实例化后。
-9. Spring Bean 属性填充之前。（AbstractAutowireCapableBeanFactory#populateBean  592 行代码）
-10. Spring Bean Aware 接口回调。（AbstractAutowireCapableBeanFactory#initializeBean -> invokeAwareMethods）
-11. Spring Bean 初始化阶段。(AbstractAutowireCapableBeanFactory#invokeInitMethods)
-12. Spring Bean 初始化阶段。
-13. Spring Bean 初始化后阶段。
-14. Spring Bean 初始化完成阶段。
-15. Spring Bean 销毁前阶段。
-16. Spring Bean 销毁阶段。
-17. Spring Bean 垃圾收集。
 
 # 缓存中获取单例 Bean
 
