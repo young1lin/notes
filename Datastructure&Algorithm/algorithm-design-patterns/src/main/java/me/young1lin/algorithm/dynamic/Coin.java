@@ -72,7 +72,7 @@ public class Coin {
 
 
 	public static void main(String[] args) {
-		int[] coins = new int[] {65, 7};
+		int[] coins = new int[] {65,17};
 		int amount = 177;
 		System.out.println(coinChange(coins, amount));
 		System.out.println(coinChangeTwo(coins, amount));

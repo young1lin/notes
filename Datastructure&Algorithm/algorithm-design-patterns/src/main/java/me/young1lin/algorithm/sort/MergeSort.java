@@ -3,7 +3,7 @@ package me.young1lin.algorithm.sort;
 import me.young1lin.algorithm.sort.annotation.Order;
 
 /**
- * 暂时还是搞不明白
+ * 通透了
  *
  * @author young1lin
  * @version 1.0
@@ -13,7 +13,7 @@ import me.young1lin.algorithm.sort.annotation.Order;
 public class MergeSort extends AbstractSort {
 
     @Override
-    public void sort(int[] arr) {
+    public void doSort(int[] arr) {
         doSort(arr, 0, arr.length - 1);
     }
 

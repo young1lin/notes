@@ -8,7 +8,7 @@ package me.young1lin.algorithm.sort;
 public class InsertionSort extends AbstractSort {
 
     @Override
-    public void sort(int[] arr) {
+    public void doSort(int[] arr) {
         checkLength(arr);
         for (int i = 0; i < arr.length; i++) {
             int value = arr[i];

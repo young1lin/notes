@@ -12,7 +12,7 @@ import java.util.LinkedList;
  * @since 2021/1/28 下午11:40
  * @version 1.0
  */
-public class FuckingList {
+public class ReversePrintlnList {
 
 	private static final ListNode HEAD = new ListNode();
 
@@ -31,7 +31,7 @@ public class FuckingList {
 	}
 
 	private static void initListNode() {
-		ListNode prev = FuckingList.HEAD;
+		ListNode prev = ReversePrintlnList.HEAD;
 		for (int i = 0; i < LIST_LENGTH; i++) {
 			ListNode tmp = new ListNode();
 			prev.value = i;

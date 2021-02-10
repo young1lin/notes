@@ -39,7 +39,16 @@ public abstract class AbstractSort implements Sort {
 	 * @param arr 待排序的数组
 	 */
 	@Override
-	public abstract void sort(int[] arr);
+	public void sort(int[] arr) {
+		checkLength(arr);
+		doSort(arr);
+	}
+
+	/**
+	 * 实际排序
+	 * @param arr be sorted int array
+	 */
+	protected abstract void doSort(int[] arr);
 
 	protected void checkLength(int[] arr) {
 		if (arr.length < 1) {

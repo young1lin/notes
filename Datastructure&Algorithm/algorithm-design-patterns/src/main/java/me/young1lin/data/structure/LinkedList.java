@@ -203,19 +203,30 @@ public class LinkedList<E> implements Deque<E>, List<E> {
 
 	@Override
 	public E pollFirst() {
-		return null;
+		ListNode<E> tmp = first;
+		if (tmp == null) {
+			throw new IndexOutOfBoundsException();
+		}
+		return unlink(tmp);
 	}
 
 	@Override
 	public E pollLast() {
-		return null;
+		ListNode<E> tmp = last;
+		if (tmp == null) {
+			throw new IndexOutOfBoundsException();
+		}
+		return unlink(tmp);
 	}
 
 
 	@Override
 	public E peekFirst() {
-
-		return null;
+		ListNode<E> tmp = first;
+		if (tmp == null) {
+			throw new IndexOutOfBoundsException("null list");
+		}
+		return tmp.item;
 	}
 
 	@Override

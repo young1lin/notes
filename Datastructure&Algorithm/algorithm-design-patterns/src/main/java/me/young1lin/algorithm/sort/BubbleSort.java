@@ -8,7 +8,7 @@ package me.young1lin.algorithm.sort;
 public class BubbleSort extends AbstractSort {
 
     @Override
-    public void sort(int[] arr) {
+    public void doSort(int[] arr) {
         checkLength(arr);
         // 提前退出冒泡循环的标识位
         boolean flag = false;

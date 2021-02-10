@@ -1,7 +1,7 @@
 package me.young1lin.algorithm.sort;
 
 /**
- * 暂时还是搞不明白
+ * 通透了
  *
  * @author young1lin
  * @version 1.0
@@ -10,7 +10,7 @@ package me.young1lin.algorithm.sort;
 public class QuickSort extends AbstractSort {
 
 	@Override
-	public void sort(int[] arr) {
+	public void doSort(int[] arr) {
 		doSort(arr, 0, arr.length - 1);
 	}
 
