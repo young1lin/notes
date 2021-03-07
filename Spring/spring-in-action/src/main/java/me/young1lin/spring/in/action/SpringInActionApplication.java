@@ -40,6 +40,7 @@ public class SpringInActionApplication extends SpringBootServletInitializer {
 		HelloService helloService = cac.getBean("helloService", HelloService.class);
 		// 这里输出的话，就已经自动装配成功了
 		System.out.println(helloService.hello());
+		cac.close();
 
 	}
 }

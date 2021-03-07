@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
  * 即 index(i)=HASH_i(w)%N，将 array 数组中的 array[index(i)] 置为 1。
  * 最终 array 变成一个某些元素为 1 的 01 数组。
  * </p>
+ *
  * BloomFilter Easy find some Object maybe exists or not exists
  *
  * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>

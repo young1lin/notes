@@ -16,8 +16,10 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan({"me.young1lin.spring.core.resolve.auto"})
 @ConditionalOnProperty(prefix = "resolve",name = "enable",havingValue = "true")
 public class HelloServiceAutoConfiguration {
+
     @Bean
     public HelloService helloService(){
         return new HelloServiceImpl();
     }
+
 }

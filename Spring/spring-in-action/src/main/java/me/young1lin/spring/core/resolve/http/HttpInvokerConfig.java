@@ -1,6 +1,7 @@
 package me.young1lin.spring.core.resolve.http;
 
 import me.young1lin.spring.core.resolve.rmi.client.RmiClientConfig;
+
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
 import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
@@ -17,24 +18,33 @@ import org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter;
 @Configuration
 public class HttpInvokerConfig {
 
-    @Bean
-    public HttpInvokerServiceExporter hit(HttpInvokerTest httpInvokerTest){
-        HttpInvokerServiceExporter ex = new HttpInvokerServiceExporter();
-        ex.setService(httpInvokerTest);
-        ex.setServiceInterface(HttpInvokerTest.class);
-        return ex;
-    }
+	/**
+	 *
+	 * @param httpInvokerTest j111
+	 * @return Http
+	 * @author yyl
+	 * @see HttpInvokerConfig
+	 */
+	@Bean
+	public HttpInvokerServiceExporter hit(HttpInvokerTest httpInvokerTest) {
+		HttpInvokerServiceExporter ex = new HttpInvokerServiceExporter();
+		ex.setService(httpInvokerTest);
+		ex.setServiceInterface(HttpInvokerTest.class);
+		return ex;
+	}
 
-    @Bean
-    public ServletWebServerFactory servletWebServerFactory(){
-        return new TomcatServletWebServerFactory(8080);
-    }
 
-    public static void main(String[] args) {
-        String className = RmiClientConfig.class.getName();
-        String currentPackage = className.substring(0,className.lastIndexOf("."));
-        ServletWebServerApplicationContext ctx = new AnnotationConfigServletWebServerApplicationContext(currentPackage);
-        //ctx.setServletConfig(new TestDispatcherServlet());
-        //ctx.setParent();
-    }
+	@Bean
+	public ServletWebServerFactory servletWebServerFactory() {
+		return new TomcatServletWebServerFactory(8080);
+	}
+
+	public static void main(String[] args) {
+		String className = RmiClientConfig.class.getName();
+		String currentPackage = className.substring(0, className.lastIndexOf("."));
+		ServletWebServerApplicationContext ctx = new AnnotationConfigServletWebServerApplicationContext(currentPackage);
+		//ctx.setServletConfig(new TestDispatcherServlet());
+		//ctx.setParent();
+	}
+
 }
