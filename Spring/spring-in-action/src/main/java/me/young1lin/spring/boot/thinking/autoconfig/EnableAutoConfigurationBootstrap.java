@@ -4,6 +4,8 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
@@ -19,6 +21,9 @@ public class EnableAutoConfigurationBootstrap {
 				.web(WebApplicationType.NONE)
 				.run(args)
 				.close();
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
+		context.refresh();
+		context.getBeanFactory().registerSingleton("","");
 	}
 
 }

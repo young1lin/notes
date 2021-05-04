@@ -11,5 +11,5 @@ me.young1lin.spring.boot.thinking.fail.UnKnownErrorFailureAnalyzer
 org.springframework.boot.diagnostics.FailureAnalysisReporter=\
 me.young1lin.spring.boot.thinking.fail.ConsoleFailureAnalysisReporter
 
-org.springframework.beans.BeanInfoFactory=\
-me.young1lin.spring.boot.thinking.autoconfig
+#org.springframework.beans.BeanInfoFactory=\
+#me.young1lin.spring.boot.thinking.autoconfig
