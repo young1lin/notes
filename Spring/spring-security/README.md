@@ -89,3 +89,22 @@ XSS 利用的是站点内信任用户，而 CSRF 则是通过伪装来自手信�
 ![CSRF.png](https://i.loli.net/2021/05/05/ONasQ3jxDb7zMX6.png) 
 官方文档上讲的转账的例子，已经很明确了，和这图一样。
 https://docs.spring.io/spring-security/site/docs/5.3.9.RELEASE/reference/html5/#csrf
+
+### CSRF 的防御
+(1) 将 Cookie 设置为 HttpOnly
+```java
+response.setHeader("Set-Cookie","cookiename=cookievalue;HttpOnly");
+```
+(2) 增加 Token
+```java
+HttpSession session = request.getSession();
+Object token = session.getAttribute("_token");
+if(Objects.isNull(token)){
+    session,setAttribute("_token",UUID.randomUUID().toString());
+}
+```
+(3) 通过 Referer 识别
+根据 HTTP 协议，在 HTTP 头中又一个字段叫 Referer，它记录了该 HTTP 请求的来源地址。在通常情况下，访问一个安全受限
+的页面的请求都来自同一个网站，验证这个地址即可。
+
+安全方法必须是幂等的。

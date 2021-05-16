@@ -23,6 +23,7 @@ public class ScanMain {
 
 	public static Map<FunctionType, FunctionTypeResolver> FUNCTION_TYPE_RESOLVE_MAP;
 
+
 	static {
 		String functionTypeBasePackage = FunctionType.class.getPackage().getName();
 		FUNCTION_TYPE_RESOLVE_MAP = ScanUtil.scan(functionTypeBasePackage, EsFunctionType.class, new Class[] {FunctionType.class});

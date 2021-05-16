@@ -20,6 +20,7 @@ public abstract class AbstractFunctionTypeResolver implements FunctionTypeResolv
 
 	/**
 	 * Template pattern, the template method to resolve columns
+	 *
 	 * @param columns the columns to be resolved
 	 * @return RequestAgg
 	 */

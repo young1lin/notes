@@ -15,4 +15,5 @@ public class CountFunctionTypeResolver extends AbstractFunctionTypeResolver{
 	protected Agg doResolve(String[] columns) {
 		return null;
 	}
+
 }
