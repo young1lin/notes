@@ -7,10 +7,31 @@ package me.young1lin.offer;
  */
 public class ReplaceBlank {
 
-	private static String str = "We are Happy";
+	private static final String STR = "We are Happy";
 
 	public static void main(String[] args) {
-		System.out.println(str.replaceAll("\\s", "%20"));
+		// forbidden
+		System.out.println(STR.replaceAll("\\s", "%20"));
+		ReplaceBlank replaceBlank = new ReplaceBlank();
+		// right way
+		System.out.println(replaceBlank.replace(STR, "%20"));
+	}
+
+	public String replace(String str, String replaceStr) {
+		StringBuilder sb = new StringBuilder();
+		if (str == null) {
+			return "";
+		}
+		char[] strArr = str.toCharArray();
+		for (char a : strArr) {
+			if (a == ' ') {
+				sb.append(replaceStr);
+			}
+			else {
+				sb.append(a);
+			}
+		}
+		return sb.toString();
 	}
 
 }
