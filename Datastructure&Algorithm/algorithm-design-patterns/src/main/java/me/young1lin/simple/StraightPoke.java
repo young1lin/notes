@@ -36,7 +36,12 @@ public class StraightPoke {
 
 	public static void main(String[] args) {
 		StraightPoke poke = new StraightPoke();
-
+		int[] numArr = new int[]{1,3,4,2,5};
+		System.out.println(poke.isStraight(numArr));
+		int[] numArr1 = new int[]{0,3,4,2,5};
+		System.out.println(poke.isStraight(numArr1));
+		int[] numArr2 = new int[]{0,0,7,2,5};
+		System.out.println(poke.isStraight(numArr2));
 	}
 
 }
