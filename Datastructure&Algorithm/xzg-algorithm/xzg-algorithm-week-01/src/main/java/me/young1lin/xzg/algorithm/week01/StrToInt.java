@@ -54,7 +54,66 @@ package me.young1lin.xzg.algorithm.week01;
 public class StrToInt {
 
 	public int strToInt(String str) {
-		return 0;
+		char[] arr = str.toCharArray();
+		int n = arr.length;
+		// 处理空
+		if (n == 0) {
+			return 0;
+		}
+		// 处理前置空格
+		int k = 0;
+		while (k < n && arr[k] == ' ') {
+			k++;
+		}
+		// 全部为空格符号，就返回 0
+		if (k == n) {
+			return 0;
+		}
+		// 处理符号
+		int sign = 1;
+		char c = arr[k];
+		// 负数
+		if (c == '-') {
+			sign = -1;
+			k++;
+
+		}// 正数
+		else if (c == '+') {
+			k++;
+		}
+		// 界定范围 -2147483638 - 2147483647
+		int intAbsHigh = 214748364;
+		int result = 0;
+		while (k < n && isNum(arr[k])) {
+			// - '0' 就可以转换成数字
+			int d = arr[k] - '0';
+			// 如果大于这个数了，那么最后一位数字，不管为什么，都是超过范围了
+			if (result > intAbsHigh) {
+				if (sign == 1) {
+					return Integer.MAX_VALUE;
+				}
+				else {
+					return Integer.MIN_VALUE;
+				}
+			}
+			// 如果等于这个数，最后一位如果正数大于 7，那也超过了，负数大于 8 ，也是超过的
+			if (result == intAbsHigh) {
+				if (sign == 1 && d > 7) {
+					return Integer.MAX_VALUE;
+				}
+				if (sign == -1 && d > 8) {
+					return Integer.MIN_VALUE;
+				}
+			}
+			// 正常逻辑
+			result = result * 10 + d;
+			k++;
+		}
+		return sign * result;
+	}
+
+	private boolean isNum(char c) {
+		return c >= '0' && c <= '9';
 	}
 
 }
