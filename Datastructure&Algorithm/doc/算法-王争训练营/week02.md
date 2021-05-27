@@ -529,3 +529,76 @@ class Solution {
 }
 ```
 
+
+
+# 栈
+
+细分题型：
+
+- 直接以栈为背景的题目：比如用栈实现队列、最小栈、栈排序
+- 连连消题目：字符串连连消、求表达式。
+- 单调栈题目：栈延伸出来的一种新的数据结构。（不多，不怎么考，比较难）
+
+## 用栈实现队列
+
+这其实剑指Offer 也有。
+
+我记得有个博客园博客写得很详细。各种优化
+
+https://www.cnblogs.com/wanghui9072229/archive/2011/11/22/2259391.html
+
+是这个。
+
+```java
+package me.young1lin.xzg.algorithm.week02;
+
+import java.util.Stack;
+
+/**
+ * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
+ * @since 2021/5/28 上午12:23
+ * @version 1.0
+ */
+public class StackToQueue {
+
+	private Stack<Integer> stack = new Stack<>();
+
+	private Stack<Integer> tmpStack = new Stack<>();
+
+
+	public StackToQueue() {
+
+	}
+
+	public void enqueue(Integer data) {
+		stack.push(data);
+	}
+
+	public Integer dequeue() {
+		if (stack.isEmpty()) {
+			return null;
+		}
+		while (!stack.isEmpty()) {
+			tmpStack.push(stack.pop());
+		}
+		Integer result = tmpStack.pop();
+		while (!tmpStack.isEmpty()) {
+			stack.push(tmpStack.pop());
+		}
+		return result;
+	}
+
+}
+```
+
+
+
+## 删除连续重复字符
+
+## 计算器/表达式求值
+
+## 单调栈-每日温度（中等）
+
+
+
+# 队列
