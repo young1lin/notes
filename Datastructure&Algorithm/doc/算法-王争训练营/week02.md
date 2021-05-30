@@ -324,8 +324,6 @@ public class LinkedList<E> {
 
 [876. 链表的中间结点](https://leetcode-cn.com/problems/middle-of-the-linked-list/)（简单）
 
-
-
 [83. 删除排序链表中的重复元素](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list/)（简单）
 
 [剑指 Offer 25. 合并两个排序的链表](https://leetcode-cn.com/problems/he-bing-liang-ge-pai-xu-de-lian-biao-lcof/) （中等）
@@ -339,8 +337,6 @@ public class LinkedList<E> {
 [328. 奇偶链表](https://leetcode-cn.com/problems/odd-even-linked-list/)（中等）
 
 [25. K 个一组翻转链表](https://leetcode-cn.com/problems/reverse-nodes-in-k-group/)（困难）
-
-
 
 [剑指 Offer 22. 链表中倒数第k个节点](https://leetcode-cn.com/problems/lian-biao-zhong-dao-shu-di-kge-jie-dian-lcof/) （简单）
 
@@ -529,8 +525,6 @@ class Solution {
 }
 ```
 
-
-
 # 栈
 
 细分题型：
@@ -538,6 +532,44 @@ class Solution {
 - 直接以栈为背景的题目：比如用栈实现队列、最小栈、栈排序
 - 连连消题目：字符串连连消、求表达式。
 - 单调栈题目：栈延伸出来的一种新的数据结构。（不多，不怎么考，比较难）
+
+## 题目
+
+[剑指 Offer 09. 用两个栈实现队列](https://leetcode-cn.com/problems/yong-liang-ge-zhan-shi-xian-dui-lie-lcof/)（简单）
+
+[225. 用队列实现栈](https://leetcode-cn.com/problems/implement-stack-using-queues/)（简单）
+
+[面试题 03.05. 栈排序](https://leetcode-cn.com/problems/sort-of-stacks-lcci/)（中等）
+
+[155. 最小栈](https://leetcode-cn.com/problems/min-stack/)（简单）
+
+[面试题 03.01. 三合一](https://leetcode-cn.com/problems/three-in-one-lcci/)（简单） 
+
+[20. 有效的括号](https://leetcode-cn.com/problems/valid-parentheses/)（简单）
+
+[面试题 16.26. 计算器](https://leetcode-cn.com/problems/calculator-lcci/)（中等）
+
+[772. 基本计算器 III](https://leetcode-cn.com/problems/basic-calculator-iii/)（困难 包含括号 力扣会员）
+
+[1047. 删除字符串中的所有相邻重复项](https://leetcode-cn.com/problems/remove-all-adjacent-duplicates-in-string/)（简单）
+
+[剑指 Offer 31. 栈的压入、弹出序列](https://leetcode-cn.com/problems/zhan-de-ya-ru-dan-chu-xu-lie-lcof/)（中等）
+
+
+
+**以下选做，在有时间有精力之后再刷**
+
+[739. 每日温度](https://leetcode-cn.com/problems/daily-temperatures/)（中等） 单调栈 
+
+[42. 接雨水](https://leetcode-cn.com/problems/trapping-rain-water/)（困难）单调栈
+
+[84. 柱状图中最大的矩形](https://leetcode-cn.com/problems/largest-rectangle-in-histogram/)（困难）单调栈
+
+[面试题 03.06. 动物收容所](https://leetcode-cn.com/problems/animal-shelter-lcci/)（中等） 队列
+
+[剑指 Offer 59 - II. 队列的最大值](https://leetcode-cn.com/problems/dui-lie-de-zui-da-zhi-lcof/)（中等） 单调队列
+
+[剑指 Offer 59 - I. 滑动窗口的最大值](https://leetcode-cn.com/problems/hua-dong-chuang-kou-de-zui-da-zhi-lcof/) （困难）单调队列
 
 ## 用栈实现队列
 
@@ -591,13 +623,233 @@ public class StackToQueue {
 }
 ```
 
-
-
 ## 删除连续重复字符
 
-## 计算器/表达式求值
+字符串删除掉连续的 3 个重复的字符串。比如 “abbbc”，返回 "ac"; "abbbaac", 返回 c。
+
+注：这里 b 消除了，然后 a 就再一起了，所以返回 c
+
+```java
+public class RemoveDuplicateChars {
+
+	static class CharWithCount {
+
+		char c;
+
+		int count;
+
+		public CharWithCount(char c, int count) {
+			this.c = c;
+			this.count = count;
+		}
+
+	}
+
+	public String remove(String str) {
+		// 用一个栈就行
+		Stack<CharWithCount> stack = new Stack<>();
+		for (int i = 0; i < str.length(); i++) {
+			char c = str.charAt(i);
+			// 如果栈是空的，也就是第一次，或者已经消完了，则添加元素
+			if (stack.isEmpty()) {
+				stack.push(new CharWithCount(c, 1));
+				continue;
+			}
+			CharWithCount topChar = stack.peek();
+			// 如果连续的字符不相等，则放入
+			if (topChar.c != c) {
+				stack.push(new CharWithCount(c, 1));
+				continue;
+			}
+			// 如果相等并且连续的字符等于 2，则需要进行消消乐
+			// 栈顶元素和 c 一样，并且等于 2 了，那就是第三个了，需要消消乐
+			if (topChar.count == 2) {
+				stack.pop();
+				continue;
+			}
+			topChar.count++;
+		}
+		StringBuilder sb = new StringBuilder();
+		while (!stack.isEmpty()) {
+			// 如果不等于 1，则需要 append 两次，同理如果是 4 个一消，则需要进行 3 次以下的 append
+			if (stack.peek().count != 1) {
+				sb.append(stack.peek().c);
+			}
+			sb.append(stack.pop().c);
+		}
+		return sb.reverse().toString();
+	}
+
+}
+```
+
+## 计算器/表达式求值（LeetCode 会员题）
+
+面试题 16.26 计算器。面试官也是 Google 的
+
+给定一个包含正整数、加➕、减(-)、乘(*)、除(/)的算数表达式（括号除外），计算其结果。
+
+表达式仅包含非负整数，+, -, *, / 四种运算符**和空格**，整数除法仅保留整数部分。
+
+示例 1:
+
+```
+输入：“3+2*2”
+输出：7
+```
+示例 2:
+
+```
+输入：“3/2”
+输出：1
+```
+
+示例 3:
+
+```
+输入：“3+5/2”
+输出：5
+```
+
+两个栈，一个存能放处理的符号，一个放不能处理的。
+
+因为乘除优先于加减。* & / 优先级大于 + -。
+
+栈1 存数字，栈 2 存符号，栈 2 有三种情况，
+
+```java
+public class Calculator {
+
+	private static final char BLANK = ' ';
+
+
+	public int calculate(String s) {
+		Stack<Integer> numbers = new Stack<>();
+		Stack<Character> ops = new Stack<>();
+		int i = 0;
+		int n = s.length();
+		while (i < n) {
+			char c = s.charAt(i);
+			// 跳过空格
+			if (c == BLANK) {
+				i++;
+
+			}// 如果是数字的话
+			else if (isDigit(c)) {
+				int number = 0;
+				while (i < n && isDigit(s.codePointAt(i))) {
+					number = number * 10 + (s.charAt(i) - '0');
+					i++;
+				}
+				numbers.push(number);
+			}// 运算符
+			else {
+				if (ops.isEmpty() || !prior(c, ops.peek())) {
+					ops.push(c);
+				}
+				else {
+					while (!ops.isEmpty() && prior(c, ops.peek())) {
+						fetchAndCal(numbers, ops);
+					}
+					ops.push(c);
+				}
+				i++;
+			}
+		}
+		while (!ops.isEmpty()) {
+			fetchAndCal(numbers, ops);
+		}
+		return numbers.pop();
+	}
+
+	private boolean prior(char c, Character peek) {
+		// 返回优先级，c 是否比 peek 的优先级大，乘除比加减优先级大
+		return (c != '*' && c != '/') || (peek != '+' && peek != '-');
+	}
+
+	private void fetchAndCal(Stack<Integer> numbers, Stack<Character> ops) {
+		int number2 = numbers.pop();
+		int number1 = numbers.pop();
+		char op = ops.pop();
+		int ret = cal(op, number1, number2);
+		numbers.push(ret);
+	}
+
+	private int cal(char op, int number1, int number2) {
+		switch (op) {
+			case '+':
+				return number1 + number2;
+			case '-':
+				return number1 - number2;
+			case '*':
+				return number1 * number2;
+			case '/':
+				return number1 / number2;
+			default:
+				return -1;
+		}
+	}
+
+	public static void main(String[] args) {
+		String[] strArr = new String[] {
+				"3+2*2",
+				"3/2",
+				"3+5/2"
+		};
+		Calculator calculator = new Calculator();
+		Stream.of(strArr).forEach(str -> System.out.println(calculator.calculate(str)));
+	}
+
+}
+```
 
 ## 单调栈-每日温度（中等）
+
+
+
+
+
+```java
+// 单调栈处理
+class Solution {
+
+    public int[] dailyTemperatures(int[] temperatures) {
+        int n = temperatures.length;
+        Stack<Integer> stack = new Stack<>();
+        // 默认会初始化全部为 0
+        int[] result = new int[n];
+        for(int i = 0; i < n; i++) {
+            // 如果栈不为空，且栈顶元素小于当前值，则可以弹出，并且设置栈里的元素的值是 i - idx
+            while(!stack.isEmpty() && temperatures[stack.peek()] < temperatures[i]){
+                int idx = stack.pop();
+                result[idx] = i - idx;
+            }
+            // push 的是下标
+            stack.push(i);
+        }
+        return result;
+    }
+
+}
+// 笨方法
+class Solution1 {
+
+    public int[] dailyTemperatures(int[] temperatures) {
+        int n = temperatures.length;
+        int[] result = new int[n];
+        for(int i = 0; i < n; i++) {
+            for(int j = i + 1; j < n; j++){
+                if(temperatures[i] < temperatures[j]){
+                    result[i] = j - i;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+}
+```
 
 
 

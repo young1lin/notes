@@ -37,3 +37,38 @@ public class StackToQueue {
 	}
 
 }
+
+class StackQueue2 {
+
+	private final Stack<Integer> stack = new Stack<>();
+
+	private final Stack<Integer> tmpStack = new Stack<>();
+
+
+	public StackQueue2() {
+
+	}
+
+	/**
+	 * 入队的时候麻烦点，出队的时候就简单了。
+	 *
+	 * @param data 入队数据
+	 */
+	public void enqueue(Integer data) {
+		while (!stack.isEmpty()) {
+			tmpStack.push(stack.pop());
+		}
+		stack.push(data);
+		while (!tmpStack.isEmpty()) {
+			stack.push(tmpStack.pop());
+		}
+	}
+
+	public Integer dequeue() {
+		if (stack.isEmpty()) {
+			return null;
+		}
+		return stack.pop();
+	}
+
+}

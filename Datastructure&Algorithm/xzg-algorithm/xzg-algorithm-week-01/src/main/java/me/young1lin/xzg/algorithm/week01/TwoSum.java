@@ -63,9 +63,7 @@ public class TwoSum {
 		};
 		int[] targets = new int[] {9, 6, 6};
 		for (int i = 0; i < arrays.length; i++) {
-			System.out.println(
-					Arrays.toString(
-							twoSum(arrays[i], targets[i])));
+			System.out.println(Arrays.toString(twoSum(arrays[i], targets[i])));
 		}
 
 	}

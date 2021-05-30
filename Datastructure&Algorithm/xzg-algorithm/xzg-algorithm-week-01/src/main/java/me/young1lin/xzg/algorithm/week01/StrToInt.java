@@ -1,5 +1,7 @@
 package me.young1lin.xzg.algorithm.week01;
 
+import java.util.stream.Stream;
+
 /**
  * 写一个函数 StrToInt，实现把字符串转换成整数这个功能。不能使用 atoi 或者其他类似的库函数。
  *
@@ -81,7 +83,7 @@ public class StrToInt {
 		else if (c == '+') {
 			k++;
 		}
-		// 界定范围 -2147483638 - 2147483647
+		// 界定范围 -2147483648 - 2147483647
 		int intAbsHigh = 214748364;
 		int result = 0;
 		while (k < n && isNum(arr[k])) {
@@ -114,6 +116,18 @@ public class StrToInt {
 
 	private boolean isNum(char c) {
 		return c >= '0' && c <= '9';
+	}
+
+	public static void main(String[] args) {
+		String[] strArr = new String[] {
+				"4193 with words",
+				"words and 987",
+				"47",
+				"-91283472332",
+				"2147483649"
+		};
+		StrToInt strToInt = new StrToInt();
+		Stream.of(strArr).forEach(str -> System.out.println(strToInt.strToInt(str)));
 	}
 
 }

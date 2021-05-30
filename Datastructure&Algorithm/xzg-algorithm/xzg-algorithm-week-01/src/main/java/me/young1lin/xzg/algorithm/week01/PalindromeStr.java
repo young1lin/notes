@@ -1,5 +1,7 @@
 package me.young1lin.xzg.algorithm.week01;
 
+import java.util.stream.Stream;
+
 /**
  * 给定一个字符串，验证它是否是回文串，只考虑字母和数字字符，可以忽略字母的大小写。
  *
@@ -74,10 +76,15 @@ public class PalindromeStr {
 		return ((char) ((int) charAt + 32));
 	}
 
-
 	public static void main(String[] args) {
 		PalindromeStr palindromeStr = new PalindromeStr();
-
+		String[] strArr = new String[] {
+				"A man, a plan, a canal: Panama",
+				"race a car",
+				"a';;s;;sa"
+		};
+		Stream.of(strArr).forEach(str ->
+				System.out.println(palindromeStr.isPalindrome(str)));
 	}
 
 }

@@ -1,5 +1,7 @@
 package me.young1lin.xzg.algorithm.week01;
 
+import java.util.stream.Stream;
+
 /**
  * 请实现一个函数，把字符串 s 中的每个空格替换成"%20"。
  *
@@ -26,15 +28,29 @@ public class ReplaceSpace {
 		}
 		char[] arr = s.toCharArray();
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < arr.length; i++) {
-			if (arr[i] == ' ') {
+		for (char c : arr) {
+			if (c == ' ') {
 				sb.append("%20");
 			}
 			else {
-				sb.append(arr[i]);
+				sb.append(c);
 			}
 		}
 		return sb.toString();
+	}
+
+	public static void main(String[] args) {
+		ReplaceSpace replaceSpace = new ReplaceSpace();
+		String[] arr = new String[] {
+				"We are happy.",
+				"We are not happy",
+				"Rome wasn't built in a day",
+				"I'm not a. communist necessarily, but i've been in the red all my life.",
+				"Image life as a game in which you are juggling some five balls in the air. You name them - work, family, health, friends and spirit, and you're keeping all these ball in the air."
+		};
+		Stream.of(arr).forEach(str -> System.out.println(replaceSpace.replaceSpace2(str)));
+		// It also works, but no one accesses it as an interview solution
+		Stream.of(arr).forEach(str -> System.out.println(replaceSpace.replaceSpace2(str)));
 	}
 
 }

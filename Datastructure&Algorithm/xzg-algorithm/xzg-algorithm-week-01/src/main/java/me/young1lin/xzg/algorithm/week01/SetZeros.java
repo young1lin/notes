@@ -1,5 +1,8 @@
 package me.young1lin.xzg.algorithm.week01;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 /**
  * 编写一种算法，若M × N矩阵中某个元素为0，则将其所在的行与列清零。
  *
@@ -43,29 +46,59 @@ public class SetZeros {
 
 	public void setZeroes(int[][] matrix) {
 		int n = matrix.length;
-		if(n == 0){
+		if (n == 0) {
 			return;
 		}
 		int m = matrix[0].length;
 		// 标记哪一行，哪一列需要清零
 		boolean[] zeroRows = new boolean[n];
 		boolean[] zeroColumns = new boolean[m];
-		for(int i = 0;i < n;++i){
-			for(int j = 0; j < m; j++){
-				if(matrix[i][j] == 0){
+		for (int i = 0; i < n; ++i) {
+			for (int j = 0; j < m; j++) {
+				if (matrix[i][j] == 0) {
 					zeroRows[i] = true;
 					zeroColumns[j] = true;
 				}
 			}
 		}
 		// 这一步就是变为 0 的操作
-		for(int i = 0;i < n;i++){
-			for(int j = 0;j < m; j++){
-				if(zeroRows[i] || zeroColumns[j]){
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < m; j++) {
+				if (zeroRows[i] || zeroColumns[j]) {
 					matrix[i][j] = 0;
 				}
 			}
 		}
+	}
+
+	public static void main(String[] args) {
+		int[][][] threeDimensionalArray = new int[][][] {
+				{
+						{0, 1, 2, 0},
+						{3, 4, 5, 2},
+						{1, 3, 1, 5}
+				},
+				{
+						{0, 0, 0, 0},
+						{0, 4, 5, 0},
+						{0, 3, 1, 0}
+				},
+				{
+						{1, 1, 1},
+						{1, 0, 1},
+						{1, 1, 1}
+				},
+		};
+		SetZeros setZeros = new SetZeros();
+		Stream.of(threeDimensionalArray).forEach(twoDimensionalArray -> {
+			setZeros.setZeroes(twoDimensionalArray);
+			for (int[] arr : twoDimensionalArray) {
+				System.out.println(Arrays.toString(arr));
+			}
+			System.out.println("-----------");
+			// 下面这个打印比较抽象
+			// System.out.println(Arrays.deepToString(twoDimensionalArray));
+		});
 	}
 
 }
