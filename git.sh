@@ -12,9 +12,9 @@ for i in "$*"; do
 done
 commit_info="${message} update"
 
-git add .
+git add ${message}
 echo "-----------------------------"
-echo "add all ...."
+echo "add ${message} ...."
 echo "-----------------------------"
 
 git commit -m "$commit_info"
