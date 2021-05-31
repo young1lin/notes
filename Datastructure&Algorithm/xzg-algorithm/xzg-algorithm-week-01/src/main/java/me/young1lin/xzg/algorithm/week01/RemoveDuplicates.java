@@ -1,5 +1,7 @@
 package me.young1lin.xzg.algorithm.week01;
 
+import java.util.stream.Stream;
+
 /**
  * 给你一个有序数组 nums ，请你 原地 删除重复出现的元素，使每个元素 只出现一次 ，返回删除后数组的新长度。
  *
@@ -57,6 +59,16 @@ public class RemoveDuplicates {
 			++fast;
 		}
 		return slow;
+	}
+
+	public static void main(String[] args) {
+		int[][] testArr = new int[][] {
+				{1, 1, 2},
+				{0, 0, 1, 1, 1, 2, 2, 3, 3, 4}
+		};
+		RemoveDuplicates removeDuplicates = new RemoveDuplicates();
+		Stream.of(testArr).forEach(arr ->
+				System.out.println(removeDuplicates.removeDuplicates(arr)));
 	}
 
 }

@@ -853,5 +853,321 @@ class Solution{
 }
 ```
 
+15. 一次编辑
 
+```java
+class Solution {
+
+   	public boolean oneEditAway(String first, String second) {
+
+		int n = first.length();
+		int m = second.length();
+		// 如果两个长度相差大于1，那么就肯定不是一次编辑能过的
+		if (Math.abs(n - m) > 1) {
+			return false;
+		}
+		// 在长的字符串中的删除 = 在短的字符串中的新增
+		// 长度一样，则是替换
+		// 先对两个字符串进行遍历
+		int i = 0;
+		int j = 0;
+		// 找出第一个不相等的元素
+		while (i < n && j < m && first.charAt(i) == second.charAt(j)) {
+			i++;
+			j++;
+		}
+		// 下面是跳过当前不一样的字符
+		// 表示是替换操作
+		// 替换 abdf abcf，样例跳过索引为 2 的
+		if (n == m) {
+			i++;
+			j++;
+		}
+		else if (n > m) {
+			i++;
+		}
+		else {
+			j++;
+		}
+		while (i < n && j < m) {
+			// 我上面都已经跳过了，还是不一样，那后面肯定不用比了
+			if (first.charAt(i) != second.charAt(j)) {
+				return false;
+			}
+			i++;
+			j++;
+		}
+		return true;
+	}
+
+}
+```
+
+16. 珠玑妙算
+
+```java
+class Solution {
+
+    public int[] masterMind(String solution, String guess) {      
+        // 猜中的话，只要有一个是相等的，那么就算猜中
+        // 伪猜中需要再遍历一遍
+        // 伪猜中是要颜色押中了，但是位置不对。
+        // 用来标记是否猜中了
+        int len = solution.length();
+        boolean[] hited = new boolean[len];
+        boolean[] tagTrue = new boolean[len];
+        // 先来搞一遍猜中的。等会再来搞伪猜中
+        int correct = 0;
+        int fakeCorrect = 0;
+        for(int i = 0; i < len; i++){
+            if(solution.charAt(i) == guess.charAt(i)) {
+                correct++;
+                tagTrue[i] = true;
+                hited[i] = true;
+            }
+        }
+        for(int i = 0; i < len; i++) {
+            if(hited[i]){
+                continue;
+            }
+            for(int j = 0; j < len; j++) {
+                if(solution.charAt(j) == guess.charAt(i) && !tagTrue[j]) {
+                    tagTrue[j] = true;
+                    fakeCorrect++;
+                    break;
+                }
+            }
+        }
+        return new int[]{correct, fakeCorrect};
+    }
+
+}
+```
+
+17. 井字游戏
+
+```java
+class Solution {
+
+		private static final char BLANK = ' ';
+
+		public String tictactoe(String[] board) {
+			int n = board.length;
+			char[][] boards = new char[n][n];
+			for (int i = 0; i < n; i++) {
+				boards[i] = board[i].toCharArray();
+			}
+			// 表示是否已经发现有人赢了
+			boolean determined = false;
+			// 检查行
+			for (int i = 0; i < n; i++) {
+				if (boards[i][0] == BLANK) {
+					continue;
+				}
+				determined = true;
+				for (int j = 1; j < n; j++) {
+					if (boards[i][j] != boards[i][0]) {
+						determined = false;
+						break;
+					}
+				}
+				if (determined) {
+					return "" + boards[i][0];
+				}
+			}
+			// 检查列
+			for (int j = 0; j < n; j++) {
+				if (boards[0][j] == BLANK) {
+					continue;
+				}
+				determined = true;
+				for (int i = 1; i < n; i++) {
+					if (boards[i][j] != boards[0][j]) {
+						determined = false;
+					}
+				}
+				if (determined) {
+					return "" + boards[0][j];
+				}
+			}
+			// 检查对角线，左上 -> 右下
+			if(boards[0][0] != BLANK){
+				int i = 1;
+				int j = 1;
+				determined = true;
+				while (i < n && j < n) {
+					if (boards[i][j] != boards[0][0]) {
+						determined = false;
+						break;
+					}
+					i++;
+					j++;
+				}
+				if (determined) {
+					return boards[0][0] + "";
+				}
+			}
+			// 检查对角
+			if (boards[n - 1][0] != BLANK) {
+				int i = n - 2;
+				int j = 1;
+				determined = true;
+				while (i >= 0 && j < n) {
+					if (boards[i][j] != boards[n - 1][0]) {
+						determined = false;
+						break;
+					}
+					i--;
+					j++;
+				}
+				if (determined) {
+					return "" + boards[n - 1][0];
+				}
+			}
+			// 都没赢的话，判定游戏是否还能继续玩
+			for (int i = 0; i < n; i++) {
+				for (int j = 0; j < n; j++) {
+					if (boards[i][j] == BLANK) {
+						return "Pending";
+					}
+				}
+			}
+			// 游戏结束，平局
+			return "Draw";
+		}
+
+}
+```
+
+18. 跳跃游戏
+
+```java
+class Solution {
+
+    public boolean canJump(int[] nums) {
+        int reachMax = 0;
+        for(int i = 0; i < nums.length; i++) {
+            if(i > reachMax) {
+                return false;
+            }
+            if(i + nums[i] > reachMax){
+                reachMax = i + nums[i];
+            }
+            if(reachMax >= nums.length -1){
+                return true;
+            }
+        }
+        return false;
+    }
+
+}
+```
+
+19. 旋转图像
+
+```java
+class Solution {
+
+    public void rotate(int[][] matrix) {
+        // 90 degrees 翻转，可以拆成两步
+        // 一、上下翻转
+        // 二、对角翻转
+        int n = matrix.length;
+        // 先上下翻转
+        for(int i = 0; i < n / 2; i++) {
+            for(int j = 0; j < n;j++) {
+                swap(matrix, i, j, n - i - 1,j);
+            }
+        }
+        // 对角翻转
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < i; j++) {
+                swap(matrix, i, j, j, i);
+            }
+        }
+    }
+
+    private void swap(int[][] matrix, int i, int j, int p, int q){
+        int tmp = matrix[i][j];
+        matrix[i][j] = matrix[p][q];
+        matrix[p][q] = tmp;
+    }
+
+}
+```
+
+20. 螺旋矩阵
+
+```java
+class Solution {
+
+    public List<Integer> spiralOrder(int[][] matrix) {
+        int m = matrix.length;
+        int n = matrix[0].length;
+        List<Integer> result = new ArrayList<>();
+        int left = 0;
+        int right = n - 1;
+        int top  = 0;
+        int bottom = m - 1;
+        while (left <= right && top <= bottom) {
+            for (int j = left; j <= right; j++) {
+                result.add(matrix[top][j]);
+            }
+            for (int i = top + 1; i <= bottom; i++) {
+                result.add(matrix[i][right]);
+            }
+            // 只有一行的情况
+            if (top != bottom) {
+                for (int j = right - 1; j >= left; j--) {
+                    result.add(matrix[bottom][j]);
+                }
+            }
+            // 只有一列的情况
+            if (left != right) {
+                for (int i = bottom - 1; i > top; i--) {
+                    result.add(matrix[i][left]);
+                }
+            }
+            left++;
+            right--;
+            top++;
+            bottom--;
+        }
+        return result;
+    }
+
+}
+```
+
+
+
+21. 搜索二维矩阵 ll
+
+```java
+class Solution {
+
+    public boolean searchMatrix(int[][] matrix, int target) {
+        // 我怎么觉得在《剑指 Offer》里面做过
+        int h = matrix.length;
+        int w = matrix[0].length;
+        int i = 0;
+        int j = w - 1;
+        while (i <= h -1 && j >= 0) {
+            if (matrix[i][j] == target) {
+                return true;
+            }
+            if (matrix[i][j] > target) {
+                j--;
+                continue;
+            }
+            if (matrix[i][j] < target) {
+                i++;
+                continue;
+            }
+        }
+        return false;
+    }
+
+}
+```
 
