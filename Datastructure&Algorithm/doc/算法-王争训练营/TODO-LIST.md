@@ -65,3 +65,140 @@
 [160. 相交链表](https://leetcode-cn.com/problems/intersection-of-two-linked-lists/)（简单） 未解决
 
 [面试题 03.05. 栈排序](https://leetcode-cn.com/problems/sort-of-stacks-lcci/)（中等）未解决
+
+[155. 最小栈](https://leetcode-cn.com/problems/min-stack/)（简单） 未解决
+
+[面试题 03.01. 三合一](https://leetcode-cn.com/problems/three-in-one-lcci/)（简单）  未解决
+
+
+
+回文链表
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+
+    public boolean isPalindrome(ListNode head) {
+        if(head == null || head.next == null){
+            return true;
+        }
+        ListNode midNode = findMidNode(head);
+        ListNode rightHalfHead = reverseList(midNode.next);
+        ListNode p = head;
+        ListNode q = rightHalfHead;
+        while (q != null) {
+            if (p.val != q.val) {
+                return false;
+            }
+            p = p.next;
+            q = q.next;
+        }
+        return true;
+    }
+
+    private ListNode findMidNode(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+        while (fast.next != null && fast.next.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return slow;
+    }
+
+    private ListNode reverseList(ListNode head) {
+        if (head == null) {
+            return null;
+        }
+        ListNode newHead = null;
+        ListNode p = head;
+        while (p != null) {
+            ListNode tmp = p.next;
+            p.next = newHead;
+            newHead = p;
+            p = tmp;
+        }
+        return newHead;
+    }
+
+}
+```
+
+
+
+奇偶链表
+
+
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+
+    public ListNode oddEvenList(ListNode head) {
+        if (head == null) {
+            return null;
+        }
+        ListNode dummyOddHead = new ListNode(-1);
+        ListNode oddTail = dummyOddHead;
+        ListNode dummyEvenHead = new ListNode(-1);
+        ListNode evenTail = dummyEvenHead;
+        ListNode p = head;
+        int count = 1;
+        while (p != null) {
+            ListNode tmp = p.next;
+            p.next = null;
+            // 奇数
+            if(count % 2 == 1){
+                oddTail.next = p;
+                oddTail = p;
+            }// 偶数
+            else {
+                evenTail.next = p;
+                evenTail = p;
+            }
+            p = tmp;
+            count++;
+        }
+        oddTail.next = dummyEvenHead.next;
+        return dummyOddHead.next;
+    }
+
+}
+```
+
+
+
+K 个 一组翻转链表
+
+
+
+链表中倒数第k个节点
+
+链表中倒数第k个节点
+
+相交链表
+
+栈排序
+
+最小栈
+
+三合一
+
