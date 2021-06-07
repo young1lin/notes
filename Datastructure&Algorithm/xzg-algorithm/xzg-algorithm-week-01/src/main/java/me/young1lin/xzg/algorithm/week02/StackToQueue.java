@@ -9,9 +9,9 @@ import java.util.Stack;
  */
 public class StackToQueue {
 
-	private Stack<Integer> stack = new Stack<>();
+	private final Stack<Integer> stack = new Stack<>();
 
-	private Stack<Integer> tmpStack = new Stack<>();
+	private final Stack<Integer> tmpStack = new Stack<>();
 
 
 	public StackToQueue() {

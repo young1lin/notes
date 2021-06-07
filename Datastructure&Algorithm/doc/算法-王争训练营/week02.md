@@ -805,10 +805,6 @@ public class Calculator {
 
 ## 单调栈-每日温度（中等）
 
-
-
-
-
 ```java
 // 单调栈处理
 class Solution {
