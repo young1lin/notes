@@ -2,6 +2,7 @@ package me.young1lin.xzg.algorithm.week02;
 
 import static java.lang.Character.isDigit;
 
+import java.util.List;
 import java.util.Stack;
 import java.util.stream.Stream;
 
@@ -46,7 +47,6 @@ public class Calculator {
 			// 跳过空格
 			if (c == BLANK) {
 				i++;
-
 			}// 如果是数字的话
 			else if (isDigit(c)) {
 				int number = 0;
