@@ -19,65 +19,66 @@ import java.net.InetSocketAddress;
  * @date 2020/11/4 10:58 下午
  */
 public class ChatServer {
-    /**
-     * 创建 DefaultChannelGroup，其将保存所有已经连接的 WebSocket Channel
-     */
-    private final ChannelGroup channelGroup =  new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
 
-    private final EventLoopGroup group = new NioEventLoopGroup();
+	/**
+	 * 创建 DefaultChannelGroup，其将保存所有已经连接的 WebSocket Channel
+	 */
+	private final ChannelGroup channelGroup = new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
 
-    private Channel channel;
+	private final EventLoopGroup group = new NioEventLoopGroup();
 
-    protected final boolean isOriginal;
+	private Channel channel;
 
-    public ChatServer(boolean isOriginal) {
-        this.isOriginal = isOriginal;
-    }
+	protected final boolean isOriginal;
 
-    public ChannelFuture start(InetSocketAddress address) {
-        //引导服务器
-        ServerBootstrap bootstrap = new ServerBootstrap();
-        bootstrap.group(group)
-                .channel(NioServerSocketChannel.class)
-                .childHandler(createInitializer(channelGroup));
-        ChannelFuture future = bootstrap.bind(address);
-        future.syncUninterruptibly();
-        channel = future.channel();
-        return future;
-    }
+	public ChatServer(boolean isOriginal) {
+		this.isOriginal = isOriginal;
+	}
 
-    /**
-     * 创建 ChatServerInitializer
-     */
-    protected ChannelInitializer<Channel> createInitializer(
-            ChannelGroup group) {
-        return new ChatServerInitializer(group, isOriginal);
-    }
+	public ChannelFuture start(InetSocketAddress address) {
+		//引导服务器
+		ServerBootstrap bootstrap = new ServerBootstrap();
+		bootstrap.group(group)
+				.channel(NioServerSocketChannel.class)
+				.childHandler(createInitializer(channelGroup));
+		ChannelFuture future = bootstrap.bind(address);
+		future.syncUninterruptibly();
+		channel = future.channel();
+		return future;
+	}
 
-    /**
-     * 处理服务器关闭，并释放所有的资源
-     */
-    public void destroy() {
-        if (channel != null) {
-            channel.close();
-        }
-        channelGroup.close();
-        group.shutdownGracefully();
-    }
+	/**
+	 * 创建 ChatServerInitializer
+	 */
+	protected ChannelInitializer<Channel> createInitializer(
+			ChannelGroup group) {
+		return new ChatServerInitializer(group, isOriginal);
+	}
 
-    public static void main(String[] args) throws Exception {
-        boolean isOriginal = true;
-        int port = 9999;
-        final ChatServer endpoint = new ChatServer(isOriginal);
-        ChannelFuture future = endpoint.start(
-                new InetSocketAddress(port));
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                endpoint.destroy();
-            }
-        });
-        future.channel().closeFuture().syncUninterruptibly();
-    }
+	/**
+	 * 处理服务器关闭，并释放所有的资源
+	 */
+	public void destroy() {
+		if (channel != null) {
+			channel.close();
+		}
+		channelGroup.close();
+		group.shutdownGracefully();
+	}
+
+	public static void main(String[] args) throws Exception {
+		boolean isOriginal = true;
+		int port = 9999;
+		final ChatServer endpoint = new ChatServer(isOriginal);
+		ChannelFuture future = endpoint.start(
+				new InetSocketAddress(port));
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				endpoint.destroy();
+			}
+		});
+		future.channel().closeFuture().syncUninterruptibly();
+	}
 
 }

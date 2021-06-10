@@ -38,12 +38,7 @@ public class SecureChatServer extends ChatServer {
 
         SecureChatServer endpoint = new SecureChatServer(isOriginal,context);
         ChannelFuture future = endpoint.start(new InetSocketAddress(port));
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                endpoint.destroy();
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread(endpoint::destroy));
         future.channel().closeFuture().syncUninterruptibly();
     }
 
