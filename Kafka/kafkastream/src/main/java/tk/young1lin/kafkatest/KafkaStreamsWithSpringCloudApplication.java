@@ -12,7 +12,9 @@ import org.springframework.cloud.stream.annotation.EnableBinding;
 @EnableBinding(Binder.class)
 @SpringBootApplication
 public class KafkaStreamsWithSpringCloudApplication {
+
     public static void main(String[] args) {
         SpringApplication.run(KafkaStreamsWithSpringCloudApplication.class, args);
     }
+
 }

@@ -28,11 +28,11 @@ public interface Binder {
     @Input(INPUT_TOPIC)
     SubscribableChannel newMessage();
 
-
     /**
      * 在这声明输出流
      * @return MessageChannel
      */
     @Output(OUTPUT_TOPIC)
     MessageChannel outputMessage();
+
 }
