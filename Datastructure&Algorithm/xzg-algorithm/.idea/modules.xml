@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/algorithm-design-patterns.iml" filepath="$PROJECT_DIR$/algorithm-design-patterns.iml" />
       <module fileurl="file://$PROJECT_DIR$/xzg-algorithm-week-01/xzg-algorithm-week-01.iml" filepath="$PROJECT_DIR$/xzg-algorithm-week-01/xzg-algorithm-week-01.iml" />
-      <module fileurl="file://$PROJECT_DIR$/xzg-algorithm-week-02/xzg-algorithm-week-02.iml" filepath="$PROJECT_DIR$/xzg-algorithm-week-02/xzg-algorithm-week-02.iml" />
     </modules>
   </component>
 </project>

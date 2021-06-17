@@ -182,4 +182,251 @@ class Solution {
 - 经过稳定排序算法排序后，相等元素之间的原有的先后顺序不变，
 - 经过不稳定排序算法排序之后，相等元素之间的原有先后顺序可能会被改变。
 
- 
+ # 冒泡排序
+
+```java
+package me.young1lin.xzg.algorithm.week03;
+
+import java.util.Arrays;
+
+/**
+ * 冒泡排序
+ *
+ * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
+ * @since 2021/6/17 下午9:09
+ * @version 1.0
+ */
+public class BubbleSort implements Sort {
+
+   @Override
+   public void sort(int[] a) {
+      int n = a.length;
+      if (n <= 1) {
+         return;
+      }
+      for (int i = 0; i < n; i++) {
+         // 提前退出冒泡循环位的标志
+         boolean flag = false;
+         for (int j = 0; j < n - i - 1; j++) {
+            if (a[j] > a[j + 1]) {
+               int tmp = a[j];
+               a[j] = a[j + 1];
+               a[j + 1] = tmp;
+               flag = true;
+            }
+         }
+         // 没有数据交换，提前退出
+         if (!flag) {
+            break;
+         }
+      }
+   }
+
+   public static void main(String[] args) {
+      int[] arr = {123, 112, 133, 443, 415, 64, 194, 411};
+      Sort sort = new BubbleSort();
+      System.out.println(Arrays.toString(arr));
+      sort.sort(arr);
+      System.out.println(Arrays.toString(arr));
+   }
+
+}
+```
+
+有序度
+
+逆序度
+
+6, 5, 4, 3, 2, 1 有序度是 0，逆序度是 n*(n-1)/2，也就是 15 
+
+1, 2, 3, 4, 5, 6 逆序度是 0，有序度是 n*(n-1)/2，也就是 15 
+
+逆序度 = 满有序度（n*(n-1)/2） - 有序度。
+
+# 插入排序
+
+将数组中的数据分为两个区间：已排序区间和未排序区间。
+
+初始已排序区间只有一个元素，就是数组中的第一个元素。
+
+插入算法的核心思想就是取未排序区间中的元素，在已排序区间中找合适的插入位置将其插入，保证已排序区间的数据一直有序。
+
+重复这个过程，直到未区间中元素为空，算法结束。
+
+时间复杂度是 O(n<sup>2</sup>)，空间复杂度是 O(1)。
+
+```java
+package me.young1lin.xzg.algorithm.week03;
+
+import java.util.Arrays;
+
+/**
+ * InsertSort
+ *
+ * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
+ * @since 2021/6/17 下午9:44
+ * @version 1.0
+ */
+public class InsertSort implements Sort {
+
+   @Override
+   public void sort(int[] arr) {
+      int n = arr.length;
+      if (n <= 1) {
+         return;
+      }
+      for (int i = 1; i < n; i++) {
+         int value = arr[i];
+         int j = i - 1;
+         for (; j >= 0; --j) {
+            // search insert position
+            if (arr[j] > value) {
+               // move data
+               arr[j + 1] = arr[j];
+            }
+            else {
+               break;
+            }
+         }
+         arr[j + 1] = value;
+      }
+   }
+
+   public static void main(String[] args) {
+      int[] arr = {123, 112, 133, 443, 415, 64, 194, 411};
+      Sort sort = new InsertSort();
+      System.out.println(Arrays.toString(arr));
+      sort.sort(arr);
+      System.out.println(Arrays.toString(arr));
+   }
+
+}
+```
+
+# 选择排序
+
+类似插入排序，也将整个数组划分为已排序区间和未排序区间。选择排序算饭每次从未排序区间中，找到最小的元素，将其放到已排序区间的末尾。
+
+不是稳定排序，O(n<sup>2</sup>) 时间
+
+```java
+package me.young1lin.xzg.algorithm.week03;
+
+/**
+ * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
+ * @since 2021/6/18 上午6:12
+ * @version 1.0
+ */
+public class SelectionSort implements Sort {
+
+   @Override
+   public void sort(int[] arr) {
+      int n = arr.length;
+      if (n <= 1) {
+         return;
+      }
+      for (int i = 0; i < n - 1; i++) {
+         // 未排序区间的第一个下标
+         int minPos = i;
+         // 从未排序区间选择最小值
+         for (int j = i; j < n; j++) {
+            // 保证一定是最小的
+            if (arr[j] < arr[minPos]) {
+               minPos = j;
+            }
+         }
+         // swap
+         int tmp = arr[i];
+         arr[i] = arr[minPos];
+         arr[minPos] = tmp;
+      }
+   }
+
+}
+```
+
+## 归并排序
+
+如果要排序一个数组，先把数组从中间分成前后两部分，然后，对前后两部分分别排序，再将排好序的两部分合并在一起。
+
+递推公式：mergeSort(p, r) = merg(mergeSort(p, q), mergetSort(q+1, r))
+
+q = (p+r)/2 
+
+终止条件：p >= r 不用再继续分解
+
+是稳定排序，复杂度为 O(nlogn)，空间复杂度是 O(n + logn) 也就是 O(n)
+
+```java
+package me.young1lin.xzg.algorithm.week03;
+
+import java.util.Arrays;
+
+/**
+ * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
+ * @since 2021/6/18 上午6:22
+ * @version 1.0
+ */
+public class MergeSort implements Sort {
+
+   @Override
+   public void sort(int[] arr) {
+      doSort(arr, 0, arr.length - 1);
+   }
+
+   private void doSort(int[] arr, int bottom, int upper) {
+      if (bottom >= upper) {
+         return;
+      }
+      int mid = (upper + bottom) / 2;
+      doSort(arr, bottom, mid);
+      doSort(arr, mid + 1, upper);
+      merge(arr, bottom, mid, upper);
+   }
+
+   private void merge(int[] arr, int bottom, int mid, int upper) {
+      int i = bottom;
+      int j = mid + 1;
+      int k = 0;
+      int[] tmp = new int[upper - bottom + 1];
+      while (i <= mid && j <= upper) {
+         if (arr[i] <= arr[j]) {
+            tmp[k++] = arr[i++];
+         }
+         else {
+            tmp[k++] = arr[j++];
+         }
+      }
+      while (i <= mid) {
+         tmp[k++] = arr[i++];
+      }
+      while (j <= upper) {
+         tmp[k++] = arr[j++];
+      }
+      // 将临时数组的内容，拷贝回去
+      for (i = 0; i <= upper - bottom; i++) {
+         arr[bottom + i] = tmp[i];
+      }
+   }
+
+   public static void main(String[] args) {
+      int[] arr = {123, 112, 133, 443, 415, 64, 194, 411};
+      Sort sort = new MergeSort();
+      System.out.println(Arrays.toString(arr));
+      sort.sort(arr);
+      System.out.println(Arrays.toString(arr));
+   }
+
+}
+```
+
+1. 递推公式来分析
+
+2. 用递归树来进行时间复杂度分析。
+
+# 快速排序
+
+pivot
+
+
+
