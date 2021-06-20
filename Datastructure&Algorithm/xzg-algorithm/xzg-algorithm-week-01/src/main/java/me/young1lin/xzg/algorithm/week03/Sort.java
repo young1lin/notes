@@ -14,4 +14,17 @@ public interface Sort {
 	 */
 	void sort(int[] arr);
 
+	/**
+	 * swap arr[i] & arr[j] 's value
+	 *
+	 * @param arr to be swapped array
+	 * @param i i index
+	 * @param j j index
+	 */
+	default void swap(int[] arr, int i, int j) {
+		int tmp = arr[i];
+		arr[i] = arr[j];
+		arr[j] = tmp;
+	}
+
 }
