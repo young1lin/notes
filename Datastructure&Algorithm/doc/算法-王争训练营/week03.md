@@ -478,3 +478,120 @@ public class QuickSort implements Sort {
 }
 ```
 
+原地排序，不是稳定排序，O(nlogn)，平均情况下，空间复杂度是 O(nlogn)
+
+# 例题1
+
+输入一个整数数组，实现一个函数来调整该数组中数字的顺序，使得所有奇数位于数组的前半部分，所有的偶数位于数组的后半部分。
+
+示例：
+
+```
+输入：nums = [1,2,3,4]
+输出：[1,3,2,4]
+注：[3,1,2,4] 也是正确答案之一。
+```
+
+```java
+class Solution {
+    
+   /**
+    * 双指针玩法
+    */
+    public int[] exchange(int[] nums) {
+        int i = 0;
+        int j = nums.length - 1;
+        while (i < j) {
+            // 奇数
+            if (nums[i] % 2 == 1) {
+                i++;
+                continue;
+            }
+            // 偶数
+            if (nums[j] % 2 == 0 ) {
+                j--;
+                continue;
+            }
+            int tmp = nums[i];
+            num[i] = nums[j];
+            nums[j] = tep;
+            i++;
+            j--;
+        }
+        return nums;
+    }
+    
+}
+```
+
+# 数组中的第 K 个最大元素
+
+在未排序的数组中找到第 K 个最大的元素。
+
+```java
+输入：[3,2,1,5,6,4] 和 k = 2
+输出：5
+```
+
+```java
+class Solution {
+    
+    public int findKthLargest (int[] nums, int k) {
+        if (nums.length < k) return -1;
+        return quickSort(nums, 0, nums.length - 1, k);
+    }
+    
+    private int quirkSort(int[] nums, int bottom, int top, int k) {
+        if (bottom > top) {
+            return -1;
+        }
+        int pivot = partition(nums, p, r);
+        if (pivot - bottom + 1 == k) {
+            return nums[pivot];
+        }
+        else if (pivot - bottom + 1 < k) {
+            return quickSort(nums, pivot + 1, top, k - (pivot - bottom + 1));
+        }
+        else {
+            return quickSort(nums, bottom, pivot - 1, k);
+        }
+    }
+    
+    private int partition(int[] nums, int bottom, int top) {
+        // [bottom, i] 表示小于 pivot 的值
+		int i = bottom - 1;
+		for (int j = bottom; j < top; j++) {
+			if (arr[j] < nums[top]) {
+				swap(nums, i + 1, j);
+				i++;
+			}
+		}
+        int tmp = nums[i + 1];
+        nums[i + 1] = nums[top];
+        nums[top] = tmp;
+		return i + 1;
+    }
+    
+}
+```
+
+
+
+# 题目
+
+1. [面试题 10.01. 合并排序的数组](https://leetcode-cn.com/problems/sorted-merge-lcci/)（简单）
+2. [21. 合并两个有序链表](https://leetcode-cn.com/problems/merge-two-sorted-lists/)（简单）
+3. [242. 有效的字母异位词](https://leetcode-cn.com/problems/valid-anagram/)（简单）
+4. [1502. 判断能否形成等差数列](https://leetcode-cn.com/problems/can-make-arithmetic-progression-from-sequence/)（简单）
+5. [252. 会议室](https://leetcode-cn.com/problems/meeting-rooms/)（简单）
+6. [56. 合并区间](https://leetcode-cn.com/problems/merge-intervals/)（中等） 
+7. [剑指 Offer 21. 调整数组顺序使奇数位于偶数前面](https://leetcode-cn.com/problems/diao-zheng-shu-zu-shun-xu-shi-qi-shu-wei-yu-ou-shu-qian-mian-lcof/) （简单）
+8. [75. 颜色分类](https://leetcode-cn.com/problems/sort-colors/)（中等）
+9. [147. 对链表进行插入排序](https://leetcode-cn.com/problems/insertion-sort-list/)（中等）
+10. [148. 排序链表](https://leetcode-cn.com/problems/sort-list/)（中等） 链表上的归并排序
+11. [215. 数组中的第K个最大元素](https://leetcode-cn.com/problems/kth-largest-element-in-an-array/)（中等） 
+12. [面试题 17.14. 最小K个数](https://leetcode-cn.com/problems/smallest-k-lcci/)（中等）
+13. [剑指 Offer 51. 数组中的逆序对](https://leetcode-cn.com/problems/shu-zu-zhong-de-ni-xu-dui-lcof/)（困难）
+
+
+
