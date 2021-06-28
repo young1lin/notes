@@ -143,6 +143,293 @@ class Solution {
 
 ## 斐波那契
 
+```java
+class Solution {
+
+    private static final int mod = 1000000007;
+
+    private int[] mem;
+
+
+    public int fib(int n) {
+        mem = new int[n+1];
+        return helper(n);
+    }
+
+    private int helper(int n) {
+        if (n == 0 || n == 1){
+            return n;
+        }
+        if (mem[n] != 0) {
+            return mem[n];
+        }
+        mem[n] = (helper(n - 1) + helper(n - 2)) % mod;
+        return mem[n];
+    }
+
+}
+```
+
+# 青蛙跳台阶问题
+
+一只青蛙一次可以跳上1级台阶，也可以跳上2级台阶。求该青蛙跳上一个 n 级的台阶总共有多少种跳法。
+
+答案需要取模 1e9+7（1000000007），如计算初始结果为：1000000008，请返回 1。
+
+示例 1：
+
+```
+输入：n = 2
+输出：2
+```
+
+示例 2：
+
+```
+输入：n = 7
+输出：21
+```
+
+示例 3：
+
+```
+输入：n = 0
+输出：1
+```
+
+
+提示：
+
+`0 <= n <= 100`
+
+```java
+class Solution {
+
+    private Map<Integer, Integer> mem = new HashMap<>();
+
+    private int mod = 1000000007;
+
+
+    public int numWays(int n) {
+        if (n == 0 || n == 1) {
+            return 1;
+        }        
+        if (mem.containsKey(n)) {
+            return mem.get(n);
+        }
+        int ret = (numWays(n - 1) + numWays(n - 2)) % mod;
+        mem.put(n, ret);
+        return ret;
+    }
+
+}
+```
+
+# 三步问题
+
+三步问题。有个小孩正在上楼梯，楼梯有n阶台阶，小孩一次可以上1阶、2阶或3阶。实现一种方法，计算小孩有多少种上楼梯的方式。结果可能很大，你需要对结果模1000000007。
+
+示例1:
+
+```
+输入：n = 3 
+输出：4
+说明: 有四种走法
+```
+
+示例2:
+
+```
+输入：n = 5
+输出：13
+```
+
+
+提示:
+
+`n范围在[1, 1000000]之间`
+
+**击败 5% 的用户**。。。。。。O(n) 的时间复杂度，还有 O(n) 的空间复杂度。
+
+```java
+class Solution {
+
+    private static final int mod = 1000000007;
+
+    public int waysToStep(int n) {
+        int[] mem = new int[n + 1];
+        return helper(n, mem);
+    }
+
+    private int helper(int n, int[] mem) {
+        if (n == 1) {
+            return 1;
+        }
+        if (n == 2) {
+            return 2;
+        }
+        if (n == 3) {
+            return 4;
+        }
+        if (mem[n] != 0) {
+            return mem[n];
+        }
+        mem[n] = ((helper(n - 1, mem) + helper(n - 2, mem)) % mod + (helper(n - 3, mem))) % mod;
+        return mem[n];
+    }
+
+}
+```
+
+ 用 dp
+
+```java
+
+class Solution {
+    
+    public int waysToStep(int n) {
+        if (n == 1) {
+            return 1;
+        }
+        if (n == 2) {
+            return 2;
+        }
+        if (n == 3) {
+            return 4;
+        }
+        int[] dp = new int[n + 1];
+        dp[1] = 1;
+        dp[2] = 2;
+        dp[3] = 4;
+        for (int i = 4; i <= n; i++) {
+            dp[i] = ((dp[i - 1] + dp[i - 2]) % 1000000007 + dp[i - 3]) % 1000000007;
+        }
+        return dp[n];
+    }
+
+}
+```
+
+也可以用三个变量来做，因为我们只要最后的值
+
+```java
+class Solution {
+    
+    public int waysToStep(int n) {
+        if (n == 1) return 1;
+        if (n == 2) return 2;
+        if (n == 3) return 4;
+        int a = 1;
+        int b = 2;
+        int c = 4;
+        int d = 0;
+        for (int i = 4; i <= n; i++) {
+            d = ((c + b) % 1000000007 + a) % 1000000007;
+            a = b;
+            b = c;
+            c = d;
+        }
+        return d;
+    }
+    
+}
+```
+
+# [从尾到头打印链表](https://leetcode-cn.com/problems/cong-wei-dao-tou-da-yin-lian-biao-lcof/)
+
+输入一个链表的头节点，从尾到头反过来返回每个节点的值（用数组返回）。
+
+示例 1：
+
+```
+输入：head = [1,3,2]
+输出：[2,3,1]
+```
+
+
+限制：
+
+`0 <= 链表长度 <= 10000`
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+
+    public int[] reversePrint(ListNode head) {
+        List<Integer> list  = new ArrayList<>();
+        reverseTravel(head, list);
+        int size = list.size();
+        int[] result = new int[size];
+        for (int i = 0; i < size; i++) {
+            result[i] = list.get(i);
+        }
+        return result;
+    }
+
+    private void reverseTravel(ListNode head, List<Integer> list) {
+        if (head == null) {
+            return;
+        }
+        reverseTravel(head.next, list);
+        list.add(head.val);
+    }
+
+}
+```
+
+# [剑指 Offer 24. 反转链表](https://leetcode-cn.com/problems/fan-zhuan-lian-biao-lcof/)
+
+定义一个函数，输入一个链表的头节点，反转该链表并输出反转后链表的头节点。
+
+ 
+
+示例:
+
+```
+输入: 1->2->3->4->5->NULL
+输出: 5->4->3->2->1->NULL
+```
+
+
+限制：
+
+`0 <= 节点个数 <= 5000`
+
+```java
+class Solution {
+    
+    public ListNode reverseList(ListNode head) {
+        if (head == null) {
+            return null;
+        }
+        // 特殊情况，只有一个节点的时候
+        if (head.next == null) {
+            return head;
+        }
+        ListNode newHead = reverseList(head.next);
+        head.next.next = head;
+        head.next = null;
+        return newHead;
+    }
+    
+}
+```
+
+
+
+# [剑指 Offer 16. 数值的整数次方](https://leetcode-cn.com/problems/shu-zhi-de-zheng-shu-ci-fang-lcof/)
+
+
+
+# [面试题 08.05. 递归乘法](https://leetcode-cn.com/problems/recursive-mulitply-lcci/) 
+
 
 
 # 	排序
@@ -566,16 +853,105 @@ class Solution {
 				i++;
 			}
 		}
-        int tmp = nums[i + 1];
-        nums[i + 1] = nums[top];
-        nums[top] = tmp;
+        swap(nums, i + 1, top);
 		return i + 1;
+    }
+    
+    private void swap(int[] nums, int i, int j) {
+        int tmp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = tmp;
+    }
+        
+}
+```
+
+## [链表上的排序](https://leetcode-cn.com/problems/insertion-sort-list/)
+
+对链表进行插入排序。
+
+插入排序的动画演示如上。从第一个元素开始，该链表可以被认为已经部分排序（用黑色表示）。
+每次迭代时，从输入数据中移除一个元素（用红色表示），并原地将其插入到已排好序的链表中。
+
+ 
+
+插入排序算法：
+
+插入排序是迭代的，每次只移动一个元素，直到所有元素可以形成一个有序的输出列表。
+每次迭代中，插入排序只从输入数据中移除一个待排序的元素，找到它在序列中适当的位置，并将其插入。
+重复直到所有输入数据插入完为止。
+
+示例 1：
+
+```
+输入: 4->2->1->3
+输出: 1->2->3->4
+```
+
+示例 2：
+```
+输入: -1->5->3->4->0
+输出: -1->0->3->4->5
+```
+
+链表遍历三要素，找到开始遍历的地方，找到遍历的逻辑，结束条件。
+
+```java
+class Solution {
+ 	
+    public ListNode insertionSortList(ListNode head) {
+        if (head == null) {
+            return null;
+        }
+        ListNode dummyHead = new ListNode(Integer.MIN_VALUE, null);
+        ListNode p = head;
+        while (p != null) {
+            ListNode tmp = p.next;
+            // 寻找 p 节点插入的位置，插入到哪个节点后面
+            ListNode q = dummyHead;
+            while (q.next != null && q.next.val <= p.val) {
+                q = q.next;
+            }
+            // 将 P 节点插入
+            p.next = q.next;
+            q.next = p;
+            p = tmp;
+        }
+        return dummyHead.next;
     }
     
 }
 ```
 
+## 排序预处理
 
+有一组无序数组，找出出现次数最多的数据。
+
+```java
+// 前面应该有个 sort 排序行数
+public int maxCount(int[] data) {
+    int n = data.length;
+    int prev = -1;
+    int count = 0;
+    int max = -1;
+    for (int i = 0; i < n; i++) {
+        if (data[i] == prev) {
+            count++;
+            if (max < count) {
+                max = count;
+            }
+        }
+        else {
+            count = 1;
+            prev = data[i];
+            if (max < count) {
+                max = count;
+            }
+        }
+        return max;
+    }    
+}
+```
 
 # 题目
 
@@ -592,6 +968,50 @@ class Solution {
 11. [215. 数组中的第K个最大元素](https://leetcode-cn.com/problems/kth-largest-element-in-an-array/)（中等） 
 12. [面试题 17.14. 最小K个数](https://leetcode-cn.com/problems/smallest-k-lcci/)（中等）
 13. [剑指 Offer 51. 数组中的逆序对](https://leetcode-cn.com/problems/shu-zu-zhong-de-ni-xu-dui-lcof/)（困难）
+14. [剑指 Offer 10- I. 斐波那契数列](https://leetcode-cn.com/problems/fei-bo-na-qi-shu-lie-lcof/) （简单）
+15. [剑指 Offer 10- II. 青蛙跳台阶问题](https://leetcode-cn.com/problems/qing-wa-tiao-tai-jie-wen-ti-lcof/)（简单）
+16. [面试题 08.01. 三步问题](https://leetcode-cn.com/problems/three-steps-problem-lcci/) （简单）
+17. [剑指 Offer 06. 从尾到头打印链表](https://leetcode-cn.com/problems/cong-wei-dao-tou-da-yin-lian-biao-lcof/) （简单）
+18. [剑指 Offer 24. 反转链表](https://leetcode-cn.com/problems/fan-zhuan-lian-biao-lcof/) （简单）
+19. [剑指 Offer 16. 数值的整数次方](https://leetcode-cn.com/problems/shu-zhi-de-zheng-shu-ci-fang-lcof/) （中等）
+20. [面试题 08.05. 递归乘法](https://leetcode-cn.com/problems/recursive-mulitply-lcci/) （中等）
+
+# 合并排序的数组
 
 
 
+# 合并两个有序链表
+
+# 合并两个有序链表
+
+# 判断能否形成等差数列
+
+# 会议室
+
+
+
+# 合并区间
+
+# [剑指 Offer 21. 调整数组顺序使奇数位于偶数前面](https://leetcode-cn.com/problems/diao-zheng-shu-zu-shun-xu-shi-qi-shu-wei-yu-ou-shu-qian-mian-lcof/)
+
+# 颜色分类
+
+
+
+# 对链表进行插入排序
+
+
+
+# 排序链表
+
+
+
+# 数组中的第K个最大元素
+
+
+
+# 最小K个数
+
+
+
+# 数组中的逆序对
