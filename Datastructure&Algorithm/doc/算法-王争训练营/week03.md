@@ -170,7 +170,7 @@ class Solution {
 }
 ```
 
-# 青蛙跳台阶问题
+## 青蛙跳台阶问题
 
 一只青蛙一次可以跳上1级台阶，也可以跳上2级台阶。求该青蛙跳上一个 n 级的台阶总共有多少种跳法。
 
@@ -225,7 +225,7 @@ class Solution {
 }
 ```
 
-# 三步问题
+## 三步问题
 
 三步问题。有个小孩正在上楼梯，楼梯有n阶台阶，小孩一次可以上1阶、2阶或3阶。实现一种方法，计算小孩有多少种上楼梯的方式。结果可能很大，你需要对结果模1000000007。
 
@@ -335,7 +335,7 @@ class Solution {
 }
 ```
 
-# [从尾到头打印链表](https://leetcode-cn.com/problems/cong-wei-dao-tou-da-yin-lian-biao-lcof/)
+## [从尾到头打印链表](https://leetcode-cn.com/problems/cong-wei-dao-tou-da-yin-lian-biao-lcof/)
 
 输入一个链表的头节点，从尾到头反过来返回每个节点的值（用数组返回）。
 
@@ -384,7 +384,7 @@ class Solution {
 }
 ```
 
-# [剑指 Offer 24. 反转链表](https://leetcode-cn.com/problems/fan-zhuan-lian-biao-lcof/)
+## [剑指 Offer 24. 反转链表](https://leetcode-cn.com/problems/fan-zhuan-lian-biao-lcof/)
 
 定义一个函数，输入一个链表的头节点，反转该链表并输出反转后链表的头节点。
 
@@ -422,17 +422,175 @@ class Solution {
 }
 ```
 
+O(n) 时间复杂度
+
+## [剑指 Offer 16. 数值的整数次方](https://leetcode-cn.com/problems/shu-zhi-de-zheng-shu-ci-fang-lcof/)
+
+实现 pow(x, n) ，即计算 x 的 n 次幂函数（即，xn）。不得使用库函数，同时不需要考虑大数问题。
+
+ 
+
+示例 1：
+
+```
+输入：x = 2.00000, n = 10
+输出：1024.00000
+```
 
 
-# [剑指 Offer 16. 数值的整数次方](https://leetcode-cn.com/problems/shu-zhi-de-zheng-shu-ci-fang-lcof/)
+示例 2：
+
+```
+输入：x = 2.10000, n = 3
+输出：9.26100
+```
+
+
+示例 3：
+
+```
+输入：x = 2.00000, n = -2
+输出：0.25000
+解释：2-2 = 1/22 = 1/4 = 0.25
+```
+
+解题
 
 
 
-# [面试题 08.05. 递归乘法](https://leetcode-cn.com/problems/recursive-mulitply-lcci/) 
+偶数的时候
+
+$x^n$ = $x^{n/2}$ * $x^{n/2}$
+
+奇数的时候
+
+$x^n$ = $x^{n/2}$ *  $x^{n/2}$ * $x$
+
+递归的公式可以拆成这样，
+
+偶数
+
+f (n) = f ($x^{n/2}$) *  f ($x^{n/2}$)
+
+奇数
+
+f (n) = f ($x^{n/2}$) *  f ($x^{n/2}$) * $x$
+
+因为 n 可能为负数，举一个例子。
+
+$x^{-5}$ = $1/x^5$
+
+当 n 为负数的时候，公式如下
+
+$x^n$ = $1/x^{-n}$  那么可以得出是 1 / rPow(x, -1 * n);
+
+**但是**，这有个特殊样例，n 为 -2147483648 时，把它负负得正，得不到 2147483648，因为整数的最大值是 2147483647。所以，这个需要改进一下，下面有个例子。
+
+$x^{-5}$ = $1/x^6$ * $x$，这样就抵消了一个 $\frac{1}{x}$
+
+所以有下面的 1 /  (rPow(x, -1 * (n + 1)) * x);
+
+```java
+class Solution {
+
+    public double myPow(double x, int n) {
+        // 大于等于 0 时，都是正常的
+        if (n >= 0) {
+            return rPow(x, n);
+        }
+        else {
+            // 只有这里比较难理解，但是只要看到上面的数学公式，就知道这里为什么这么做了，有特殊的样例数据，所以必须这么处理
+            return 1 / (rPow(x, -1 * (n + 1)) * x );
+        }
+    }
+
+    private double rPow(double x, int n) {
+        // 任何数的 0 次方都是 1
+        if (n == 0) {
+            return 1;
+        }
+        // 没有头绪时，先看这，这里比较简单，是第一步推出来的公式，再反推上面的内容
+        double halfPow = rPow(x, n / 2);
+        // 奇数的时候
+        if (n % 2 == 1) {
+            return halfPow * halfPow * x;
+        }// 偶数的时候
+        else {
+            return halfPow * halfPow;
+        }
+    }
+
+}
+```
 
 
 
-# 	排序
+## [面试题 08.05. 递归乘法](https://leetcode-cn.com/problems/recursive-mulitply-lcci/)
+
+递归乘法。 写一个递归函数，不使用 * 运算符， 实现两个正整数的相乘。可以使用加号、减号、位移，但要吝啬一些。
+
+示例1:
+
+```
+ 输入：A = 1, B = 10
+ 输出：10
+```
+
+
+示例2:
+
+```
+ 输入：A = 3, B = 4
+ 输出：12
+```
+
+
+提示:
+
+保证乘法范围不会溢出
+
+用加法即可，击败 100% 用户，朴实无华的解题。
+
+```java
+class Solution {
+
+    public int multiply(int A, int B) {
+        if(B == 0)
+            return 0;
+        return A + multiply(A, B - 1);
+    }
+
+}
+```
+
+还可以和上面一样。
+
+```java
+class Solution {
+    
+    public int multiply(int A, int B) {
+        // A 个 B 相加
+        if (A == 1) {
+            return B;
+        }
+        int halfValue = multiply(A / 2, B);
+        // 奇数
+        if (A % 2 == 1) {
+           	return halfValue + halfValue + B;
+        }// 偶数
+        else {
+            return halfValue + halfValue;
+        }
+    }
+    
+}
+```
+
+优化，例如 5 * 8，可以是 5 个 8相加，或者 8 个 5 相加，用前者这样就可以更快。
+
+
+
+# 排序
 
 1. 排序算法的评价指标
 2. 冒泡排序：原理、代码实现、性能分析
@@ -469,7 +627,7 @@ class Solution {
 - 经过稳定排序算法排序后，相等元素之间的原有的先后顺序不变，
 - 经过不稳定排序算法排序之后，相等元素之间的原有先后顺序可能会被改变。
 
- # 冒泡排序
+## 冒泡排序
 
 ```java
 package me.young1lin.xzg.algorithm.week03;
@@ -530,7 +688,7 @@ public class BubbleSort implements Sort {
 
 逆序度 = 满有序度（n*(n-1)/2） - 有序度。
 
-# 插入排序
+## 插入排序
 
 将数组中的数据分为两个区间：已排序区间和未排序区间。
 
@@ -590,7 +748,7 @@ public class InsertSort implements Sort {
 }
 ```
 
-# 选择排序
+## 选择排序
 
 类似插入排序，也将整个数组划分为已排序区间和未排序区间。选择排序算饭每次从未排序区间中，找到最小的元素，将其放到已排序区间的末尾。
 
@@ -711,7 +869,7 @@ public class MergeSort implements Sort {
 
 2. 用递归树来进行时间复杂度分析。
 
-# 快速排序
+## 快速排序
 
 pivot
 
@@ -811,7 +969,7 @@ class Solution {
 }
 ```
 
-# 数组中的第 K 个最大元素
+## 数组中的第 K 个最大元素
 
 在未排序的数组中找到第 K 个最大的元素。
 
@@ -968,31 +1126,148 @@ public int maxCount(int[] data) {
 11. [215. 数组中的第K个最大元素](https://leetcode-cn.com/problems/kth-largest-element-in-an-array/)（中等） 
 12. [面试题 17.14. 最小K个数](https://leetcode-cn.com/problems/smallest-k-lcci/)（中等）
 13. [剑指 Offer 51. 数组中的逆序对](https://leetcode-cn.com/problems/shu-zu-zhong-de-ni-xu-dui-lcof/)（困难）
-14. [剑指 Offer 10- I. 斐波那契数列](https://leetcode-cn.com/problems/fei-bo-na-qi-shu-lie-lcof/) （简单）
-15. [剑指 Offer 10- II. 青蛙跳台阶问题](https://leetcode-cn.com/problems/qing-wa-tiao-tai-jie-wen-ti-lcof/)（简单）
-16. [面试题 08.01. 三步问题](https://leetcode-cn.com/problems/three-steps-problem-lcci/) （简单）
-17. [剑指 Offer 06. 从尾到头打印链表](https://leetcode-cn.com/problems/cong-wei-dao-tou-da-yin-lian-biao-lcof/) （简单）
-18. [剑指 Offer 24. 反转链表](https://leetcode-cn.com/problems/fan-zhuan-lian-biao-lcof/) （简单）
-19. [剑指 Offer 16. 数值的整数次方](https://leetcode-cn.com/problems/shu-zhi-de-zheng-shu-ci-fang-lcof/) （中等）
-20. [面试题 08.05. 递归乘法](https://leetcode-cn.com/problems/recursive-mulitply-lcci/) （中等）
 
-# 合并排序的数组
+# 1. 合并排序的数组
 
+给定两个排序后的数组 A 和 B，其中 A 的末端有足够的缓冲空间容纳 B。 编写一个方法，将 B 合并入 A 并排序。
 
+初始化 A 和 B 的元素数量分别为 m 和 n。
 
-# 合并两个有序链表
+示例:
 
-# 合并两个有序链表
+```
+输入:
+A = [1,2,3,0,0,0], m = 3
+B = [2,5,6],       n = 3
 
-# 判断能否形成等差数列
-
-# 会议室
+输出: [1,2,2,3,5,6]
+```
 
 
+说明:
 
-# 合并区间
+A.length == n + m
+
+```java
+class Solution {
+
+   public void merge(int[] A, int m, int[] B, int n) {
+       // 得到各个区间的末尾下标
+        int amount = m + n - 1, i = m - 1, j = n - 1;
+        // 因为是已经排序的，所以每次都在各自的数组中，选择最小的，插入到 A 的数组中
+        while (i >= 0 && j >= 0) {
+            if (A[i] > B[j]) {
+                A[amount--] = A[i--];
+            } else {
+                A[amount--] = B[j--];
+            }
+        }
+        // j 还大于等于 0，表示 n > m，例如 A 有 2 个数，B 有 4 个数，需要对 B 的数值进入 A 末尾
+        while (j >= 0) {
+            A[amount--] = B[j--];
+        }
+    }
+
+}
+```
+
+# 2. 合并两个有序链表
+
+将两个升序链表合并为一个新的 升序 链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。 
+
+ ![](https://assets.leetcode.com/uploads/2020/10/03/merge_ex1.jpg)
+
+示例 1：
+
+```
+输入：l1 = [1,2,4], l2 = [1,3,4]
+输出：[1,1,2,3,4,4]
+```
+
+
+示例 2：
+
+```
+输入：l1 = [], l2 = []
+输出：[]
+```
+
+
+示例 3：
+
+```
+输入：l1 = [], l2 = [0]
+输出：[0]
+```
+
+
+提示：
+
+两个链表的节点数目范围是 [0, 50]
+-100 <= Node.val <= 100
+l1 和 l2 均按 非递减顺序 排列
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if(l1 == null && l2 == null){
+            return null;
+        }
+        else if(l1 == null && l2 != null){
+            return l2;
+        }
+        else if(l1 != null && l2 == null){
+            return l1;
+        }
+        ListNode prehead = new ListNode(-1);
+        ListNode prev = prehead;
+        while (l1 != null && l2 != null) {
+            if (l1.val > l2.val) {
+                prev.next = l2;
+                l2 = l2.next;
+            }
+            else {
+                prev.next = l1;
+                l1 = l1.next;
+            }
+            prev = prev.next;
+        }
+        // 合并未合并完成的链表
+        prev.next = l1 == null ? l2 : l1;
+        return prehead.next;
+    }
+
+}
+```
+
+
+
+# 3. 判断能否形成等差数列
+
+
+
+# 4. 会议室
+
+
+
+# 5. 合并区间
+
+
 
 # [剑指 Offer 21. 调整数组顺序使奇数位于偶数前面](https://leetcode-cn.com/problems/diao-zheng-shu-zu-shun-xu-shi-qi-shu-wei-yu-ou-shu-qian-mian-lcof/)
+
+
 
 # 颜色分类
 
