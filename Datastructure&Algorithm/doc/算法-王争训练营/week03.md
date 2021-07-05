@@ -1251,13 +1251,175 @@ class Solution {
 }
 ```
 
+# 3. [242. 有效的字母异位词](https://leetcode-cn.com/problems/valid-anagram/)（简单）
 
+给定两个字符串 s 和 t ，编写一个函数来判断 t 是否是 s 的字母异位词。
+
+示例 1:
+
+```
+输入: s = "anagram", t = "nagaram"
+输出: true
+```
+
+示例 2:
+
+```
+输入: s = "rat", t = "car"
+输出: false
+```
+
+题解
+
+```java
+class Solution {
+
+       public boolean isAnagram(String s, String t) {
+            if (s.length() != t.length()) {
+                return false;
+            }
+           char[] a = s.toCharArray();
+           char[] b = t.toCharArray();
+           Arrays.sort(a);
+           Arrays.sort(b);
+           for (int i = 0; i < a.length; i++) {
+               if (a[i] != b[i]) {
+                   return false;
+               }
+           }
+           return true;
+       }
+}
+```
 
 # 3. 判断能否形成等差数列
 
+给你一个数字数组 arr 。
+
+如果一个数列中，任意相邻两项的差总等于同一个常数，那么这个数列就称为 等差数列 。
+
+如果可以重新排列数组形成等差数列，请返回 true ；否则，返回 false 。
 
 
-# 4. 会议室
+
+示例 1：
+
+```
+输入：arr = [3,5,1]
+输出：true
+解释：对数组重新排序得到 [1,3,5] 或者 [5,3,1] ，任意相邻两项的差分别为 2 或 -2 ，可以形成等差数列。
+```
+
+
+示例 2：
+
+```
+输入：arr = [1,2,4]
+输出：false
+解释：无法通过重新排序得到等差数列。
+```
+
+
+提示：
+
+2 <= arr.length <= 1000
+-10^6 <= arr[i] <= 10^6
+
+击败 98% 的人！！
+
+```java
+class Solution {
+
+    public boolean canMakeArithmeticProgression(int[] arr) {
+        if (arr == null || arr.length == 0 || arr.length == 1) {
+            return false;
+        }
+        Arrays.sort(arr);
+        int con = arr[1] - arr[0];
+        for (int i = 0; i < arr.length - 1; i++) {
+            int tmp = arr[i + 1] - arr[i];
+            if (tmp != con) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+}
+```
+
+# 4. 会议室(会员题)
+
+给定一个会议时间安排的数组 intervals，每个会议时间都会包括开始和结束时间 intervals[i] = [start<sub>i</sub>, end<sub>i</sub>]，请你判断一个人是否能够参加这里面的全部会议。
+
+示例 1:
+
+```
+输入：intervals = [[0,30],[5,10],[15,20]]
+输出：false
+```
+
+示例 2:
+
+```
+输入：intervals = [[7,10],[2,14]]
+输出：true
+```
+
+可以先排个序，根据第一个时间排序，如果第一个时间就重复了，那么就是不可能的。
+
+```java
+class Solution {
+    
+    public boolean canEnterAllMeeting(int[][] intervals) {
+        if (intervals.length == 0) {
+            return true;
+        }
+        int n = intervals.length;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n - i - 1; j++) {
+                if (intervals[j + 1][0] < intervals[i][0]) {
+                    int[] tmp = intervals[j];
+                    intervals[j] = intervals[i];
+                    intervals[i] = tmp;
+                }
+            }
+        }
+        int x = 0;
+        while (x < n - 1) {
+            if (intervals[x][0] > intervals[x + 1][1]) {
+                return false;
+            }
+            x++;
+        }
+        return true;
+    }
+    
+}
+```
+
+小争哥的
+
+```java
+class Solution {
+	
+    public boolean canAttendMeetings(int[][] intervals) {
+    	Arrays.sort(intervals, new Comparator<int[]>(){
+            public int compare(int[] i1, int[] i2) {
+                // 妙啊
+                return i1[0] - i2[0];
+            }
+        });
+        for (int i = 1; i < intervals.length; i++) {
+            if (intervals[i][0] < intervals[i - 1][1]) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+}
+```
 
 
 
