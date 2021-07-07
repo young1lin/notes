@@ -1,5 +1,7 @@
 package me.young1lin.xzg.algorithm.week03;
 
+import java.util.Arrays;
+
 /**
  * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
  * @since 2021/6/18 上午6:12
@@ -28,6 +30,10 @@ public class SelectionSort implements Sort {
 			arr[i] = arr[minPos];
 			arr[minPos] = tmp;
 		}
+
+		int[][] intervals = new int[10][10];
+		Arrays.sort(intervals, (int[] arr1, int[] arr2) -> arr[0] - arr[1]);
+
 	}
 
 }

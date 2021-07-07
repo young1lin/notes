@@ -1425,6 +1425,78 @@ class Solution {
 
 # 5. 合并区间
 
+以数组 intervals 表示若干个区间的集合，其中单个区间为 intervals[i] = [starti, endi] 。请你合并所有重叠的区间，并返回一个不重叠的区间数组，该数组需恰好覆盖输入中的所有区间。
+
+ 
+
+示例 1：
+
+```
+输入：intervals = [[1,3],[2,6],[8,10],[15,18]]
+输出：[[1,6],[8,10],[15,18]]
+解释：区间 [1,3] 和 [2,6] 重叠, 将它们合并为 [1,6].
+```
+
+
+示例 2：
+
+```
+输入：intervals = [[1,4],[4,5]]
+输出：[[1,5]]
+解释：区间 [1,4] 和 [4,5] 可被视为重叠区间。
+```
+
+
+提示：
+
+1 <= intervals.length <= 104
+intervals[i].length == 2
+0 <= starti <= endi <= 104
+
+```java
+class Solution {
+
+    public int[][] merge(int[][] intervals) {
+        if (intervals.length == 1) {
+            return intervals;
+        }
+        // 先排序
+        Arrays.sort(intervals, new Comparator<int[]>() {
+            @Override
+            public int compare(int[] i1, int[] i2) {
+                // 妙啊
+                return i1[0] - i2[0];
+            }
+        });
+        // 在对已排序的内容进行统计
+        List<int[]> result = new ArrayList<>(intervals.length);
+        // 用双指针走法
+        int curLeft = intervals[0][0];
+        int curRight = intervals[0][1];
+        for (int i = 0; i < intervals.length; i++) {
+            // 如果当前的小于右边值，
+            if (intervals[i][0] <= curRight) {
+                if (intervals[i][1] > curRight) {
+                    // 那就合并
+                    curRight = intervals[i][1];
+                }
+            }
+            else {
+                // save values;
+                result.add(new int[]{curLeft, curRight});
+                curLeft = intervals[i][0];
+                curRight = intervals[i][1];
+            }
+        }
+        result.add(new int[]{curLeft, curRight});
+        // 再对已经排序的内容，遍历已排序的内容，
+        // 拿 arr[i][1] 和 arr[i+1][0] 比较，如果前者比后者大于等于，那么就合并
+        return result.toArray(new int[result.size()][]);
+    }
+
+}
+```
+
 
 
 # [剑指 Offer 21. 调整数组顺序使奇数位于偶数前面](https://leetcode-cn.com/problems/diao-zheng-shu-zu-shun-xu-shi-qi-shu-wei-yu-ou-shu-qian-mian-lcof/)
