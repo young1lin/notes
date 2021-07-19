@@ -1497,9 +1497,51 @@ class Solution {
 }
 ```
 
-
-
 # [剑指 Offer 21. 调整数组顺序使奇数位于偶数前面](https://leetcode-cn.com/problems/diao-zheng-shu-zu-shun-xu-shi-qi-shu-wei-yu-ou-shu-qian-mian-lcof/)
+
+输入一个整数数组，实现一个函数来调整该数组中数字的顺序，使得所有奇数位于数组的前半部分，所有偶数位于数组的后半部分。
+
+ 
+
+示例：
+
+```
+输入：nums = [1,2,3,4]
+输出：[1,3,2,4] 
+注：[3,1,2,4] 也是正确的答案之一。
+```
+
+**提示：**
+
+1. `0 <= nums.length <= 50000`
+2. `1 <= nums[i] <= 10000`
+
+```java
+class Solution {
+
+    public int[] exchange(int[] nums) {
+        int left = 0;
+        int right = nums.length - 1;
+        while (left < right) {
+            if (nums[left] % 2 == 1) {
+                left++;
+                continue;
+            }
+            if (nums[right] % 2 == 0) {
+                right--;
+                continue;
+            }
+            int tmp = nums[left];
+            nums[left] = nums[right];
+            nums[right] = tmp;
+            left++;
+            right--;
+        }
+        return nums;
+    }
+
+}
+```
 
 
 
@@ -1507,15 +1549,378 @@ class Solution {
 
 
 
+给定一个包含红色、白色和蓝色，一共 n 个元素的数组，原地对它们进行排序，使得相同颜色的元素相邻，并按照红色、白色、蓝色顺序排列。
+
+此题中，我们使用整数 0、 1 和 2 分别表示红色、白色和蓝色。
+
+ 
+
+示例 1：
+
+```
+输入：nums = [2,0,2,1,1,0]
+输出：[0,0,1,1,2,2]
+```
+
+
+示例 2：
+
+```
+输入：nums = [2,0,1]
+输出：[0,1,2]
+```
+
+示例 3：
+
+```
+输入：nums = [0]
+输出：[0]
+```
+
+
+示例 4：
+
+```
+输入：nums = [1]
+输出：[1]
+```
+
+提示：
+
+```
+n == nums.length
+1 <= n <= 300
+nums[i] 为 0、1 或 2
+```
+
+
+
+```java
+class Solution1 {
+
+    /**
+     * 冒泡排序
+     */
+    public void sortColors(int[] nums) {
+        int len = nums.length;
+        if (len == 1) {
+            return;
+        }
+        for (int i = 0; i < len; i++) {
+            for (int j = 0; j < len - i - 1; j++) {
+                if (nums[j] > nums[j + 1]) {
+                    int tmp = nums[j + 1];
+                    nums[j + 1] = nums[j];
+                    nums[j] = tmp;
+                }
+            }
+        }
+    }
+
+}
+
+class Solution {
+
+    /**
+     * 双指针走法
+     */
+    public void sortColors(int[] nums) {
+        int len = nums.length;
+        int left = 0;
+        int right = len - 1;
+        // 第一次双指针，把 2 放到最右边
+        while (left < right) {
+            if (nums[left] != 2) {
+                left++;
+                continue;
+            }
+            if (nums[right] == 2) {
+                right--;
+                continue;
+            }
+            int tmp = nums[right];
+            nums[right] = nums[left];
+            nums[left] = tmp;
+            left++;
+            right--;
+        }
+        // 第二次双指针，把 0 和 1 分开
+        int left1 = 0;
+        int right1 = left;
+        if (nums[right1] == 2) {
+            right1--;
+        }
+        while (left1 < right1) {
+            if (nums[left1] == 0) {
+                left1++;
+                continue;
+            }
+            if (nums[right1] == 1) {
+                right1--;
+                continue;
+            }
+            int tmp = nums[right1];
+            nums[right1] = nums[left1];
+            nums[left1] = tmp;
+        }
+    }
+
+}
+```
+
+
+
 # 对链表进行插入排序
+
+对链表进行插入排序。
+
+
+插入排序的动画演示如上。从第一个元素开始，该链表可以被认为已经部分排序（用黑色表示）。
+每次迭代时，从输入数据中移除一个元素（用红色表示），并原地将其插入到已排好序的链表中。
+
+
+
+插入排序算法：
+
+插入排序是迭代的，每次只移动一个元素，直到所有元素可以形成一个有序的输出列表。
+每次迭代中，插入排序只从输入数据中移除一个待排序的元素，找到它在序列中适当的位置，并将其插入。
+重复直到所有输入数据插入完为止。
+
+示例 1：
+
+```
+输入: 4->2->1->3
+输出: 1->2->3->4
+```
+
+
+示例 2：
+
+```
+输入: -1->5->3->4->0
+输出: -1->0->3->4->5
+```
+
+
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+
+    public ListNode insertionSortList(ListNode head) {
+        if (head == null) {
+            return null;
+        }
+        ListNode dummyHead = new ListNode(Integer.MIN_VALUE, null);
+        ListNode p = head;
+        while (p != null) {
+            ListNode tmp = p.next;
+            // 寻找 p 节点插入的位置，插入到哪个节点后面
+            ListNode q = dummyHead;
+            while (q.next != null && q.next.val <= p.val) {
+                q = q.next;
+            }
+            // 将 P 节点插入
+            p.next = q.next;
+            q.next = p;
+            p = tmp;
+        }
+        return dummyHead.next;
+    }
+
+}
+```
 
 
 
 # 排序链表
 
+给你链表的头结点 head ，请将其按 升序 排列并返回 排序后的链表 。
+
+进阶：
+
+你可以在 O(n log n) 时间复杂度和常数级空间复杂度下，对链表进行排序吗？
+
+示例 1：
+
+![](https://assets.leetcode.com/uploads/2020/09/14/sort_list_1.jpg)
+
+```
+输入：head = [4,2,1,3]
+输出：[1,2,3,4]
+```
+
+示例 2：
+
+![](https://assets.leetcode.com/uploads/2020/09/14/sort_list_2.jpg)
+
+```
+输入：head = [-1,5,3,4,0]
+输出：[-1,0,3,4,5]
+```
+
+
+示例 3：
+
+```
+输入：head = []
+输出：[]
+```
+
+
+提示：
+
+链表中节点的数目在范围 [0, 5 * 104] 内
+-105 <= Node.val <= 105
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+
+    public ListNode sortList(ListNode head) {
+        if (head == null) {
+            return null;
+        }
+        if (head.next == null) {
+            return head;
+        }
+        ListNode midNode = findMidNode(head);
+        ListNode nextNode = midNode.next;
+        midNode.next = null;
+        ListNode leftHead = sortList(head);
+        ListNode rightHead = sortList(nextNode);
+        return mergeList(leftHead, rightHead);
+    }
+
+    private ListNode findMidNode(ListNode head) {
+        ListNode slow = head;
+        ListNode fast = head;
+        while (fast.next != null && fast.next.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        return slow;
+    }
+
+    private ListNode mergeList(ListNode leftHead, ListNode rightHead) {
+        ListNode newHead = new ListNode();
+        ListNode tail = newHead;
+        ListNode pa = leftHead;
+        ListNode pb = rightHead;
+        while (pa != null && pb != null) {
+            if (pa.val <= pb.val) {
+                tail.next = pa;
+                tail = tail.next;
+                pa = pa.next;
+            }
+            else {
+                tail.next = pb;
+                tail = tail.next;
+                pb = pb.next;
+            }
+        }
+        if (pa != null) {
+            tail.next = pa;
+        }
+        if (pb != null) {
+            tail.next = pb;
+        }
+        return newHead.next;
+    }
+
+}
+```
+
 
 
 # 数组中的第K个最大元素
+
+给定整数数组 nums 和整数 k，请返回数组中第 k 个最大的元素。
+
+请注意，你需要找的是数组排序后的第 k 个最大的元素，而不是第 k 个不同的元素。
+
+
+
+示例 1:
+
+```
+输入: [3,2,1,5,6,4] 和 k = 2
+输出: 5
+```
+
+
+示例 2:
+
+```
+输入: [3,2,3,1,2,4,5,5,6] 和 k = 4
+输出: 4
+```
+
+
+
+
+提示：
+
+1 <= k <= nums.length <= 104
+-104 <= nums[i] <= 104
+
+```java
+class Solution {
+
+    public int findKthLargest(int[] nums, int k) {
+        int len = nums.length;
+        doSort(nums, 0, len - 1);
+        return nums[len - k];
+    }
+
+	private void doSort(int[] arr, int bottom, int top) {
+		if (bottom >= top) {
+			return;
+		}
+		int partition = partition(arr, bottom, top);
+		doSort(arr, bottom, partition - 1);
+		doSort(arr, partition + 1, top);
+	}
+
+	private int partition(int[] arr, int bottom, int top) {
+		// [bottom, i] 表示小于 pivot 的值
+		int i = bottom - 1;
+		for (int j = bottom; j < top; j++) {
+			if (arr[j] < arr[top]) {
+				swap(arr, i + 1, j);
+				i++;
+			}
+		}
+		swap(arr, i + 1, top);
+		return i + 1;
+	}
+
+    private void swap(int[] nums, int i, int j) {
+        int tmp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = tmp;
+    }
+
+}
+```
 
 
 
@@ -1523,4 +1928,125 @@ class Solution {
 
 
 
+```java
+class Solution {
+
+    private int[] result;
+
+    private int count = 0;
+
+    public int[] smallestK(int[] arr, int k) {
+        if (k == 0 || arr.length < k) {
+            return new int[0];
+        }
+        result  = new int[k];
+        quickSort(arr, 0, arr.length - 1);
+        for (int i = 0; i < k; i++) {
+            result[i] = arr[i];
+        }
+        return result;
+    }
+
+    private void quickSort(int[] nums, int bottom, int top) {
+        if (bottom > top) {
+            return;
+        }
+        int q = partition(nums, bottom, top);
+        quickSort(nums, bottom, q - 1);
+        quickSort(nums, q + 1, top);
+    }
+    
+    private int partition(int[] nums, int bottom, int top) {
+        int i = bottom - 1;
+        int j = bottom;
+        while (j < top) {
+            if (nums[j] < nums[top]) {
+                swap(nums, j, i + 1);
+                i++;
+            }
+            j++;
+        }
+        swap(nums, i + 1, top);
+        return i + 1;
+    }
+
+    private void swap(int[] nums, int i, int j) {
+        int tmp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = tmp;
+    }
+
+}
+```
+
+
+
 # 数组中的逆序对
+
+在数组中的两个数字，如果前面一个数字大于后面的数字，则这两个数字组成一个逆序对。输入一个数组，求出这个数组中的逆序对的总数。
+
+**示例 1:**
+
+```
+输入: [7,5,6,4]
+输出: 5
+```
+
+ 
+
+
+
+```java
+class Solution {
+
+    /** 其实就是算逆序度 */
+    public int reversePairs(int[] nums) {
+        return mergeSort(nums, 0, nums.length - 1);
+    }
+
+    private int mergeSort(int[] nums, int bottom, int top) {
+        if (bottom >= top) {
+            return 0;
+        }
+        int mid = (bottom + top) / 2;
+        int reverseCount = 0;
+        reverseCount += mergeSort(nums, bottom, mid);
+        reverseCount += mergeSort(nums, mid + 1, top);
+        reverseCount += merge(nums, bottom, mid, top);
+        return reverseCount;
+    }
+
+    private int merge(int[] nums, int bottom, int mid, int top) {
+        int[] tmp = new int[top - bottom + 1];
+        int i = bottom;
+        int j = mid + 1;
+        int k = 0;
+        int reverseCount = 0;
+        while (i <= mid && j <= top) {
+            if (nums[j] < nums[i]) {
+                reverseCount += mid - i + 1;
+                tmp[k++] = nums[j];
+                j++;
+            }
+            else {
+                tmp[k++] = nums[i];
+                i++;
+            }
+        }
+        while (j <= top) {
+            tmp[k++] = nums[j];
+            j++;
+        }
+        while (i <= mid) {
+            tmp[k++] = nums[i];
+            i++;
+        }
+        for (i = 0; i < top - bottom + 1; i++) {
+            nums[i + bottom] = tmp[i];
+        }
+        return reverseCount;
+    }
+
+}
+```
+
