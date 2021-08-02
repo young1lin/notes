@@ -698,27 +698,346 @@ public class Solution {
 
 ## 环形链表（两年前做过了）
 
+用 HashMap
+
 
 
 ## 移除重复节点
 
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+
+    public ListNode removeDuplicateNodes(ListNode head) {
+        if (head == null) {
+            return head;
+        }
+        Set<Integer> set = new HashSet<>();
+        ListNode dummyNode = new ListNode();
+        ListNode tail = dummyNode;
+        ListNode p = head;
+        while (p != null) {
+            ListNode tmp = p.next;
+            if (!set.contains(p.val)) {
+                set.add(p.val);
+                tail.next = p;
+                tail = p;
+                tail.next = null;
+            }
+            p = tmp;
+        }
+        return dummyNode.next;
+    }
+
+}
+```
+
+
+
 ## 单词频率
+
+设计一个方法，找出任意指定单词在一本书中的出现频率。
+
+你的实现应该支持如下操作：
+
+WordsFrequency(book)构造函数，参数为字符串数组构成的一本书
+get(word)查询指定单词在书中出现的频率
+示例：
+
+```java
+WordsFrequency wordsFrequency = new WordsFrequency({"i", "have", "an", "apple", "he", "have", "a", "pen"});
+wordsFrequency.get("you"); //返回0，"you"没有出现过
+wordsFrequency.get("have"); //返回2，"have"出现2次
+wordsFrequency.get("an"); //返回1
+wordsFrequency.get("apple"); //返回1
+wordsFrequency.get("pen"); //返回1
+```
+
+
+提示：
+
+book[i]中只包含小写字母
+1 <= book.length <= 100000
+1 <= book[i].length <= 10
+get函数的调用次数不会超过100000
+
+```java
+class WordsFrequency {
+
+    private Map<String, Integer> map;
+
+
+    public WordsFrequency(String[] book) {
+        map = new HashMap<>();
+        for (int i = 0; i < book.length; i++) {
+            String key = book[i];
+            Integer times = map.get(key);
+            if (times != null) {
+                map.put(key, times + 1);
+            }
+            else {
+                map.put(key, 1);
+            }
+        }
+    }
+    
+    public int get(String word) {
+        Integer result = map.get(word);
+        return result == null ? 0 : result.intValue();
+    }
+    
+}
+
+/**
+ * Your WordsFrequency object will be instantiated and called as such:
+ * WordsFrequency obj = new WordsFrequency(book);
+ * int param_1 = obj.get(word);
+ */
+```
+
+
 
 ## 是否互为字符重排
 
+给定两个字符串 s1 和 s2，请编写一个程序，确定其中一个字符串的字符重新排列后，能否变成另一个字符串。
+
+示例 1：
+
+```
+输入: s1 = "abc", s2 = "bca"
+输出: true 
+```
+
+
+示例 2：
+
+```
+输入: s1 = "abc", s2 = "bad"
+输出: false
+```
+
+
+说明：
+
+0 <= len(s1) <= 100
+
+```java
+class Solution {
+
+    /**
+     * 这个解法超越 100% 用户，因为用的是快拍 + 遍历。所以是 O(n) 的
+     */
+    public boolean CheckPermutation(String s1, String s2) {
+        char[] s1Arr = s1.toCharArray();
+        char[] s2Arr = s2.toCharArray();
+        if (s1Arr.length != s2Arr.length) {
+            return false;
+        }
+        // 都排个序，然后一个个比较，当然也可以用 Map 来做
+        Arrays.sort(s1Arr);
+        Arrays.sort(s2Arr);
+        for (int i = 0; i < s1Arr.length; i++) {
+            if (s1Arr[i] != s2Arr[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+}
+```
+
+
+
 ## 数组中重复的数字
+
+
 
 ## 有效的字母异位词
 
+```java
+class Solution {
+
+       public boolean isAnagram(String s, String t) {
+            if (s.length() != t.length()) {
+                return false;
+            }
+           char[] a = s.toCharArray();
+           char[] b = t.toCharArray();
+           Arrays.sort(a);
+           Arrays.sort(b);
+           for (int i = 0; i < a.length; i++) {
+               if (a[i] != b[i]) {
+                   return false;
+               }
+           }
+           return true;
+       }
+       
+}
+```
+
+
+
 ### 字母异位词分组
+
+给定一个字符串数组，将字母异位词组合在一起。可以按任意顺序返回结果列表。
+
+字母异位词指字母相同，但排列不同的字符串。
+
+ 
+
+示例 1:
+
+```
+输入: strs = ["eat", "tea", "tan", "ate", "nat", "bat"]
+输出: [["bat"],["nat","tan"],["ate","eat","tea"]]
+```
+
+
+示例 2:
+
+```
+输入: strs = [""]
+输出: [[""]]
+```
+
+
+示例 3:
+
+```
+输入: strs = ["a"]
+输出: [["a"]]
+```
+
+
+提示：
+
+1 <= strs.length <= 104
+0 <= strs[i].length <= 100
+strs[i] 仅包含小写字母
+
+```java
+class Solution {
+
+    public List<List<String>> groupAnagrams(String[] strs) {
+        if (strs.length == 0) {
+            return null;
+        }
+        Map<String, Integer[]> map = new HashMap();
+        for (int i = 0; i < strs.length; i++) {
+            String tmpStr = new String(strs[i]);
+            char[] chArr = tmpStr.toCharArray();
+            Arrays.sort(chArr);
+            String k = new String(chArr);
+            Integer[] valArr = map.get(k);
+            if (valArr != null) {
+                int len = valArr.length;
+                Integer[] newArr = new Integer[len + 1];
+                for(int j = 0; j < len; j++) {
+                    newArr[j] = valArr[j];
+                }
+                newArr[len] = i;
+                map.put(k, newArr);
+            }
+            else {
+                valArr = new Integer[]{i};
+                map.put(k, valArr);
+            }
+        }
+        List<List<String>> result = new ArrayList<>(map.size());
+        map.forEach((k, v) -> {
+            List<String> tmpList = new ArrayList<>(v.length);
+            for (int i = 0; i < v.length; i++) {
+                tmpList.add(strs[v[i]]);
+            }
+            result.add(tmpList);
+        });
+        return result;
+    }
+
+}
+```
 
 ## 只出现一次的数字
 
+给定一个非空整数数组，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。
+
+说明：
+
+你的算法应该具有线性时间复杂度。 你可以不使用额外空间来实现吗？
+
+示例 1:
+
+```
+输入: [2,2,1]
+输出: 1
+```
+
+示例 2:
+
+```
+输入: [4,1,2,1,2]
+输出: 4
+```
+
+
+
+```java
+class Solution {
+
+    public int singleNumber(int[] nums) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            Integer val = map.get(nums[i]);
+            if (val != null) {
+                map.put(nums[i], val + 1);
+            }
+            else {
+                map.put(nums[i], 1);
+            }
+        }
+        for (Integer key : map.keySet()){
+            if (map.get(key) == 1) {
+                return key;
+            }
+        }
+        return -1;
+    }
+    
+    
+    public int singleNumber(int[] nums) {
+        int single = 0;
+        for (int num : nums) {
+            // 0 和 任何数异或为其本身，本身和本身异或为 0，其实就是消消乐，最后独苗就是那个数
+            single ^= num;
+        }
+        return single;
+    }
+
+}
+```
+
+
+
 ## 两个数组的交集
+
+
 
 ## 数组的相对排序
 
+
+
 ## 设计哈希映射
+
+
 
 ## LRU 缓存机制（一年前做过了，比较简单）
 
