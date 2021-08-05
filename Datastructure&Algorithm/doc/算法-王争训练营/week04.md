@@ -1029,6 +1029,49 @@ class Solution {
 
 ## 两个数组的交集
 
+天下武功，唯快不破！！
+
+执行结果：
+
+通过
+
+显示详情
+
+
+
+添加备注
+
+执行用时：2 ms, 在所有 Java 提交中击败了95.52%的用户
+
+内存消耗：38.7 MB, 在所有 Java 提交中击败了38.70%的用户
+
+```java
+class Solution {
+
+    public int[] intersection(int[] nums1, int[] nums2) {
+        Map<Integer, Integer> map = new HashMap<>(nums1.length);
+        for (int i = 0; i < nums1.length; i++) {
+            map.put(nums1[i], i);
+        }
+        Set<Integer> list = new HashSet<>();
+        for (int i = 0; i < nums2.length; i++) {
+           if(map.get(nums2[i]) != null){
+               list.add(nums2[i]);
+           }
+        }
+        int[] result =  new int[list.size()];
+        int index = 0;
+        for (Integer i : list) {
+            result[index++] = i;
+        }
+        return result;
+    }
+
+}
+```
+
+
+
 
 
 ## 数组的相对排序
