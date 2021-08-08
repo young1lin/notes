@@ -1,0 +1,10 @@
+SET MODE MYSQL;
+
+-- CREATE TABLE IF NOT EXISTS
+CREATE TABLE IF NOT EXISTS person(
+   `id`   LONG AUTO_INCREMENT PRIMARY KEY,
+   `name` VARCHAR(20) DEFAULT '张三' COMMENT '姓名',
+   `age`  INT         DEFAULT 20 COMMENT '年龄',
+   `email` VARCHAR(50) DEFAULT 'email@gmail.com' COMMENT 'email',
+   `balance` DECIMAL(20, 10) DEFAULT 0 COMMENT 'balance'
+);

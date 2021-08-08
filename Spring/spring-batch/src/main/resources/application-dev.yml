@@ -1,0 +1,16 @@
+spring:
+  h2:
+    console:
+      enabled: true
+  # datasource config
+  datasource:
+    url: jdbc:h2:mem:batch
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: sa
+  # Spring Batch config
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: always
