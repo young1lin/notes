@@ -5,7 +5,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * use default datasource config
+ * use default datasource config.
  *
  * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
  * @since 2021/8/7 上午9:25

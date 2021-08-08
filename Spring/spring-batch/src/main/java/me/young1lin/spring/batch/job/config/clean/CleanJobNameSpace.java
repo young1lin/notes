@@ -9,4 +9,6 @@ public final class CleanJobNameSpace {
 
 	public static final String CLEAN_JOB_PREFIX = "clean-";
 
+	public static final String MARKET_JOB_PREFIX = "market-";
+
 }

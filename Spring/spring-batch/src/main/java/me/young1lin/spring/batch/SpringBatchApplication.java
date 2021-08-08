@@ -2,14 +2,14 @@ package me.young1lin.spring.batch;
 
 import java.util.List;
 
-import me.young1lin.spring.batch.entity.Person;
-import me.young1lin.spring.batch.mapper.PersonMapper;
-
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
+
+import me.young1lin.spring.batch.entity.Person;
+import me.young1lin.spring.batch.mapper.PersonMapper;
 
 /**
  * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
