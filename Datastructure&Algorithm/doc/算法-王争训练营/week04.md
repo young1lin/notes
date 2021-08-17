@@ -9,7 +9,7 @@
 ```java
 public int binarySearh(int[] a, int n, int value) {
     int low = 0;
-    int high = n - 1;
+    int high = n - 1; 
     while (low <= high) {
         int mid = (low + hight) / 2;
         if (a[mid] == value) {
