@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.scala-lang.modules:scala-parser-combinators_2.11:1.1.1">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/young1lin/soft/apache-maven-3.6.2/repository/org/scala-lang/modules/scala-parser-combinators_2.11/1.1.1/scala-parser-combinators_2.11-1.1.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/young1lin/soft/apache-maven-3.6.2/repository/org/scala-lang/modules/scala-parser-combinators_2.11/1.1.1/scala-parser-combinators_2.11-1.1.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/young1lin/soft/apache-maven-3.6.2/repository/org/scala-lang/modules/scala-parser-combinators_2.11/1.1.1/scala-parser-combinators_2.11-1.1.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
