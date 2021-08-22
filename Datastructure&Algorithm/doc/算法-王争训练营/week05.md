@@ -229,8 +229,555 @@ public void insert(int data) {
 
 ## 删除操作
 
-针对待删除节点的子节点个树不同，分三种情况来处理。
+针对**待删除节点**的子节点个树不同，分三种情况来处理。
 
 1. 要删除的节点没有子节点。只需直接将父节点中指向要删除节点的指针置为 null 即可。
 2. 要删除的节点只有一个子节点。只需要更新父节点中指向要删除的节点的指针，让它重新指向要删除节点的子节点即可。
-3. 要删除的节点有两个节点。需要找到这个节点的右子树中的“最小节点”，把它踢喊道要删除的节点上（或者左子树的最大节点，总之就是越接近这个被删除节点值的节点）。然后再删除掉这个“最小节点”，因为”最小节点“肯定没有左子节点，所以，可以用上面两条规则来删除这个最小节点。
+3. 要删除的节点有两个节点。需要找到这个节点的右子树中的“最小节点”，把它替换到要删除的节点上（或者左子树的最大节点，总之就是越接近这个被删除节点值的节点）。然后再删除掉这个“最小节点”，因为”最小节点“肯定没有左子节点，所以，可以用上面两条规则来删除这个最小节点。
+
+```java
+public void delete(int data) {
+    // p 指向要删除的节点，初始化指向根节点
+    Node p = root;
+    // pp 是记录的是 p 的父节点
+    Node pp = null;
+    // 先用非递归的方式，找到 p 节点
+    while(p != null && p.data != data) {
+        pp = p;
+        if (data > p.data) {
+            p = p.right;
+        }
+        else {
+            p = p.left;
+        }
+    }
+    // 没有找到
+    if (p == null) {
+        return;
+    }
+    // 要删除的节点有两个子节点
+    if (p.left != null && p.right != null) {
+        Node minP = p.right;
+        // minPP 表示 minP 的父节点
+        Node minPP = p;
+        while (minP.left != null) {
+            minPP = minP;
+            minP = minP.left;
+        }
+        // 将 minP 的数据替换到 P 中
+        p.data = minP.data;
+        // 下面就变成了删除 minP 了
+        p = minP;
+        pp = minPP;
+    }
+    // 删除节点是叶子节点或者仅有一个子节点
+    // 查找待删除节点 p 的子节点
+    Node child = null;
+    if (p.left != null) {
+        child = p.left;
+    }
+   	else if (p.right != null) {
+        child = p.right;
+    }
+    
+    if (pp == null) {
+        // 删除的是根节点
+        root = child;
+    }
+    else if (pp.left == p) {
+        pp.left = child;
+    }
+    else {
+        pp.right = child;
+    }
+}
+```
+
+
+
+二叉查找树的查找、插入、删除性能，跟树的高度成正比。
+
+解决普通二叉查找树的性能退化问题：
+二叉查找树在频繁动态更新过程中，可能会出现树的高度远远大于 $log_2n$ 的情况。
+
+从而导致各个操作的效率下降。极端情况下，二叉树退化为链表，时间复杂度就会退化为 O(n)。
+
+
+
+平衡二叉查找树：比如 AVL 树
+
+任意一个节点的左右子树的高度相差不能大于 1.
+
+
+
+近似平衡二叉查找树：比如红黑树
+
+树的高度近似 $log_2n$
+
+各个操作的性能：完全二叉树 > 平衡二叉树 > 近似平衡二叉树
+
+维护平衡的成本：完全二叉树 > 平衡二叉树 > 近似平衡二叉树
+
+# 二叉树题型套路讲解
+
+1. 二叉树前中后序遍历
+2. 二叉树按层遍历
+3. 二叉树上的递归
+4. 二叉查找树
+5. LCA 最近公共祖先
+6. 二叉树转单、双、循环链表
+7. 按照遍历结果反向构建二叉树
+8. 二叉树上的最长路径和
+
+**题型****1****：二叉树前中后序遍历**
+
+[144. 二叉树的前序遍历](https://leetcode-cn.com/problems/binary-tree-preorder-traversal/)（简单）
+
+[94. 二叉树的中序遍历](https://leetcode-cn.com/problems/binary-tree-inorder-traversal/) （简单）
+
+[145. 二叉树的后序遍历](https://leetcode-cn.com/problems/binary-tree-postorder-traversal/)（简单）
+
+[589. N 叉树的前序遍历](https://leetcode-cn.com/problems/n-ary-tree-preorder-traversal/)（简单）**例题** 
+
+[590. N 叉树的后序遍历](https://leetcode-cn.com/problems/n-ary-tree-postorder-traversal/)（简单）
+
+
+
+**题型****2****：二叉树按层遍历**
+
+[剑指 Offer 32 - I. 从上到下打印二叉树](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-lcof/)（中等）**例题** 
+
+[102. 二叉树的层序遍历](https://leetcode-cn.com/problems/binary-tree-level-order-traversal/)（中等） 
+
+[剑指 Offer 32 - III. 从上到下打印二叉树 III](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-iii-lcof/) （中等）
+
+[429. N 叉树的层序遍历](https://leetcode-cn.com/problems/n-ary-tree-level-order-traversal/)（中等）
+
+[513. 找树左下角的值](https://leetcode-cn.com/problems/find-bottom-left-tree-value/)（中等）
+
+
+
+**题型****3****：二叉树上的递归**
+
+[104. 二叉树的最大深度](https://leetcode-cn.com/problems/maximum-depth-of-binary-tree/)（简单）**例题** 
+
+[559. N 叉树的最大深度](https://leetcode-cn.com/problems/maximum-depth-of-n-ary-tree/)（简单）
+
+[剑指 Offer 55 - II. 平衡二叉树](https://leetcode-cn.com/problems/ping-heng-er-cha-shu-lcof/)（中等）**例题** 
+
+[617. 合并二叉树](https://leetcode-cn.com/problems/merge-two-binary-trees/)（简单）
+
+[226. 翻转二叉树](https://leetcode-cn.com/problems/invert-binary-tree/) （简单）
+
+[101. 对称二叉树](https://leetcode-cn.com/problems/symmetric-tree/)（中等）
+
+ [98. 验证二叉搜索树](https://leetcode-cn.com/problems/validate-binary-search-tree/)（中等）
+
+
+
+**题型****4****：二叉查找树**
+
+[剑指 Offer 54. 二叉搜索树的第k大节点](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-di-kda-jie-dian-lcof/)（中等）
+
+[538. 把二叉搜索树转换为累加树](https://leetcode-cn.com/problems/convert-bst-to-greater-tree/) （中等）
+
+[面试题 04.06. 后继者](https://leetcode-cn.com/problems/successor-lcci/)（中等）
+
+
+
+
+
+# [144. 二叉树的前序遍历](https://leetcode-cn.com/problems/binary-tree-preorder-traversal/)（简单）
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+
+    public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> result =  new ArrayList<>();
+        pre(root, result);
+        return result;
+    }
+
+    public void pre(TreeNode node, List<Integer> result) {
+        if (node == null) {
+            return;
+        }
+        result.add(node.val);
+        pre(node.left, result);
+        pre(node.right, result);
+    }
+
+}
+```
+
+
+
+# [94. 二叉树的中序遍历](https://leetcode-cn.com/problems/binary-tree-inorder-traversal/) （简单）
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        in(root, result);
+        return result;
+    }
+
+    private void in(TreeNode node, List<Integer> result) {
+        if (node == null) {
+            return;
+        }
+        in(node.left, result);
+        result.add(node.val);
+        in(node.right, result);
+    }
+
+}
+```
+
+
+
+# [145. 二叉树的后序遍历](https://leetcode-cn.com/problems/binary-tree-postorder-traversal/)（简单）
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+
+    public List<Integer> postorderTraversal(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        post(root, result);
+        return result;
+    }
+
+    private void post(TreeNode node, List<Integer> result) {
+        if (node == null) {
+            return;
+        }
+        back(node.left, result);
+        back(node.right, result);
+        result.add(node.val);
+    }
+
+}
+```
+
+
+
+# [589. N 叉树的前序遍历](https://leetcode-cn.com/problems/n-ary-tree-preorder-traversal/)（简单）**例题**
+
+
+
+给定一个 N 叉树，返回其节点值的 前序遍历 。
+
+N 叉树 在输入中按层序遍历进行序列化表示，每组子节点由空值 null 分隔（请参见示例）。
+
+
+
+进阶：
+
+递归法很简单，你可以使用迭代法完成此题吗?
+
+示例 1：
+
+```
+输入：root = [1,null,3,2,4,null,5,6]
+输出：[1,3,5,6,2,4]
+```
+
+示例 2：
+
+```
+输入：root = [1,null,2,3,4,5,null,null,6,7,null,8,null,9,10,null,null,11,null,12,null,13,null,null,14]
+输出：[1,2,3,6,7,11,14,4,8,12,5,9,13,10]
+```
+
+
+提示：
+
+N 叉树的高度小于或等于 1000
+节点总数在范围 [0, 10^4] 内
+通过次数85,002提交次数114,150
+
+ 递归实现
+
+```java
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public List<Node> children;
+
+    public Node() {}
+
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val, List<Node> _children) {
+        val = _val;
+        children = _children;
+    }
+};
+*/
+
+class Solution {
+
+    public List<Integer> preorder(Node root) {
+        List<Integer> result = new ArrayList<>();
+        prev(root, result);
+        return result;
+    }
+
+    private void prev(Node node, List<Integer> result) {
+        if (node == null) {
+            return;
+        }
+        result.add(node.val);
+        for (Node n : node.children) {
+            prev(n, result);
+        }
+    }
+
+}
+```
+
+非递归实现
+
+```java
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public List<Node> children;
+
+    public Node() {}
+
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val, List<Node> _children) {
+        val = _val;
+        children = _children;
+    }
+};
+*/
+
+class Solution {
+
+    public List<Integer> preorder(Node root) {
+        List<Integer> result = new ArrayList<>();
+        if (root == null) {
+            return result;
+        }
+        LinkedList<Node> stack = new LinkedList<>();
+        stack.add(root);
+        while (!stack.isEmpty()) {
+            Node node = stack.pollLast();
+            result.add(node.val);
+            // 先反转，后面再进行弹栈，因为是根左右，所以先加上面的，再弹出左边的，最后是右边的内容弹出
+            Collections.reverse(node.children);
+            for (Node item : node.children) {
+                stack.add(item);
+            }
+        }
+        return result;
+    }
+
+}
+```
+
+
+
+# [590. N 叉树的后序遍历](https://leetcode-cn.com/problems/n-ary-tree-postorder-traversal/)（简单）
+
+递归
+
+```java
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public List<Node> children;
+
+    public Node() {}
+
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val, List<Node> _children) {
+        val = _val;
+        children = _children;
+    }
+};
+*/
+
+class Solution {
+
+    public List<Integer> postorder(Node root) {
+        List<Integer> result = new ArrayList<>();
+        post(root, result);
+        return result;
+    }
+
+    private void post(Node node, List<Integer> result) {
+        if (node == null) {
+            return;
+        }
+        for (Node n : node.children) {
+            post(n, result);
+        }
+        result.add(node.val);
+    }
+
+}
+```
+
+迭代
+
+```java
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public List<Node> children;
+
+    public Node() {}
+
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val, List<Node> _children) {
+        val = _val;
+        children = _children;
+    }
+};
+*/
+
+class Solution {
+
+    public List<Integer> postorder(Node root) {
+        LinkedList<Integer> result = new LinkedList<>();
+        if (root == null) {
+            return result;
+        }
+
+        Deque<Node> stack = new ArrayDeque<>();
+        stack.addLast(root);
+        while (!stack.isEmpty()) {
+            Node node = stack.removeLast();
+            result.addFirst(node.val);
+            for (int i = 0; i < node.children.size(); i++) {
+                stack.addLast(node.children.get(i));
+            }
+        }
+        return result; 
+    }
+
+}
+```
+
+
+
+# [剑指 Offer 32 - I. 从上到下打印二叉树](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-lcof/)（中等）**例题**
+
+# [102. 二叉树的层序遍历](https://leetcode-cn.com/problems/binary-tree-level-order-traversal/)（中等）
+
+
+
+# [剑指 Offer 32 - III. 从上到下打印二叉树 III](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-iii-lcof/) （中等）
+
+
+
+# [429. N 叉树的层序遍历](https://leetcode-cn.com/problems/n-ary-tree-level-order-traversal/)（中等）
+
+
+
+# [513. 找树左下角的值](https://leetcode-cn.com/problems/find-bottom-left-tree-value/)（中等）
+
+
+
+# [104. 二叉树的最大深度](https://leetcode-cn.com/problems/maximum-depth-of-binary-tree/)（简单）**例题**
+
+
+
+# [559. N 叉树的最大深度](https://leetcode-cn.com/problems/maximum-depth-of-n-ary-tree/)（简单）
+
+
+
+# [剑指 Offer 55 - II. 平衡二叉树](https://leetcode-cn.com/problems/ping-heng-er-cha-shu-lcof/)（中等）**例题**
+
+
+
+# [617. 合并二叉树](https://leetcode-cn.com/problems/merge-two-binary-trees/)（简单）
+
+
+
+# [226. 翻转二叉树](https://leetcode-cn.com/problems/invert-binary-tree/) （简单）
+
+
+
+# [101. 对称二叉树](https://leetcode-cn.com/problems/symmetric-tree/)（中等）
+
+
+
+# [98. 验证二叉搜索树](https://leetcode-cn.com/problems/validate-binary-search-tree/)（中等）
+
+
+
+# [剑指 Offer 54. 二叉搜索树的第k大节点](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-di-kda-jie-dian-lcof/)（中等）
+
+
+
+# [538. 把二叉搜索树转换为累加树](https://leetcode-cn.com/problems/convert-bst-to-greater-tree/) （中等）
+
+
+
+# [面试题 04.06. 后继者](https://leetcode-cn.com/problems/successor-lcci/)（中等）
+
