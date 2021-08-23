@@ -727,7 +727,93 @@ class Solution {
 
 # [剑指 Offer 32 - I. 从上到下打印二叉树](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-lcof/)（中等）**例题**
 
+从上到下打印出二叉树的每个节点，同一层的节点按照从左到右的顺序打印。
+
+ 
+
+例如:
+给定二叉树: [3,9,20,null,null,15,7],
+
+        3
+       / \
+      9  20
+        /  \
+       15   7
+
+返回：
+
+```
+[3,9,20,15,7]
+```
+
+
+
+```java
+class Solution {
+    
+    public int[] levelOrder(TreeNode root) {
+        if (root == null) {
+            return new int[0];
+        }
+        List<Integer> result = new ArrayList<>();
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            result.add(node.val);
+            if (node.left != null) {
+                queue.add(node.left);
+            }
+            if (node.right != null) {
+                queue.add(node.right);
+            }
+        }
+        int[] resultArray = new int[result.size()];
+        int index = 0;
+        for (Integer i : result) {
+            resultArray[index++] = i;
+        }
+        return resultArray;
+    }
+    
+}
+```
+
+
+
 # [102. 二叉树的层序遍历](https://leetcode-cn.com/problems/binary-tree-level-order-traversal/)（中等）
+
+给你一个二叉树，请你返回其按 层序遍历 得到的节点值。 （即逐层地，从左到右访问所有节点）。
+
+ 
+
+示例：
+二叉树：[3,9,20,null,null,15,7],
+
+        3
+       / \
+      9  20
+        /  \
+       15   7
+
+返回其层序遍历结果：
+
+```
+[
+  [3],
+  [9,20],
+  [15,7]
+]
+```
+
+
+
+
+```java
+
+```
+
+
 
 
 
@@ -747,11 +833,128 @@ class Solution {
 
 
 
+给定一个二叉树，找出其最大深度。
+
+二叉树的深度为根节点到最远叶子节点的最长路径上的节点数。
+
+说明: 叶子节点是指没有子节点的节点。
+
+示例：
+给定二叉树 [3,9,20,null,null,15,7]，
+
+        3
+       / \
+      9  20
+        /  \
+       15   7
+返回它的最大深度 3 
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+
+    public int maxDepth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        // 递归求问题，求左子树和右子树的最大深度
+        return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
+    }
+
+}
+```
+
+
+
 # [559. N 叉树的最大深度](https://leetcode-cn.com/problems/maximum-depth-of-n-ary-tree/)（简单）
 
 
 
 # [剑指 Offer 55 - II. 平衡二叉树](https://leetcode-cn.com/problems/ping-heng-er-cha-shu-lcof/)（中等）**例题**
+
+输入一棵二叉树的根节点，判断该树是不是平衡二叉树。如果某二叉树中任意节点的左右子树的深度相差不超过1，那么它就是一棵平衡二叉树。
+
+ 
+
+示例 1:
+
+给定二叉树 [3,9,20,null,null,15,7]
+
+        3
+       / \
+      9  20
+        /  \
+       15   7
+
+返回 true 。
+
+示例 2:
+
+给定二叉树 [1,2,2,3,3,null,null,4,4]
+
+           1
+          / \
+         2   2
+        / \
+       3   3
+      / \
+     4   4
+
+返回 false 。
+
+ ```java
+ /**
+  * Definition for a binary tree node.
+  * public class TreeNode {
+  *     int val;
+  *     TreeNode left;
+  *     TreeNode right;
+  *     TreeNode(int x) { val = x; }
+  * }
+  */
+ class Solution {
+ 
+     private boolean isBalanced = true;
+ 
+     public boolean isBalanced(TreeNode root) {
+         height(root);
+         return isBalanced;
+     }
+ 
+     private int height(TreeNode node) {
+         if (node == null) {
+             return 0;
+         }
+         if (!isBalanced) {
+             // 如果已经是不平衡的二叉树了，就提前终止递归
+             return 0;
+         }
+         int leftHeight = height(node.left);
+         int rightHeight = height(node.right);
+         if (Math.abs(leftHeight - rightHeight) > 1) {
+             isBalanced = false;
+         }
+         return Math.max(leftHeight, rightHeight) + 1;
+     }
+ 
+ }
+ ```
+
+
 
 
 
@@ -772,6 +975,124 @@ class Solution {
 
 
 # [剑指 Offer 54. 二叉搜索树的第k大节点](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-di-kda-jie-dian-lcof/)（中等）
+
+给定一棵二叉搜索树，请找出其中第k大的节点。
+
+ 
+
+示例 1:
+
+输入: root = [3,1,4,null,2], k = 1
+
+```
+   3
+  / \
+ 1   4
+  \
+   2
+```
+
+输出: 4
+示例 2:
+
+输入: root = [5,3,6,2,4,null,null,1], k = 3
+
+```
+       5
+      / \
+     3   6
+    / \
+   2   4
+  /
+ 1
+```
+
+
+输出: 4
+
+
+限制：
+
+1 ≤ k ≤ 二叉搜索树元素个数
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+
+    public int kthLargest(TreeNode root, int k) {
+        // 二叉搜索树的种序遍历是有序的，所以只需要找到对应的反的序列就行
+        if (root == null) {
+            return 0;
+        }
+        List<Integer> list = new ArrayList<>();
+        in(root, list);
+        return list.get(list.size() - k);
+    }
+
+    private void in(TreeNode node, List<Integer> list) {
+        if (node == null) {
+            return;
+        }
+        in(node.left, list);
+        list.add(node.val);
+        in(node.right, list);
+    } 
+
+}
+
+
+
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+
+    int count = 0;
+
+    int result;
+
+    public int kthLargest(TreeNode root, int k) {
+        if (root == null) {
+            return 0;
+        }
+        in(root, k);
+        return result;
+    }
+
+    private void in(TreeNode node, int k) {
+        // 提前终止递归，剪枝
+        if (count >= k) {
+            return;
+        }
+        if (node == null) {
+            return;
+        }
+        // 优先去右边找
+        in(node.right, k);
+        count++;
+        if (count == k) {
+            result = node.val;
+            return;
+        }
+        in(node.left, k);
+    } 
+
+}
+```
 
 
 
