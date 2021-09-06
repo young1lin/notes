@@ -385,6 +385,56 @@ public void delete(int data) {
 
 
 
+# I  hava no idea about this
+
+```java
+class Solution {
+	// 模拟函数调用栈
+    private class SFrame {
+        
+        public int status = 1;
+        
+        public TreeNode node = null;
+        
+        public SFrame(int status, TreeNode node) {
+            this.status = status;
+            this.node = node;
+        }
+        
+    }
+    
+    List<Integer> result = new ArrayList<>();
+    
+    public List<Integer preOrder(TreeNode root) {
+        Stack<SFrame> stack = new Stack<>();
+        TreeNode p = root;
+        while (true) {
+            // 一路向左
+            while (p != null) {
+                stack.push(new SFrame(1, p));
+                result.add(p.val);
+                p = p.left;
+            }
+            // 左右子树都遍历完，再次访问到这个节点时，2 -> 3
+            while (!stack.isEmpty() && stack.peek().status == 2) {
+                stack.peek().status = 3;
+                stack.pop();
+            }
+            if (stack.isEmpty()) {
+                break;
+            }
+            // 左子树遍历完，再次访问到这个节点时 1-> 2
+            stack.peek().status = 2;
+            p = statck.peek().node.right;
+        }
+        return result;
+    }
+    
+}
+```
+
+
+
 
 
 # [144. 二叉树的前序遍历](https://leetcode-cn.com/problems/binary-tree-preorder-traversal/)（简单）
@@ -806,26 +856,278 @@ class Solution {
 ]
 ```
 
+执行用时：1 ms, 在所有 Java 提交中击败了92.66%的用户
+
+内存消耗：38.5 MB, 在所有 Java 提交中击败了80.70%的用户
+
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        List<List<Integer>> result = new ArrayList<>();
+        if (root == null) {
+            return result;
+        }
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            List<Integer> curLevelNodes = new ArrayList<>();
+            int curLevelNum = queue.size();
+            for (int i = 0; i < curLevelNum; i++) {
+                TreeNode treeNode = queue.poll();
+                curLevelNodes.add(treeNode.val);
+                if (treeNode.left != null) {
+                    queue.add(treeNode.left);
+                }
+                if (treeNode.right != null) {
+                    queue.add(treeNode.right);
+                }
+            }
+            result.add(curLevelNodes);
+        }
+        return result;
+    }
+
+}
+```
+
+# [剑指 Offer 32 - III. 从上到下打印二叉树 III](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-iii-lcof/) （中等）
+
+请实现一个函数按照之字形顺序打印二叉树，即第一行按照从左到右的顺序打印，第二层按照从右到左的顺序打印，第三行再按照从左到右的顺序打印，其他行以此类推。
+
+ 
+
+例如:
+给定二叉树: [3,9,20,null,null,15,7],
+
+        3
+       / \
+      9  20
+        /  \
+       15   7
+
+返回其层次遍历结果：
+
+```
+[
+  [3],
+  [20,9],
+  [15,7]
+]
+```
+
+
+
+一看就会，一做就懵逼系列。
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int x) { val = x; }
+ * }
+ */
+class Solution {
+
+
+    // 牛的，这个 BFS
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        Queue<TreeNode> queue = new LinkedList<>();
+        List<List<Integer>> res = new ArrayList<>();
+        if(root != null) queue.add(root);
+        while(!queue.isEmpty()) {
+            LinkedList<Integer> tmp = new LinkedList<>();
+            for(int i = queue.size(); i > 0; i--) {
+                TreeNode node = queue.poll();
+                // 偶数层 -> 队列头部
+                if(res.size() % 2 == 0) {
+                    tmp.addLast(node.val);
+                } 
+                // 奇数层 -> 队列尾部
+                else {
+                    tmp.addFirst(node.val); 
+                }
+                if(node.left != null) queue.add(node.left);
+                if(node.right != null) queue.add(node.right);
+            }
+            res.add(tmp);
+        }
+        return res;
+    }
+
+}
+```
+
+
+
+# [429. N 叉树的层序遍历](https://leetcode-cn.com/problems/n-ary-tree-level-order-traversal/)（中等）
+
+给定一个 N 叉树，返回其节点值的层序遍历。（即从左到右，逐层遍历）。
+
+树的序列化输入是用层序遍历，每组子节点都由 null 值分隔（参见示例）。
+
+示例 1：
+
+![img](https://assets.leetcode.com/uploads/2018/10/12/narytreeexample.png)
+
+```
+输入：root = [1,null,3,2,4,null,5,6]
+输出：[[1],[3,2,4],[5,6]]
+```
+
+示例 2：
+
+![img](https://assets.leetcode.com/uploads/2019/11/08/sample_4_964.png)
+
+```
+输入：root = [1,null,2,3,4,5,null,null,6,7,null,8,null,9,10,null,null,11,null,12,null,13,null,null,14]
+输出：[[1],[2,3,4,5],[6,7,8,9,10],[11,12,13],[14]]
+```
+
+
+提示：
+
+树的高度不会超过 1000
+树的节点总数在 [0, 10^4] 之间
+
 
 
 
 ```java
+/*
+// Definition for a Node.
+class Node {
+    public int val;
+    public List<Node> children;
 
+    public Node() {}
+
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val, List<Node> _children) {
+        val = _val;
+        children = _children;
+    }
+};
+*/
+
+// This code is a modified version of the code posted by
+// #zzzliu on the discussion forums.
+class Solution {
+
+    public List<List<Integer>> levelOrder(Node root) {      
+        List<List<Integer>> result = new ArrayList<>();
+        if (root == null) return result;
+        Queue<Node> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            List<Integer> level = new ArrayList<>();
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                Node node = queue.poll();
+                level.add(node.val);
+                queue.addAll(node.children);
+            }
+            result.add(level);
+        }
+        return result;
+    }
+    
+}
 ```
 
 
 
 
 
-# [剑指 Offer 32 - III. 从上到下打印二叉树 III](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-iii-lcof/) （中等）
-
-
-
-# [429. N 叉树的层序遍历](https://leetcode-cn.com/problems/n-ary-tree-level-order-traversal/)（中等）
-
-
-
 # [513. 找树左下角的值](https://leetcode-cn.com/problems/find-bottom-left-tree-value/)（中等）
+
+给定一个二叉树的 根节点 root，请找出该二叉树的 最底层 最左边 节点的值。
+
+假设二叉树中至少有一个节点。
+
+ 
+
+示例 1:
+
+![img](https://assets.leetcode.com/uploads/2020/12/14/tree1.jpg)
+
+```
+输入: root = [2,1,3]
+输出: 1
+```
+
+示例 2:
+
+![img](https://assets.leetcode.com/uploads/2020/12/14/tree2.jpg)
+
+```
+输入: [1,2,3,4,null,5,6,null,null,7]
+输出: 7
+```
+
+
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+
+    public int findBottomLeftValue(TreeNode root) {
+        // 这不就是前面的之字型，改成从右到左吗
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        int result = -1;
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            result = node.val;
+            // 从右到左
+            if (node.right != null) {
+                queue.add(node.right);
+            }
+            if (node.left != null) {
+                queue.add(node.left);
+            }
+        }
+        return result;
+    }
+
+}
+```
 
 
 
