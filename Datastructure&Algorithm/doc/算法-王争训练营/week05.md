@@ -907,6 +907,40 @@ class Solution {
 }
 ```
 
+递归实现
+
+执行用时：0 ms, 在所有 Java 提交中击败了100.00%的用户
+
+内存消耗：38.6 MB, 在所有 Java 提交中击败了48.20%的用户
+
+```java
+class Solution {
+    
+    private List<List<Integer>> result = new ArrayList<>();
+    
+    
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        dfs(root, 0);
+        return result;
+    }
+    
+    private void dfs(TreeNode root, int level) {
+        if (root == null) {
+            return;
+        }
+        if (level > result.size() - 1) {
+            result.add(new ArrayList<>());
+        }
+        result.get(level).add(root.val);
+        dfs(root.left, level + 1);
+        dfs(root.right, level + 1);
+    }
+    
+}
+```
+
+
+
 # [剑指 Offer 32 - III. 从上到下打印二叉树 III](https://leetcode-cn.com/problems/cong-shang-dao-xia-da-yin-er-cha-shu-iii-lcof/) （中等）
 
 请实现一个函数按照之字形顺序打印二叉树，即第一行按照从左到右的顺序打印，第二层按照从右到左的顺序打印，第三行再按照从左到右的顺序打印，其他行以此类推。
@@ -974,6 +1008,40 @@ class Solution {
         return res;
     }
 
+}
+```
+
+递归实现
+
+```java
+class Solution {
+    
+    private List<List<Integer>> result = new ArrayList<>();
+    
+    
+    public List<List<Integer>> levelOrder(TreeNode root) {
+    	dfs(root, 0);
+                // 将索引为奇数的数组的逆序
+        for (int i = 0; i < result.size(); i++) {
+            if ((i%2) == 0) {
+                Collections.reverse(result.get(i));
+            }
+        }
+        return result;
+    }
+  	
+    private void dfs(TreeNode node, int level) {
+        if (node == null) {
+            return;
+        }
+        if (level > result.size() - 1) {
+            result.add(new ArrayList<>());
+        }
+        result.get(level).add(node.val);
+        dfs(node.right, level + 1);
+        dfs(node.left, level + 1);
+    }
+    
 }
 ```
 
@@ -1184,6 +1252,64 @@ class Solution {
 
 # [559. N 叉树的最大深度](https://leetcode-cn.com/problems/maximum-depth-of-n-ary-tree/)（简单）
 
+给定一个 N 叉树，找到其最大深度。
+
+最大深度是指从根节点到最远叶子节点的最长路径上的节点总数。
+
+N 叉树输入按层序遍历序列化表示，每组子节点由空值分隔（请参见示例）。
+
+
+
+示例 1：
+
+![img](https://assets.leetcode.com/uploads/2018/10/12/narytreeexample.png)
+
+```
+输入：root = [1,null,3,2,4,null,5,6]
+输出：3
+```
+
+
+
+示例 2：
+
+![img](https://assets.leetcode.com/uploads/2019/11/08/sample_4_964.png)
+
+```
+输入：root = [1,null,2,3,4,5,null,null,6,7,null,8,null,9,10,null,null,11,null,12,null,13,null,null,14]
+输出：5
+```
+
+
+提示：
+
+- 树的深度不会超过 1000 。
+
+- 树的节点数目位于 `[0, 104]` 之间。
+
+```java
+class Solution {
+  
+    public int maxDepth(Node root) {
+        if (root == null) {
+            return 0;
+        } 
+        else if (root.children.isEmpty()) {
+            return 1;  
+        } 
+        else {
+            List<Integer> heights = new LinkedList<>();
+            for (Node item : root.children) {
+                heights.add(maxDepth(item)); 
+            }
+            return Collections.max(heights) + 1;
+        }
+    }
+
+}
+
+```
+
 
 
 # [剑指 Offer 55 - II. 平衡二叉树](https://leetcode-cn.com/problems/ping-heng-er-cha-shu-lcof/)（中等）**例题**
@@ -1256,11 +1382,77 @@ class Solution {
  }
  ```
 
-
-
-
-
 # [617. 合并二叉树](https://leetcode-cn.com/problems/merge-two-binary-trees/)（简单）
+
+给定两个二叉树，想象当你将它们中的一个覆盖到另一个上时，两个二叉树的一些节点便会重叠。
+
+你需要将他们合并为一个新的二叉树。合并的规则是如果两个节点重叠，那么将他们的值相加作为节点合并后的新值，否则不为 NULL 的节点将直接作为新二叉树的节点。
+
+示例 1:
+
+```
+输入: 
+	Tree 1                     Tree 2                  
+          1                         2                             
+         / \                       / \                            
+        3   2                     1   3                        
+       /                           \   \                      
+      5                             4   7                  
+输出: 
+合并后的树:
+	     3
+	    / \
+	   4   5
+	  / \   \ 
+	 5   4   7
+```
+
+
+
+```java
+class Solution {
+    
+    public TreeNode mergeTrees(TreeNode root1, TreeNode root2) {
+    	if (root1== null && root2 == null) {
+            return null;
+        }    
+        TreeNode newNode = new TreeNode(0);
+        if (root1 != null) {
+            newNode.val += root1.val;
+        }
+        if (root2 != null) {
+            newNode.val += root2.val;
+        }
+        // 合并左子树
+        TreeNode leftTree = null;
+        if (root1 != null) {
+            leftTree = root1.left;
+        }
+        TreeNode leftTree2 = null;
+        if (root2 != null) {
+            leftTree2 = root2.left;
+        }
+        TreeNode leftRoot = mergeTrees(leftTree, leftTree2);
+        
+       	// 合并右子树
+        TreeNode rightTree = null;
+        if (root1 != null) {
+            rightTree = root1;
+        }
+        TreeNode rightTree2 = null;
+        if (root2 != null) {
+            rightTree2 = root2;
+        }
+        TreeNode rightRoot = mergeTrees(rightTree, rightTree2);
+        
+        // 拼接 root、左子树、右子树
+        newNode.left = leftRoot;
+        newNode.right = rightRoot;
+        return newNode;
+    }
+    
+}
+```
 
 
 
