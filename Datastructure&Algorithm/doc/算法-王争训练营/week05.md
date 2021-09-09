@@ -1458,13 +1458,172 @@ class Solution {
 
 # [226. 翻转二叉树](https://leetcode-cn.com/problems/invert-binary-tree/) （简单）
 
+  翻转一棵二叉树。
 
+示例：
+
+输入：
+
+          4
+        /   \
+      2     7
+     / \   / \
+    1   3 6   9
+
+输出：
+
+          4
+        /   \
+      7     2
+     / \   / \
+    9   6 3   1
+递归
+
+左子树反转和右子树反转，然后交换左右子树，就能得到翻转的二叉树
+
+```java
+class Solution {
+    
+    public TreeNode invertTree(TreeNode root) {
+        if (root == null) {
+            return null;
+        }
+        TreeNode leftNode = invertTree(root.left);
+        TreeNode rightNode =  invertTree(root.right);
+        root.right = leftNode;
+        root.left = rightNode;
+        return root;
+    }
+
+}
+```
 
 # [101. 对称二叉树](https://leetcode-cn.com/problems/symmetric-tree/)（中等）
+
+给定一个二叉树，检查它是否是镜像对称的。
+
+ 
+
+例如，二叉树 [1,2,2,3,4,4,3] 是对称的。
+
+        1
+       / \
+      2   2
+     / \ / \
+    3  4 4  3
+
+但是下面这个 [1,2,2,null,3,null,3] 则不是镜像对称的:
+
+        1
+       / \
+      2   2
+       \   \
+       3    3
+
+
+
+进阶：
+
+你可以运用递归和迭代两种方法解决这个问题吗？
+
+递归
+
+```java
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int val;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode() {}
+ *     TreeNode(int val) { this.val = val; }
+ *     TreeNode(int val, TreeNode left, TreeNode right) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+class Solution {
+
+    public boolean isSymmetric(TreeNode root) {
+        if (root == null) {
+            return true;
+        }
+        return isSymmetric(root.left, root.right);
+    }
+
+    public boolean isSymmetric(TreeNode left, TreeNode right) {
+        if (left == null && right == null) {
+            return true;
+        }
+        if (left != null && right != null && left.val == right.val) {
+            // 【左子树的右子树】和【右子树的左子树】相等，且【左子树的左子树】和【右子树的右子树】相等
+            return isSymmetric(left.right, right.left) && isSymmetric(left.left, right.right);
+        }
+        return false;
+    }
+
+
+}
+```
 
 
 
 # [98. 验证二叉搜索树](https://leetcode-cn.com/problems/validate-binary-search-tree/)（中等）
+
+
+
+递归
+
+```java
+class Solution {
+    
+    private boolean isValid = true;
+    
+    public boolean isValidBST(TreeNode root) {
+        if (root == null) {
+            return true;
+        }
+        dfs(root);
+        return isValid;
+    }
+    
+    private int[] dfs(TreeNode root) {
+        if (isValid == false) {
+            return null;
+        }
+        int min = root.val;
+        int max = root.val;
+        if (root.left != null) {
+            int[] leftMinMax = dfs(root.left);
+            if (isValid == false) {
+                return null;
+            }
+            if (leftMinMax[1] >= root.val) {
+                isValid = false;
+                return null;
+            }
+            min = leftMinMax[0];
+        }
+        if (root.right != null) {
+            int[] rightMinMax = dfs(root.right);
+            if (isValid == false) {
+                return null;
+            }
+            if (rightMinMax[0] <= root.val) {
+                isValid = false;
+                return null;
+            }
+            max = rightMinMax[1];
+        }
+        return new int[]{min, max};
+    }
+    
+} 
+```
+
+
 
 
 
