@@ -1752,6 +1752,157 @@ class Solution {
 # [538. 把二叉搜索树转换为累加树](https://leetcode-cn.com/problems/convert-bst-to-greater-tree/) （中等）
 
 
+给出二叉 **搜索** 树的根节点，该树的节点值各不相同，请你将其转换为累加树（Greater Sum Tree），使每个节点 `node` 的新值等于原树中大于或等于 `node.val` 的值之和。
+
+提醒一下，二叉搜索树满足下列约束条件：
+
+-   节点的左子树仅包含键 **小于** 节点键的节点。
+-   节点的右子树仅包含键 **大于** 节点键的节点。
+-   左右子树也必须是二叉搜索树。
+
+示例 1
+![](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2019/05/03/tree.png)
+```
+输入：[4,1,6,0,2,5,7,null,null,null,3,null,null,null,8]
+输出：[30,36,21,36,35,26,15,null,null,null,33,null,null,null,8]
+```
+示例 2：
+```
+输入：root = [0,null,1]
+输出：[1,null,1]
+```
+示例 3：
+```
+输入：root = [1,0,2]
+输出：[3,3,2]
+```
+示例 4：
+```
+输入：root = [3,2,4,1]
+输出：[7,9,4,10]
+```
+递归实现
+```java
+class Solution {  
+  
+    private int sum = 0;  
+  
+	 public TreeNode convertBST(TreeNode root) {  
+		 if (root != null) {
+
+		 // 二叉搜索树的中序遍历是单调递增，【左根右】
+
+		 // 所以【右根左】是单调递减的
+
+		 // 从 0 开始累加，
+
+		 convertBST(root.right);
+
+		 sum += root.val;
+
+		 root.val = sum;
+
+		 convertBST(root.left);
+
+		 }
+		 return root;
+	 }
+	 
+}
+```
 
 # [面试题 04.06. 后继者](https://leetcode-cn.com/problems/successor-lcci/)（中等）
+设计一个算法，找出二叉搜索树中指定节点的“下一个”节点（也即中序后继）。
 
+如果指定节点没有对应的“下一个”节点，则返回null。
+```
+示例 1:
+
+输入: root = [2,1,3], p = 1
+
+  2
+ / \
+1   3
+
+输出: 2
+```
+示例 2:
+```
+输入: root = [5,3,6,2,4,null,null,1], p = 6
+
+      5
+     / \
+    3   6
+   / \
+  2   4
+ /   
+1
+
+输出: null
+```
+
+非递归实现
+```java
+/**
+
+ * Definition for a binary tree node.
+
+ * public class TreeNode {
+
+ *     int val;
+
+ *     TreeNode left;
+
+ *     TreeNode right;
+
+ *     TreeNode(int x) { val = x; }
+
+ * }
+
+ */
+
+class Solution {
+
+  
+
+	 public TreeNode inorderSuccessor(TreeNode root, TreeNode p) {
+		 TreeNode pre = null;
+		 while(root != p){
+			 //右边
+			 if(p.val > root.val){ 
+				root = root.right;
+			 }
+			 //左边
+			 else{ 
+				pre = root;
+				root = root.left;
+			 }
+		 }
+
+		 //假如没有右子树
+
+		 if(root.right == null){
+
+		 	return pre;
+
+		 } 
+		 else{
+
+		 	root = root.right;
+
+			 while(root.left != null){
+
+			 	root = root.left;
+
+			 }
+
+			 return root;
+
+		 } 
+
+	 }
+
+  
+
+}
+```
