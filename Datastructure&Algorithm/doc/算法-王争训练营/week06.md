@@ -279,3 +279,148 @@ class Solution {
 
 
 # [剑指 Offer 33. 二叉搜索树的后序遍历序列](https://leetcode-cn.com/problems/er-cha-sou-suo-shu-de-hou-xu-bian-li-xu-lie-lcof/)（中等）
+
+
+
+# 堆
+
+## 定义
+
+1. 堆必须是一个完全二叉树。
+2. 堆中每个节点的值必须大于等于（或者小于等于）其子树中每个节点的值。
+
+大顶堆
+
+每个节点的值都大于等于树中每个节点的值
+
+小顶堆
+
+每个节点的值都小于等于树中每个节点的值
+
+堆是完全二叉树，所以，适合用数组来存储。
+
+一般是从 1 开始存的，从 0 开始存处理的时候比较麻烦。
+
+## 操作
+
+1. 往堆中插入数据
+2. 取堆顶元素
+3. 删除堆顶元素
+4. 更新元素值
+
+
+
+### 往堆中插入数据
+
+将新数据插入到数组的末尾，然后执行自下而上的堆化操作。
+
+以大顶堆举例。
+
+上浮和下沉。
+
+```java
+public class Heap {
+    
+    private final int a[];
+    
+    private final int capacity;
+    
+    private int size;
+    
+    
+    public Heap(int capacity) {
+        a = new int[capacity + 1];
+        capacity = capacity;
+        size = 0;
+    }
+    
+    public void insert(int data) {
+        if (size >= capacity) {
+            throw new IndexOutOfBoundsException("Current heap can't insert more data");
+        }
+        // size 先加上
+        ++size;
+        // 现在末尾加上这个 data
+        a[size] = data;
+        int i = size;
+        // 自下往上堆化
+        while (i/2 > 0 && a[i] > [i/2]) {
+            // 交换下标为 i 和 i/2 的两个元素
+            swap(a, i, i/2);
+            i = i/2;
+        }
+    }
+    
+    private void swap(int a[], int i, int j) {
+        int tmp = a[i];
+        a[i] = a[j];
+    	a[j] = tmp;
+    }
+    
+}
+```
+
+### 取堆顶元素
+
+大顶堆的堆顶是最大的元素
+
+小顶堆的堆顶是最小的元素
+
+```java
+public int top() {
+    if (size == 0) {
+        return Integer.MIN_VALUE;
+    }
+    return a[1];
+}
+```
+
+### 删除堆顶元素
+
+ 把最后一个节点放到堆顶，然后利用自上而下的堆化方式让堆重新满足定义。
+
+```
+[/,28,25,17,18,16,13,9,8,12, , , ]
+```
+
+堆顶删除后，要把最后面的元素放到堆顶，再进行自上而下的堆化，这样就满足完全二叉树的定义。
+
+```java
+public void removeTop() {
+    if (size == 0) {
+        return;
+    }
+    a[1] = a[size];
+    --size;
+    heapify(a, size, 1);
+}
+
+private void heapify(int a[], int n, int i) {
+    while(true) {
+        int maxPos = i;
+        // 和左子节点比较，如果左子节点大于当前节点，左子节点的值上来。
+        if (i * 2 <= n && a[i] < a[i * 2]) {
+            maxPos = i * 2;
+        }
+        // 和右子节点比较，如果右子节点大于这个节点，右子节点上来
+        if (i * 2 + 1 <= n && a[maxPos] < a[i * 2 + 1]) {
+            maxPos = i * 2 +1;
+        }
+        if (maxPos == i) {
+            break;
+        }
+        swap(a, i, maxPos);
+    	i = maxPos;
+    }
+}
+```
+
+### 更新元素值
+
+如果更新后的值变小了，就进行：自上而下的堆化。
+
+如果更新后的值变大了，就进行：自下而上的堆化。
+
+```java
+```
+
