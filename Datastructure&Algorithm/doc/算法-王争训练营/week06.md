@@ -421,6 +421,52 @@ private void heapify(int a[], int n, int i) {
 
 如果更新后的值变大了，就进行：自下而上的堆化。
 
-```java
-```
+
+
+# 堆排序
+
+两大步骤
+
+1. 建堆，将数组中的数据原地组织成一个堆。
+2. 排序，基于堆排序数据。
+
+ ## 堆排序-建堆
+
+第一种实现思路：从前往后处理每个元素，对每个元素执行自上而下的堆化。O (nlogn) 时间复杂度
+
+第二种实现思路：从后往前处理每个元素，对每个元素执行自上而下的堆化。O(n) 时间复杂度
+
+
+
+ ```java
+ private void buildHeap(int[] a, int n) {
+     for (int i = n/2; i >= 1; --i) {
+         heapify(a, n, i);
+     }
+ }
+ 
+ private void heapify(int[] a, int n, int i) {
+     while (true) {
+         int maxPos = i;
+         if (i * 2 <= n && a[i] < a[i * 2]) {
+             maxPos = i * 2;
+         }
+         if (i * 2 + 1 <= n && a[maxPos] < a[i * 2 +1]) {
+             maxPos = i * 2 + 1;
+         }
+         swap(a, i, maxPos);
+         i = maxPos;
+     }
+ }
+ ```
+
+
+
+## 排序
+
+1. 将堆顶元素与最后一个元素交换。最大元素就放到了下标位 n 的位置。堆大小 -1 
+2. 交换之后的堆顶元素，自上而下堆化，重新构建成堆。
+3. 一直重复这个过程，直到最后堆中只剩下一个元素，排序工作就完成了。
+
+
 

@@ -1,0 +1,112 @@
+{
+  "main": {
+    "id": "c8d46e951d8f3c45",
+    "type": "split",
+    "children": [
+      {
+        "id": "b0de1f7399564b56",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "Books/2021-50本书/Can't Hurt Me.md",
+            "mode": "source"
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "3d0094e5e01844e6",
+    "type": "split",
+    "children": [
+      {
+        "id": "7fb56ca71dac5347",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "02c782feb46d1add",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "5cb7de9904a7ccfd",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "3b30faa76d06d9a6",
+    "type": "split",
+    "children": [
+      {
+        "id": "5b9126dafd01636b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "7a6cb718f18a309d",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Books/2021-50本书/Can't Hurt Me.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "bf7ab82c5fa95a1e",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Books/2021-50本书/Can't Hurt Me.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "active": "b0de1f7399564b56",
+  "lastOpenFiles": [
+    "Books/2021-50本书/Can't Hurt Me.md",
+    "Big Data/Azkaban/方案.md",
+    "Books/2021-50本书/肥胖代码：减肥的秘密.md",
+    "肥胖 .md",
+    "Books/2021-50本书/不拘一格.md",
+    "Books/2021-50本书/读书的料及其文化生产.md",
+    "Books/2021-50本书/从一到无穷大.md",
+    "Books/2021-50本书/被讨厌的勇气.md",
+    "English/doc/英语语法新思维/初级/时态.md",
+    "Other/doc/极客时间-李运华训练营-汇总建议.md"
+  ]
+}

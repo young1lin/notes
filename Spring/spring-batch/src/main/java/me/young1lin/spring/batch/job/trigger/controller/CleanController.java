@@ -30,6 +30,7 @@ public class CleanController {
 
 	private final Map<String, Job> cleanJobMap;
 
+
 	public CleanController(JobLauncher jobLauncher, Map<String, Job> cleanJobMap) {
 		this.jobLauncher = jobLauncher;
 		this.cleanJobMap = cleanJobMap;

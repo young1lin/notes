@@ -239,7 +239,7 @@ Cloud Foundry 为在它之上运行之上的程序，提供了总所周知的运
 
 **雪花式部署**
 
-// TODO 翻译 Snowflake 官网的雪花是式部署[第一篇文章](https://community.snowflake.com/s/article/Snowflake-CI-CD-using-Flyway-and-Azure-DevOps-Pipeline-Part-1)                
+// TODO 翻译 Snowflake 官网的雪花式部署[第一篇文章](https://community.snowflake.com/s/article/Snowflake-CI-CD-using-Flyway-and-Azure-DevOps-Pipeline-Part-1)                
 
 [第二篇文章](https://www.snowflake.com/blog/embracing-agile-software-delivery-and-devops-with-snowflake/)
 
@@ -342,8 +342,9 @@ RestTemplate 介绍。
 路由（DiscoveryClient）Spring Cloud 提供的统一的抽象，用于提供服务路由。
 
 ```java
- * @author Olga Maciaszek-Sharma
- */
+ /**
+  * @author Olga Maciaszek-Sharma
+  */
 public interface DiscoveryClient extends Ordered {
 
    int DEFAULT_ORDER = 0;
@@ -392,9 +393,9 @@ public interface DiscoveryClient extends Ordered {
 
 打算跳过样例代码，暂存一下。
 
-## OAuth
+## OAuth2
 
-可以看看阮一峰的云冲印授权的那个。
+可以看看阮一峰的云冲印授权的那个（这个也是抄《OAuth2 实战》的书上的内容，我建议是看书）。
 
 OAuth （简称“开放授权”）是互联网上基于令牌的授权标准。令牌减少了用户名和密码暴露的时间窗口。令牌可以将客户端与密码分离，确保错误的客户端永远无法锁定你的账户，令牌可以表示某个用户使用的客户端，或者表示一个没有某个用户的上下文。
 
@@ -503,7 +504,7 @@ Task 可以运行并具有预期的最终状态。任务是任何短暂进程或
 
 ## 通过 Workflow 进行的以工作流位中心的整合
 
-工作流时通过自治代理系统（和人类）明确建模进度的实践。工作流（Workflow）系统定义了一个状态机，并构建了一个状态机向目标进程的建模。工作流系统被设计成既是技术工件又是更高级别业务流程描述。
+工作流是通过自治代理系统（和人类）明确建模进度的实践。工作流（Workflow）系统定义了一个状态机，并构建了一个状态机向目标进程的建模。工作流系统被设计成既是技术工件又是更高级别业务流程描述。
 
 Activiti
 

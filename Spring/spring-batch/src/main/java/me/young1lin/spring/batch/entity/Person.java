@@ -10,15 +10,18 @@ import java.util.Objects;
  */
 public class Person {
 
-	Long id;
+	private Long id;
 
-	String name;
+	private String name;
 
-	Integer age;
+	private Integer age;
 
-	String email;
+	private String email;
 
-	BigDecimal balance;
+	private	BigDecimal balance;
+
+
+	public Person(){}
 
 	public Long getId() {
 		return id;
