@@ -468,5 +468,188 @@ private void heapify(int a[], int n, int i) {
 2. 交换之后的堆顶元素，自上而下堆化，重新构建成堆。
 3. 一直重复这个过程，直到最后堆中只剩下一个元素，排序工作就完成了。
 
+```java
+public void sort(int a[], int n) {
+    buildHeap(a, n);
+    int k = n;
+    while (k > 1) {
+        swap(a, 1, k);
+        --k;
+        heapify(a, k, 1);
+    }
+}
+```
+
+## 堆排序分析
+
+1. 堆排序是否是原地排序算法？
+
+   是
+
+2. 堆排序是否是稳定排序算法？
+
+   否
+
+3. 堆排序的时间复杂度是多少？
+
+   O(nlogn)
+
+4. 堆排序的空间复杂度是多少？
+
+   O(1)
+
+[23. 合并K个升序链表](https://leetcode-cn.com/problems/merge-k-sorted-lists/)(困难) **（例题）**
+
+[347. 前 K 个高频元素](https://leetcode-cn.com/problems/top-k-frequent-elements/)（中等） **（例题）**
+
+[295. 数据流的中位数](https://leetcode-cn.com/problems/find-median-from-data-stream/)（困难）**（例题）**
+
+[973. 最接近原点的 K 个点](https://leetcode-cn.com/problems/k-closest-points-to-origin/)（中等）
+
+[313. 超级丑数](https://leetcode-cn.com/problems/super-ugly-number/)（中等）
 
 
+
+
+
+[208. 实现 Trie (前缀树)](https://leetcode-cn.com/problems/implement-trie-prefix-tree/)（中等） 标准Trie树
+
+以下为选做题目：
+
+[面试题 17.17. 多次搜索](https://leetcode-cn.com/problems/multi-search-lcci/)（中等） 标准AC自动机，不过写AC自动机太复杂，Trie树搞定
+
+[212. 单词搜索 II](https://leetcode-cn.com/problems/word-search-ii/)（困难）
+
+
+
+# [23. 合并K个升序链表](https://leetcode-cn.com/problems/merge-k-sorted-lists/)(困难) **（例题）**
+
+给你一个链表数组，每个链表都已经按升序排列。
+
+请你将所有链表合并到一个升序链表中，返回合并后的链表。
+
+示例 1：
+
+ ```
+ 输入：lists = [[1,4,5],[1,3,4],[2,6]]
+ 输出：[1,1,2,3,4,4,5,6]
+ 解释：链表数组如下：
+ [
+   1->4->5,
+   1->3->4,
+   2->6
+ ]
+ 将它们合并到一个有序链表中得到。
+ 1->1->2->3->4->4->5->6
+ ```
+
+示例 2：
+
+```
+输入：lists = []
+输出：[]
+```
+
+示例 3：
+
+```
+输入：lists = [[]]
+输出：[]
+```
+
+
+提示：
+
+- k == lists.length
+- 0 <= k <= 10^4
+- 0 <= lists[i].length <= 500
+- -10^4 <= lists[i][j] <= 10^4
+- lists[i] 按 升序 排列
+- lists[i].length 的总和不超过 10^4
+
+```java
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     int val;
+ *     ListNode next;
+ *     ListNode() {}
+ *     ListNode(int val) { this.val = val; }
+ *     ListNode(int val, ListNode next) { this.val = val; this.next = next; }
+ * }
+ */
+class Solution {
+    
+    private class QElement {
+        
+        ListNode curNode;
+       	
+        public QElement(ListNode curNode) {
+            this.curNode = curNode;
+        }
+        
+    }
+
+    public ListNode mergeKLists(ListNode[] lists) {
+		if (lists == null || lists.length == 0) {
+            return null;
+        }
+        int k = lists.length;
+        PriorityQueue<QElement> minQ = new PriorityQueue<>(new Comparator<QElement>() {
+            
+            @Override
+            public int compare(QElement q1, QElement q2) {
+                return q1.curNode.val - q2.curNode.val;
+            }
+
+        });
+        
+        for (int i = 0; i < k; ++i) {
+            if (lists[i] != null) {
+                minQ.offer(new QElement(lists[i]));
+            }
+        }
+        ListNode head = new ListNode();
+        ListNode tail = head;
+        while (!minQ.isEmpty()) {
+            QElement element = minQ.poll();
+            ListNode curNode = element.curNode;
+            tail.next = element.curNode;
+            tail = tail.next;
+            if (curNode.next != null) {
+                minQ.offer(new QElement(curNode.next));
+            }
+        }
+        return head.next;
+    }
+    
+}
+```
+
+
+
+# [347. 前 K 个高频元素](https://leetcode-cn.com/problems/top-k-frequent-elements/)（中等） **（例题）**
+
+
+
+# [295. 数据流的中位数](https://leetcode-cn.com/problems/find-median-from-data-stream/)（困难）**（例题）**
+
+
+
+# [973. 最接近原点的 K 个点](https://leetcode-cn.com/problems/k-closest-points-to-origin/)（中等）
+
+
+
+# [313. 超级丑数](https://leetcode-cn.com/problems/super-ugly-number/)（中等）
+
+
+
+Trie
+
+# [208. 实现 Trie (前缀树)](https://leetcode-cn.com/problems/implement-trie-prefix-tree/)（中等） 标准Trie树
+
+以下为选做题目：
+
+# [面试题 17.17. 多次搜索](https://leetcode-cn.com/problems/multi-search-lcci/)（中等） 标准AC自动机，不过写AC自动机太复杂，Trie树搞定
+
+# [212. 单词搜索 II](https://leetcode-cn.com/problems/word-search-ii/)（困难）
