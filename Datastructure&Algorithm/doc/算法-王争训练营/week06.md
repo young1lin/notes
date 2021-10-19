@@ -522,6 +522,19 @@ public void sort(int a[], int n) {
 
 
 
+# TopK
+
+1. 针对静态数据（查询 TopK 操作）
+2. 针对动态数据（只包含添加数据操作和查询 TopK 操作）
+
+解决思路有 3 种：
+
+1. 排序，然后取数组种的第 K 个元素 -> 静态数据
+2. 利用快速排序算法的思想，做到 O(n) -> 静态数据
+3. 利用堆，插入 O(logk)，获取 O(1) -> 动态数据 
+
+
+
 # [23. 合并K个升序链表](https://leetcode-cn.com/problems/merge-k-sorted-lists/)(困难) **（例题）**
 
 给你一个链表数组，每个链表都已经按升序排列。
@@ -630,9 +643,185 @@ class Solution {
 
 # [347. 前 K 个高频元素](https://leetcode-cn.com/problems/top-k-frequent-elements/)（中等） **（例题）**
 
+给你一个整数数组 nums 和一个整数 k ，请你返回其中出现频率前 k 高的元素。你可以按 任意顺序 返回答案。
 
+示例 1:
+
+```
+输入: nums = [1,1,1,2,2,3], k = 2
+输出: [1,2]
+```
+
+示例 2:
+
+```
+输入: nums = [1], k = 1
+输出: [1]
+```
+
+
+提示：
+
+- 1 <= nums.length <= 105
+- k 的取值范围是 [1, 数组中不相同的元素的个数]
+- 题目数据保证答案唯一，换句话说，数组中前 k 个高频元素的集合是唯一的
+
+进阶：你所设计算法的时间复杂度 必须 优于 O(n log n) ，其中 n 是数组大小。
+
+```java
+class Solution {
+
+    private class QElement {
+        
+        int val;
+        
+        int count;
+        
+        public QElement(int val, int count) {
+            this.val = val;
+            this.count = count;
+        }
+        
+    }
+    
+    public int[] topKFrequent(int[] nums, int k) {
+ 		// 可以用排序，因为是静态数据，还可以用 HashMap 来做，这边为了巩固堆的知识，用堆来做。
+        // 哈希表统计每个数字出现的次数 count
+    	Map<Integer, Integer> counts = new HashMap<>();
+        for (int num : nums) {
+            counts.put(num, counts.getOrDefault(num, 0) + 1);
+        }
+        // 按照 count 值构建小顶堆
+        PriorityQueue<QElement> queue = new PriorityQueue<>(new Comparator<QElement>() {
+            @Override
+            public int compare(QElement e1, QElement e2) {
+                return e1.count - e2.count;
+            }
+        });
+        // 求 TopK
+        counts.forEach((num, count) -> {
+            if (queue.size() < k) {
+                queue.offer(new QElement(num, count));
+            }
+            else {
+                if (queue.peek().count < count) {
+                    queue.poll();
+                    queue.offer(new QElement(num, count));
+                }
+            }
+        });
+        int[] result = new int[k];
+        for (int i = 0; i < k; ++i) {
+            result[i] = queue.poll().val;
+        }
+        return result;
+    }
+
+}
+```
 
 # [295. 数据流的中位数](https://leetcode-cn.com/problems/find-median-from-data-stream/)（困难）**（例题）**
+
+求中位数&百分位位数
+
+一直维护具有以下特性的两个堆：
+
+- 一个大顶堆，一个小顶堆。
+- 每个堆中元素个数接近 n/2：如果 n 是偶数，两个堆中的数据个数都是 n/2；如果 n 是奇数，大顶堆又 n/2+1 个数据，小顶堆有 n/2 个数据。
+- 大顶堆中的元素都小于等于小顶堆中的元素。
+
+那么大顶堆中堆顶的元素就是中位数。
+
+在插入数据时，如何维护两个堆继续满足上述特性呢？
+
+如果新数据小于等于大顶堆的堆顶元素，就将这个新数据插入到大顶堆，否则，插入到小顶堆。不过，此时就有可能出现两个堆中的数据个数不符合前面约定。我们通过从一个堆中不停地将堆顶元素移动到另一个堆，通过这样的调整，让两个堆中的数据个数满足前面的约定。
+
+
+
+
+
+中位数是有序列表中间的数。如果列表长度是偶数，中位数则是中间两个数的平均值。
+
+例如，
+
+[2,3,4] 的中位数是 3
+
+[2,3] 的中位数是 (2 + 3) / 2 = 2.5
+
+设计一个支持以下两种操作的数据结构：
+
+- void addNum(int num) - 从数据流中添加一个整数到数据结构中。
+- double findMedian() - 返回目前所有元素的中位数。
+  示例：
+
+```
+addNum(1)
+addNum(2)
+findMedian() -> 1.5
+addNum(3) 
+findMedian() -> 2
+```
+
+
+进阶:
+
+1. 如果数据流中所有整数都在 0 到 100 范围内，你将如何优化你的算法？
+2. 如果数据流中 99% 的整数都在 0 到 100 范围内，你将如何优化你的算法？
+
+
+
+```java
+class MedianFinder {
+    /**
+     * 一个小顶堆
+     */
+    private PriorityQueue<Integer> minQueue = new PriorityQueue<>((o1, o2) -> o1 - o2);
+    
+    /**
+     * 一个大顶堆
+     */
+    private PriorityQueue<Integer> maxQueue = new PriorityQueue<>((o1, o2) -> o2 - o1);
+    
+    
+    public MedianFinder() {}
+    
+    public void addNum(int num) {
+		if (maxQueue.isEmpty() || num <= maxQueue.peek()) {
+            maxQueue.add(num);
+        }
+        else {
+            minQueue.add(num);
+        }
+        // 每个堆中元素个数接近 n/2：如果 n 是偶数，两个堆中的数据个数都是 n/2；如果 n 是奇数，大顶堆又 n/2+1 个数据，小顶堆有 n/2 个数据。
+        while (maxQueue.size() <= minQueue.size()) {
+            Integer e = minQueue.poll();
+            maxQueue.add(e);
+        }
+        while (minQueue.size() < maxQueue.size() - 1) {
+            Integer e = maxQueue.poll();
+            minQueue.add(e);
+        }
+    }
+    
+    public double findMedian() {
+        // 那么大顶堆中堆顶的元素就是中位数
+		if (maxQueue.size() > minQueue.size()) {
+            return maxQueue.peek();
+        }
+        else {
+            return (maxQueue.peek() + minQueue.peek()) / 2f;
+        }
+    }
+    
+}
+
+/**
+ * Your MedianFinder object will be instantiated and called as such:
+ * MedianFinder obj = new MedianFinder();
+ * obj.addNum(num);
+ * double param_2 = obj.findMedian();
+ */
+```
 
 
 
