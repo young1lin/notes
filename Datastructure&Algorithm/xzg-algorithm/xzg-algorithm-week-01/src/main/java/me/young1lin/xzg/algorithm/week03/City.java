@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 这是阿里面试的一道简单的题，给一个两年经验的人面的，比较简单
+ *
  * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
  * @since 2021/6/29 下午8:10
  * @version 1.0
@@ -19,6 +21,9 @@ public class City {
 	private static final String[] MUNICIPALITIES = new String[] {
 			"北京市", "天津市", "上海市", "重庆市"
 	};
+
+	private static final String PROVINCE_NAME = "省";
+
 
 	private static class TreeNode implements Comparable<TreeNode> {
 
@@ -41,13 +46,7 @@ public class City {
 
 		@Override
 		public int compareTo(TreeNode treeNode) {
-			if (this.sort > treeNode.sort) {
-				return 1;
-			}
-			else if (this.sort < treeNode.sort) {
-				return -1;
-			}
-			return 0;
+			return this.sort - treeNode.sort;
 		}
 
 		@Override
@@ -88,9 +87,10 @@ public class City {
 		List<TreeNode> provinceList = findProvinceList(mergedList);
 		// 合并省份和直辖市
 		List<TreeNode> mergedProvince = mergedProvince(provinceList, mergedList);
-		TreeNode treeNode = new TreeNode(1, "中国", new ArrayList<>(), 1);
-		treeNode.nodes.addAll(mergedProvince);
-		System.out.println(treeNode);
+		// 添加头部信息，返回整个树
+		TreeNode root = merge2Root(mergedProvince);
+		// 输出信息
+		System.out.println(root);
 	}
 
 	private static List<TreeNode> readFile() throws IOException {
@@ -168,7 +168,7 @@ public class City {
 
 	private static boolean isProvince(TreeNode treeNode) {
 		String cityName = treeNode.cityName;
-		if (cityName.contains("省")) {
+		if (cityName.contains(PROVINCE_NAME)) {
 			return true;
 		}
 		// 首先直辖市是固定的，就那几个，所以，直辖市可以用穷举的方式来实现和省的同级别内容
@@ -180,9 +180,8 @@ public class City {
 		return false;
 	}
 
-	private static List<TreeNode> mergedProvince(List<TreeNode> provinceList,
-			List<TreeNode> list) {
-		lab1:
+	private static List<TreeNode> mergedProvince(
+			List<TreeNode> provinceList, List<TreeNode> list) {
 		for (TreeNode treeNode : list) {
 			// 如果是直辖市或者省，直接跳过，最终我要返回的是 provinceList
 			if (isProvince(treeNode)) {
@@ -197,13 +196,18 @@ public class City {
 						// 如果省的子的节点，等于当前节点的 sort，则就是它的市，比如 浙江省：台州市
 						if (subCity.sort == treeNode.sort) {
 							subCity.nodes = treeNode.nodes;
-							continue lab1;
 						}
 					}
 				}
 			}
 		}
 		return provinceList;
+	}
+
+	private static TreeNode merge2Root(List<TreeNode> mergedProvince) {
+		TreeNode treeNode = new TreeNode(1, "中国", new ArrayList<>(), 1);
+		treeNode.nodes.addAll(mergedProvince);
+		return treeNode;
 	}
 
 }

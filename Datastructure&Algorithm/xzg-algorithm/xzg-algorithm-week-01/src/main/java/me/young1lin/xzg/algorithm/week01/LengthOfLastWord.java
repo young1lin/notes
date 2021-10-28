@@ -26,11 +26,11 @@ public class LengthOfLastWord {
 
 	private static final char BLANK = ' ';
 
+
 	public int lengthOfLastWord(String s) {
 		int n = s.length();
 		int end = n - 1;
 		char[] arr = s.toCharArray();
-		int count = 0;
 		// 把后面的空字符串剔除
 		while (end >= 0 && arr[end] == BLANK) {
 			end--;
