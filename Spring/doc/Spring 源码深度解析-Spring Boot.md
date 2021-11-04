@@ -522,8 +522,6 @@ protected final SourceClass doProcessConfigurationClass(
 
 书上说最终到下面这步，但是我找不到，不管是 ConfigurationClassPareser#parse 方法，还是调用的上面的方法。
 
-// TODO 找出到底是哪里调用的下面的这个方法。
-
 ```java
 public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, final String declaringClass) {
    ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,
