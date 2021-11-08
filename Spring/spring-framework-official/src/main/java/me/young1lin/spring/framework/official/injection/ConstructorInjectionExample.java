@@ -6,15 +6,14 @@ import java.util.logging.Logger;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.SmartInitializingSingleton;
-import org.springframework.stereotype.Component;
+import org.springframework.context.SmartLifecycle;
 
 /**
  * @author <a href="mailto:young1lin0108@gmail.com">young1lin</a>
  * @since 2021/11/6 下午11:34
  * @version 1.0
  */
-@Component
-public class ConstructorInjectionSample implements InitializingBean,
+public class ConstructorInjectionSample implements InitializingBean, SmartLifecycle,
 		SmartInitializingSingleton {
 
 	private static final Logger logger =
@@ -30,28 +29,51 @@ public class ConstructorInjectionSample implements InitializingBean,
 	 */
 	private final String ultimateAnswer;
 
+	private boolean isRunning;
 
-	@ConstructorProperties({"year", "ultimateAnswer"})
-	public ConstructorInjectionSample(int years, String ultimateAnswer) {
-		this.years = years;
-		this.ultimateAnswer = ultimateAnswer;
+
+	@ConstructorProperties("property")
+	public ConstructorInjectionSample(ConstructorProperty property) {
+		this.years = property.getYears();
+		this.ultimateAnswer = property.getUltimateAnswer();
 	}
 
 	@PostConstruct
 	public void init() {
 		logger.info("PostConstruct init");
+	}
+
+	@Override
+	public void afterPropertiesSet() {
+		logger.info("afterPropertiesSet init");
 		logger.info(String.format("years: [%s], ultimateAnswer: [%s]", years,
 				ultimateAnswer));
 	}
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		logger.info("afterPropertiesSet init");
+	public void initMethod() {
+		logger.info("initMethod init");
 	}
 
 	@Override
 	public void afterSingletonsInstantiated() {
 		logger.info("afterSingletonsInstantiated init");
+	}
+
+	@Override
+	public void start() {
+		logger.info("start...");
+		isRunning = true;
+	}
+
+	@Override
+	public void stop() {
+		logger.info("stop...");
+		isRunning = false;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return isRunning;
 	}
 
 }

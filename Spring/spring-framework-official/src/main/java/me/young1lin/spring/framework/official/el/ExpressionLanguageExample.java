@@ -5,5 +5,5 @@ package me.young1lin.spring.framework.official.el;
  * @since 2021/11/6 下午11:30
  * @version 1.0
  */
-public class ELUse {
+public class ELExample {
 }

@@ -301,3 +301,61 @@ class Solution {
 }
 ```
 
+# 正则表达式
+
+假设正则表达式中只包含 “\*\” 和 “?” 这两种通配符，并且对两个通配符的语义稍微做些改变。其中 "\*\“ 匹配任意多个（大于等于 0 个）任意字符，"?" 匹配零个或者一个任意字符。编程判断一个给定的文本，能够跟给定的正则表达式匹配？
+
+adcabef
+
+a*b?f
+
+依次考察正则表达式中的每个字符，决定每个字符跟文本中的哪些字符匹配，是一个、两个还是多个...，决定完正则表达式中的一个字符之后，再决定下一个，直到正则表达式中所有字符都考察完为止，这个时候，如果文本中的字符也都匹配完了，就说明匹配了，否则就说明没有匹配。这也符合多阶段决策模型。
+
+
+
+```java
+public class solution {
+    
+    private boolean matched = false;
+    
+    public boolean match(chat[] text, char[] pattern) {
+        backtrack(text, pattern, 0, 0);
+        return matched;
+    }
+    
+    private void backtrack(char[] text, char[] pattern, int ti, int pj) {
+        // 结束条件
+        // 正则表达式到结尾了
+        if (pj == pattern.length) {
+            // 可行解，文本串也到结尾了
+            if (ti == text.length) {
+                matched = true;
+            }
+            return;
+        }
+        // 做选择（根据 pattern 中当前考察字符的具体情况）
+        // 匹配任意个字符
+        if (pattern[pj] == '*') {
+            for (int k = 0; k <= text.length - ti; ++k) {
+                backtrack(text, pattern, ti + k, pj + 1);
+            }
+        }
+        // ? 匹配 0 个或 1 个字符
+        else if (pattern[pj] == '?') {
+            backtrack(text, patternm, ti, pj + 1);
+            if (ti < text.length) {
+                backtrack(text, patternm, ti + 1, pj + 1);
+            }
+        }
+        // 纯字符匹配才行
+        else if (ti < text.length && pattern[pj] == teext[ti]) {
+            backtrack(text, pattern, ti + 1, pj + 1);
+        }
+        // 撤销选择，因为没有全局变量，局部变量会在递归返回时自动恢复
+    }
+    
+} 
+```
+
+
+
