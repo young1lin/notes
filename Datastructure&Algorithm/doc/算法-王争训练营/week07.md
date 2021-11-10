@@ -359,3 +359,248 @@ public class solution {
 
 
 
+[面试题 08.12. 八皇后](https://leetcode-cn.com/problems/eight-queens-lcci/)（困难）
+
+[37. 解数独](https://leetcode-cn.com/problems/sudoku-solver/)
+
+[17. 电话号码的字母组合](https://leetcode-cn.com/problems/letter-combinations-of-a-phone-number/)（中等）
+
+
+
+[77. 组合](https://leetcode-cn.com/problems/combinations/)（中等） 给n个数返回所有k个数的组合
+
+[78. 子集](https://leetcode-cn.com/problems/subsets/)（中等） 所有的组合
+
+[90. 子集 II](https://leetcode-cn.com/problems/subsets-ii/)（中等）有重复数据
+
+[46. 全排列](https://leetcode-cn.com/problems/permutations/)（中等） 所有排列
+
+[47. 全排列 II](https://leetcode-cn.com/problems/permutations-ii/)（中等） 有重复数据
+
+
+
+[39. 组合总和](https://leetcode-cn.com/problems/combination-sum/)（中等） 选出某几个数相加为给定和，无重复数据，可以使用多次，不能有重复答案
+
+[40. 组合总和 II](https://leetcode-cn.com/problems/combination-sum-ii/)（中等）选出某几个数相加为给定和，有重复数据，只能使用一次，不能有重复答案
+
+[216. 组合总和 III](https://leetcode-cn.com/problems/combination-sum-iii/)（中等） 选出k个数相加为给定和，没有重复数据，只能使用一次
+
+
+
+[131. 分割回文串](https://leetcode-cn.com/problems/palindrome-partitioning/)（中等）
+
+[93. 复原 IP 地址](https://leetcode-cn.com/problems/restore-ip-addresses/)（中等）
+
+[22. 括号生成](https://leetcode-cn.com/problems/generate-parentheses/)（中等） 
+
+
+
+# [面试题 08.12. 八皇后](https://leetcode-cn.com/problems/eight-queens-lcci/)（困难）
+
+设计一种算法，打印 N 皇后在 N × N 棋盘上的各种摆法，其中每个皇后都不同行、不同列，也不在对角线上。这里的“对角线”指的是所有的对角线，不只是平分整个棋盘的那两条对角线。
+
+注意：本题相对原题做了扩展
+
+示例:
+
+```
+ 输入：4
+ 输出：[[".Q..","...Q","Q...","..Q."],["..Q.","Q...","...Q",".Q.."]]
+ 解释: 4 皇后问题存在如下两个不同的解法。
+[
+ [".Q..",  // 解法 1
+  "...Q",
+  "Q...",
+  "..Q."],
+
+ ["..Q.",  // 解法 2
+  "Q...",
+  "...Q",
+  ".Q.."]
+]
+```
+
+实现代码
+
+```java
+class Solution {
+    
+    private List<List<String>> result = new ArrayList<>();
+    
+    public List<List<String>> solveNQueens(int n) {
+        // init board
+     	char[][] board = initBoard(n);
+		backtrack(0, board, n);
+        return result;
+    }
+    
+    private char[][] initBoard(int n) {
+        char[][] board = new char[n][n];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                board[i][j] = '.';
+            }
+        }
+        return board;
+    }
+    
+    private void backtrack(int row, char[][] board, int n) {
+        // 结束条件，得到可行解
+        if (row == n) {
+            List<String> snapshot = new ArrayList<>();
+            for (int i = 0; i < n; ++i) {
+                snapshot.add(new String(board[i]));
+            }
+            result.add(snapshot);
+            return;
+        }
+        // 每一行都有 n 种放法
+        for (int col = 0; col < n; col++) {
+            // 可选列表
+            // 做选择，第 row 行的棋子放到了 col 列
+            if (isOk(board, n, row, col)) {
+                board[row][col] = 'Q';
+                // 考察下一行
+                backtrack(row + 1, board, n);
+                // 恢复选择
+                board[row][col] = '.';
+            }
+        }
+    }
+
+    /**
+     * 判断 row 行 col 列放置是否合适
+     */
+    private boolean isOk(char[][] board, int n, int row, int col) {
+        // 检查列冲突
+        for (int i = 0; i < n; i++) {
+            if (board[i][col] == 'Q') {
+                return false;
+            }
+        }
+        // 检查右上对角冲突
+        int i = row - 1;
+        int j = col + 1;
+        while (i >= 0 && j < n) {
+            if (board[i][j] == 'Q') {
+                return false;
+            }
+            i--;
+            j++;
+        }
+        // 检查左上对角冲突
+        i = row - 1;
+        j = col - 1;
+        while (i >= 0 && j >= 0) {
+            if (board[i][j] == 'Q') {
+                return false;
+            }
+            i--;
+            j--;
+        }
+        return true;
+    }
+    
+}
+```
+
+
+
+```
+### 代码模板
+result = []
+def backtrack(可选列表, 决策阶段, 路径)
+	if 满足结束条件 (所有决策都已完成或得到可行解)
+		if 路径为可行解： result.add(路径)
+		return
+    for 选择 in [可选列表]:
+    	# 做选择
+    	
+    	路径.add(选择)
+    	backtrack(可选列表，决策阶段，路径)
+    	# 撤销选择
+    	路径.remove(选择)
+```
+
+
+
+# [37. 解数独](https://leetcode-cn.com/problems/sudoku-solver/)
+
+编写一个程序，通过填充空格来解决数独问题。
+
+数独的解法需 遵循如下规则：
+
+1. 数字 1-9 在每一行只能出现一次。
+2. 数字 1-9 在每一列只能出现一次。
+3. 数字 1-9 在每一个以粗实线分隔的 3x3 宫内只能出现一次。（请参考示例图）
+4. 数独部分空格内已填入了数字，空白格用 '.' 表示。
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2021/04/12/250px-sudoku-by-l2g-20050714svg.png)
+
+```
+输入：board = [["5","3",".",".","7",".",".",".","."],["6",".",".","1","9","5",".",".","."],[".","9","8",".",".",".",".","6","."],["8",".",".",".","6",".",".",".","3"],["4",".",".","8",".","3",".",".","1"],["7",".",".",".","2",".",".",".","6"],[".","6",".",".",".",".","2","8","."],[".",".",".","4","1","9",".",".","5"],[".",".",".",".","8",".",".","7","9"]]
+输出：[["5","3","4","6","7","8","9","1","2"],["6","7","2","1","9","5","3","4","8"],["1","9","8","3","4","2","5","6","7"],["8","5","9","7","6","1","4","2","3"],["4","2","6","8","5","3","7","9","1"],["7","1","3","9","2","4","8","5","6"],["9","6","1","5","3","7","2","8","4"],["2","8","7","4","1","9","6","3","5"],["3","4","5","2","8","6","1","7","9"]]
+解释：输入的数独如上图所示，唯一有效的解决方案如下所示：
+```
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2021/04/12/250px-sudoku-by-l2g-20050714_solutionsvg.png)
+
+
+
+提示：
+
+board.length == 9
+board[i].length == 9
+board[i][j] 是一位数字或者 '.'
+题目数据 保证 输入数独仅有一个解
+
+```java
+```
+
+
+
+# [17. 电话号码的字母组合](https://leetcode-cn.com/problems/letter-combinations-of-a-phone-number/)（中等）
+
+
+
+# [77. 组合](https://leetcode-cn.com/problems/combinations/)（中等） 给n个数返回所有k个数的组合
+
+
+
+# [78. 子集](https://leetcode-cn.com/problems/subsets/)（中等） 所有的组合
+
+
+
+# [90. 子集 II](https://leetcode-cn.com/problems/subsets-ii/)（中等）有重复数据
+
+
+
+# [46. 全排列](https://leetcode-cn.com/problems/permutations/)（中等） 所有排列
+
+
+
+# [47. 全排列 II](https://leetcode-cn.com/problems/permutations-ii/)（中等） 有重复数据
+
+
+
+# [39. 组合总和](https://leetcode-cn.com/problems/combination-sum/)（中等） 选出某几个数相加为给定和，无重复数据，可以使用多次，不能有重复答案
+
+
+
+# [40. 组合总和 II](https://leetcode-cn.com/problems/combination-sum-ii/)（中等）选出某几个数相加为给定和，有重复数据，只能使用一次，不能有重复答案
+
+
+
+# [216. 组合总和 III](https://leetcode-cn.com/problems/combination-sum-iii/)（中等） 选出k个数相加为给定和，没有重复数据，只能使用一次
+
+
+
+# [131. 分割回文串](https://leetcode-cn.com/problems/palindrome-partitioning/)（中等）
+
+
+
+# [93. 复原 IP 地址](https://leetcode-cn.com/problems/restore-ip-addresses/)（中等）
+
+
+
+# [22. 括号生成](https://leetcode-cn.com/problems/generate-parentheses/)（中等）
