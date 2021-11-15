@@ -554,7 +554,108 @@ board[i].length == 9
 board[i][j] 是一位数字或者 '.'
 题目数据 保证 输入数独仅有一个解
 
+```
+### 代码模板
+result = []
+def backtrack(可选列表, 决策阶段, 路径)
+	if 满足结束条件 (所有决策都已完成或得到可行解)
+		if 路径为可行解： result.add(路径)
+		return
+    for 选择 in [可选列表]:
+    	# 做选择
+    	
+    	路径.add(选择)
+    	backtrack(可选列表，决策阶段，路径)
+    	# 撤销选择
+    	路径.remove(选择)
+```
+
+
+
 ```java
+class Solution {
+    
+    private boolean[][] rows = new boolean[9][10];
+    
+    private boolean[][] cols = new boolean[9][10];
+
+    private boolean[][][] blocks = new boolean[3][3][10];
+
+	private boolean solved = false;
+    
+    
+    public void solveSudoku(char[][] board) {
+        // 先标记已经填好的格子，减少后续的回溯步骤
+        markTheFilledBox(board);
+		// 回溯求解
+        backtrack(0, 0, board);
+    }
+    
+    private void markTheFilledBox(char[][] board) {
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; i < 9; i++) {
+                if (board[i][j] != '.') {
+                    int num = board[i][j] - '0';
+                    rows[i][num] = true;
+                    cols[j][num] = true;
+                    blocks[i/3][j/3][num] = true;
+                }
+            }
+        }   
+    }
+    
+    private void backtrack(int row, int col, char[][] board) {
+        if (row == 9) {
+            solved = true;
+            return;
+        }
+    	if (board[row][col] != '.') {
+            int nextRow = row;
+            int nextCol = col + 1;
+            if (col == 8) {
+                nextRow = row + 1;
+                nextCol = 0;
+            }
+            backtrack(nextRow, nextCol, board);
+        	if (solved) {
+                return;
+            }
+        }
+        else {
+            for (int num = 1; num <= 9; ++num) {
+                if (isOk(row, col, num)) {
+                    // 数字转化成 char
+                    board[row][col] = String.valueOf(num).charAt(0);
+                    rows[row][num] = true;
+                    cols[col][num] = true;
+                    blocks[row/3][col/3][num] = true;
+
+                    int nextRow = row;
+                    int nextCol = col + 1;
+                    if (col == 8) {
+                        nextRow = row + 1;
+                        nextCol = 0;
+                    }
+                    backtrack(nextRow, nextCol, board);
+                    
+                    if (solved) {
+                        return;
+                    }
+                    // path
+                    board[row][col] = '.';
+                    rows[row][num] = false;
+                    cols[col][num] = false;
+                    blocks[row/3][col/3][num] = false;
+                }
+            }
+        }
+    }
+    
+    private boolean isOk(int row, int col, int num) {
+        return !rows[row][num] && !cols[col][num] && !blocks[row/3][col/3][num];
+    }
+
+}
 ```
 
 

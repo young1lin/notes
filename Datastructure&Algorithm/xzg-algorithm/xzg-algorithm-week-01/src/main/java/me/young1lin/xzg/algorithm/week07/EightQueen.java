@@ -15,7 +15,7 @@ public class EightQueen {
 
 	List<char[][]> result = new ArrayList<>();
 
-	public List<char[][]> eightQeueue() {
+	public List<char[][]> eightQueen() {
 		char[][] board = new char[8][8];
 		for (int i = 0; i < 8; ++i) {
 			for (int j = 0; j < 8; ++j) {
@@ -88,7 +88,7 @@ public class EightQueen {
 
 	public static void main(String[] args) {
 		EightQueen eightQueen = new EightQueen();
-		List<char[][]> boards = eightQueen.eightQeueue();
+		List<char[][]> boards = eightQueen.eightQueen();
 		System.out.printf("Solutions' number is [%s] \r\n", boards.size());
 		for (char[][] board : boards) {
 			for (char[] row : board) {
