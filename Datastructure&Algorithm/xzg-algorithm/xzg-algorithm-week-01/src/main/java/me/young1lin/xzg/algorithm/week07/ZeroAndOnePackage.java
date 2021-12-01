@@ -10,6 +10,7 @@ public class ZeroAndOnePackage {
 	/** 存储背包中物品总重量的最大值 */
 	private int maxW = Integer.MIN_VALUE;
 
+
 	public int bag(int[] items, int w) {
 		backtrack(items, 0, 0, w);
 		return maxW;

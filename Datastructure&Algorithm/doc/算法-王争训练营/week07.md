@@ -662,9 +662,137 @@ class Solution {
 
 # [17. 电话号码的字母组合](https://leetcode-cn.com/problems/letter-combinations-of-a-phone-number/)（中等）
 
+给定一个仅包含数字 2-9 的字符串，返回所有它能表示的字母组合。答案可以按 任意顺序 返回。
 
+给出数字到字母的映射如下（与电话按键相同）。注意 1 不对应任何字母。
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2021/11/09/200px-telephone-keypad2svg.png)
+
+```
+示例 1：
+
+输入：digits = "23"
+输出：["ad","ae","af","bd","be","bf","cd","ce","cf"]
+```
+
+
+
+```
+示例 2：
+
+输入：digits = ""
+输出：[]
+```
+
+
+
+```
+示例 3：
+
+输入：digits = "2"
+输出：["a","b","c"]
+```
+
+
+
+```java
+class Solution {
+    
+    private List<String> result = new ArrayList<>();
+    
+    public List<String> letterCombinations(String digits) {
+        if (digits.length() == 0) {
+            return Collections.emptyList();
+        }
+        String[] mappings = new String[10];
+        mappings[2] = "abc";
+        mappings[3] = "def";
+        mappings[4] = "ghi";
+        mappings[5] = "jkl";
+        mappings[6] = "mno";
+        mappings[7] = "pqrs";
+        mappings[8] = "tuv";
+        mappings[9] = "wxyz";
+		char[] path = new char[digits.length()];
+		backtrack(mappings, digits, 0, path);
+        return result;
+    }
+    
+    private void backtrack(String[] mappings, String digits, int k, char[] path) {
+        if (k == digits.length()) {
+            result.add(new String(path));
+        	return;
+        }
+        String mapping = mappings[digits.charAt(k) - '0'];
+        for (int i = 0; i< mapping.length(); i++) {
+            path[k] = mapping.charAt(i);
+            backtrack(mappings, digits, k + 1, path);
+        }
+    }
+    
+}
+```
 
 # [77. 组合](https://leetcode-cn.com/problems/combinations/)（中等） 给n个数返回所有k个数的组合
+
+给定两个整数 n 和 k，返回范围 [1, n] 中所有可能的 k 个数的组合。
+
+你可以按 任何顺序 返回答案。
+
+```
+示例 1：
+
+输入：n = 4, k = 2
+输出：
+[
+  [2,4],
+  [3,4],
+  [2,3],
+  [1,2],
+  [1,3],
+  [1,4],
+]
+```
+
+```
+示例 2：
+
+输入：n = 1, k = 1
+输出：[[1]]
+```
+
+
+
+```java
+class Solution {
+    
+    private List<List<Integer>> result = new ArrayList<>();
+    
+    
+    public List<List<Integer>> combine(int n, int k) {
+		backtrack(n, k, 1, new ArrayList<>());
+        return result;
+    }
+    
+    private void backtrack(int n, int k, int step, List<Integer> path) {
+        if (path.size() == k) {
+            result.add(new ArrayList<>(path));
+			return;
+        }
+       	if (step == n + 1) {
+            return;
+        }
+        
+        backtrack(n, k, step + 1, path);
+        path.add(step);
+        backtrack(n, k, step + 1, path);
+        path.remove(path.size() - 1);
+    }
+    
+}
+```
+
+
 
 
 
