@@ -6,4 +6,5 @@ package me.young1lin.spring.framework.official.scop;
  * @version 1.0
  */
 public class ScopeExampleApplication {
+
 }

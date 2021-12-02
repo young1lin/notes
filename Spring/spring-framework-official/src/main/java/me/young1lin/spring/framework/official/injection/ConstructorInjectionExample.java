@@ -13,11 +13,11 @@ import org.springframework.context.SmartLifecycle;
  * @since 2021/11/6 下午11:34
  * @version 1.0
  */
-public class ConstructorInjectionSample implements InitializingBean, SmartLifecycle,
+public class ConstructorInjectionExample implements InitializingBean, SmartLifecycle,
 		SmartInitializingSingleton {
 
 	private static final Logger logger =
-			Logger.getLogger(ConstructorInjectionSample.class.getName());
+			Logger.getLogger(ConstructorInjectionExample.class.getName());
 
 	/**
 	 * Number of years to calculate the Ultimate Answer
@@ -33,7 +33,7 @@ public class ConstructorInjectionSample implements InitializingBean, SmartLifecy
 
 
 	@ConstructorProperties("property")
-	public ConstructorInjectionSample(ConstructorProperty property) {
+	public ConstructorInjectionExample(ConstructorProperty property) {
 		this.years = property.getYears();
 		this.ultimateAnswer = property.getUltimateAnswer();
 	}

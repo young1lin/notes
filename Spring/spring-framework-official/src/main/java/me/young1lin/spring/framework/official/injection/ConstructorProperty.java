@@ -6,4 +6,34 @@ package me.young1lin.spring.framework.official.injection;
  * @version 1.0
  */
 public class ConstructorProperty {
+
+	private int years;
+
+	private String ultimateAnswer;
+
+
+	public int getYears() {
+		return years;
+	}
+
+	public void setYears(int years) {
+		this.years = years;
+	}
+
+	public String getUltimateAnswer() {
+		return ultimateAnswer;
+	}
+
+	public void setUltimateAnswer(String ultimateAnswer) {
+		this.ultimateAnswer = ultimateAnswer;
+	}
+
+	@Override
+	public String toString() {
+		return "ConstructorProperty{" +
+				"years=" + years +
+				", ultimateAnswer='" + ultimateAnswer + '\'' +
+				'}';
+	}
+
 }
