@@ -798,9 +798,143 @@ class Solution {
 
 # [78. 子集](https://leetcode-cn.com/problems/subsets/)（中等） 所有的组合
 
+给你一个整数数组 nums ，数组中的元素 互不相同 。返回该数组所有可能的子集（幂集）。
+
+解集 不能 包含重复的子集。你可以按 任意顺序 返回解集。
+
+ 
+
+示例 1：
+
+```
+输入：nums = [1,2,3]
+输出：[[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]
+```
+
+示例 2：
+
+```
+输入：nums = [0]
+输出：[[],[0]]
+```
+
+
+提示：
+
+1 <= nums.length <= 10
+-10 <= nums[i] <= 10
+nums 中的所有元素 互不相同
+
+```java
+class Solution {
+
+    private List<List<Integer>> result = new ArrayList<>();
+
+    public List<List<Integer>> subsets(int[] nums) {
+        backtrack(nums, 0, new ArrayList<>());
+        return result;
+    }
+
+    /**
+     * 按理来说私有方法不应该写注释的
+     * @param nums 可选列表，nums[k] 选还是不选
+     * @param k 表示阶段
+     * @param path 表示路径
+     */
+    private void backtrack(int[] nums, int k, List<Integer> path) {
+        if (k == nums.length) {
+            result.add(new ArrayList(path));
+            return;
+        }
+        
+        backtrack(nums, k + 1, path);
+
+        path.add(nums[k]);
+        backtrack(nums, k + 1, path);
+        path.remove(path.size() - 1);
+    }
+
+}
+```
+
 
 
 # [90. 子集 II](https://leetcode-cn.com/problems/subsets-ii/)（中等）有重复数据
+
+给你一个整数数组 nums ，其中可能包含重复元素，请你返回该数组所有可能的子集（幂集）。
+
+解集 不能 包含重复的子集。返回的解集中，子集可以按 任意顺序 排列。
+
+示例 1：
+
+```
+输入：nums = [1,2,2]
+输出：[[],[1],[1,2],[1,2,2],[2],[2,2]]
+```
+
+示例 2：
+
+```
+输入：nums = [0]
+输出：[[],[0]]
+```
+
+
+提示：
+
+1 <= nums.length <= 10
+-10 <= nums[i] <= 10
+
+```java
+class Solution {
+    
+    private List<List<Integer>> result = new ArrayList<>();
+    
+    
+    public List<List<Integer>> subsetsWithDup(int[] nums) {
+		Map<Integer, Integer> map = new HashMap<>();
+        // 遍历一遍，统计处各个数存在的次数
+    	for (int i = 0; i < nums.length; ++i) {
+            int count = 1;
+            if (map.containsKey(nums[i])) {
+                count += map.get(nums[i]);
+            }
+            map.put(nums[i], count);
+        }
+        int n = map.size();
+        int[] uniqueNums = new int[n];
+        int[] counts = new int[n];
+        int k = 0;
+        for (int i = 0; i < nums.length; ++i) {
+            if (map.containsKey(nums[i])) {
+                uniqueNums[k] = nums[i];
+                counts[k] = map.get(nums[i]);
+                k++;
+                map.remove(nums[i]);
+            }
+        }
+        backtrack(uniqueNums, counts, 0, new ArrayList<>());
+        return result;
+    }
+    
+    private void backtrack(int[] uniqueNums, int[] counts, int k, List<Integer> path) {
+     	if (k == uniqueNums.length) {
+            result.add(new ArrayList<>(path));
+        	return;
+        }
+        for (int count = 0; count <= counts[k]; ++count) {
+            for (int i = 0; i < count; ++i) {
+                path.add(uniqueNums[k]);
+            }
+            backtrack(uniqueNums, counts, k + 1, path);
+            for (int i = 0; i < count; ++i) {
+                path.remove(path.size() - 1);
+            }
+        }
+    }
+    
+}
+```
 
 
 
