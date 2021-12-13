@@ -237,9 +237,7 @@ Spring Cloud Config Client
 
 Cloud Foundry 为在它之上运行之上的程序，提供了总所周知的运维优势（日志聚合、路由、自我修复、动态扩展和收缩、安全等方面）。
 
-**雪花式部署**
-
-// TODO 翻译 Snowflake 官网的雪花式部署[第一篇文章](https://community.snowflake.com/s/article/Snowflake-CI-CD-using-Flyway-and-Azure-DevOps-Pipeline-Part-1)                
+**雪花式部署**	         
 
 [第二篇文章](https://www.snowflake.com/blog/embracing-agile-software-delivery-and-devops-with-snowflake/)
 
@@ -450,7 +448,11 @@ Redis 用作 Spring Cache
 
 如果在有序日志中记录每个域事件，则可以通过在任何以前的时间点重新创建系统状态来执行临时查询。如果有任何服务失败，则其本地状态可以从日志中完全被重新创建。这种做法被称为事件溯源。
 
+Saga 必要的，事件溯源。
+
 ## Spring Cloud Stream
+
+其实就是 Spring Integration 的内容
 
 MessageChannel 
 
@@ -466,7 +468,7 @@ SubscribeChannel
 
 ## 批处理
 
-批流一体——Flink。说实话，我还没怎么用过，就是用 Docker 启动过而已。
+批流一体——Flink。不太行，不能做到真正的流批一体，不能复用同一套 SQL，里面的 TableAPI 还行，SQL API 不行。
 
 ### Spring Batch
 
@@ -688,3 +690,4 @@ Continuous Deployment
 
 ![基本的管道设计.png](https://i.loli.net/2021/01/29/sx4EO9UfZWemIj1.png)
 
+​		
