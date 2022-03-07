@@ -999,17 +999,62 @@ class Solution {
 ```
 
 
-
-
-
-
-
-
 # [47. 全排列 II](https://leetcode-cn.com/problems/permutations-ii/)（中等） 有重复数据
 
 
 
 # [39. 组合总和](https://leetcode-cn.com/problems/combination-sum/)（中等） 选出某几个数相加为给定和，无重复数据，可以使用多次，不能有重复答案
+
+给你一个 无重复元素 的整数数组 candidates 和一个目标整数 target ，找出 candidates 中可以使数字和为目标数 target 的 所有 不同组合 ，并以列表形式返回。你可以按 任意顺序 返回这些组合。
+
+candidates 中的 同一个 数字可以 无限制重复被选取 。如果至少一个数字的被选数量不同，则两种组合是不同的。 
+
+对于给定的输入，保证和为 target 的不同组合数少于 150 个。
+
+ 
+
+示例 1：
+
+```
+输入：candidates = [2,3,6,7], target = 7
+输出：[[2,2,3],[7]]
+解释：
+2 和 3 可以形成一组候选，2 + 2 + 3 = 7 。注意 2 可以使用多次。
+7 也是一个候选， 7 = 7 。
+仅有这两种组合。
+```
+
+
+示例 2：
+
+```
+输入: candidates = [2,3,5], target = 8
+输出: [[2,2,2,2],[2,3,3],[3,5]]
+```
+
+
+示例 3：
+
+```
+输入: candidates = [2], target = 1
+输出: []
+```
+
+
+提示：
+
+1 <= candidates.length <= 30
+1 <= candidates[i] <= 200
+candidate 中的每个元素都 互不相同
+1 <= target <= 500
+
+```java
+class Solution {
+    
+    
+    
+}
+```
 
 
 
@@ -1018,6 +1063,84 @@ class Solution {
 
 
 # [216. 组合总和 III](https://leetcode-cn.com/problems/combination-sum-iii/)（中等） 选出k个数相加为给定和，没有重复数据，只能使用一次
+
+找出所有相加之和为 n 的 k 个数的组合，且满足下列条件：
+
+只使用数字1到9
+每个数字 最多使用一次 
+返回 所有可能的有效组合的列表 。该列表不能包含相同的组合两次，组合可以以任何顺序返回。
+
+ 
+
+示例 1:
+
+```
+输入: k = 3, n = 7
+输出: [[1,2,4]]
+解释:
+1 + 2 + 4 = 7
+没有其他符合的组合了。
+```
+
+示例 2:
+
+```
+输入: k = 3, n = 9
+输出: [[1,2,6], [1,3,5], [2,3,4]]
+解释:
+1 + 2 + 6 = 9
+1 + 3 + 5 = 9
+2 + 3 + 4 = 9
+没有其他符合的组合了。
+```
+
+示例 3:
+
+```
+输入: k = 4, n = 1
+输出: []
+解释: 不存在有效的组合。
+在[1,9]范围内使用4个不同的数字，我们可以得到的最小和是1+2+3+4 = 10，因为10 > 1，没有有效的组合。
+```
+
+
+提示:
+
+2 <= k <= 9
+1 <= n <= 60
+
+
+
+```java
+class Solution {
+
+    private List<List<Integer>> result = new ArrayList<>();
+
+
+    public List<List<Integer>> combinationSum3(int k, int n) {
+        backtrack(k, n, 1, 0, new ArrayList<>());
+        return result;
+    }
+
+        private void backtrack(int k, int n, int step, int sum, List<Integer> path) {
+        if (sum == n && path.size() == k) {
+            result.add(new ArrayList<>(path));
+            return;
+        }
+        if (sum >= n || path.size() >= k || step > 9) {
+            return;
+        }
+        backtrack(k, n, step + 1, sum, path);
+        path.add(step);
+        backtrack(k, n, step + 1, sum + step, path);
+        path.remove(path.size() - 1);
+    }
+    
+
+}
+```
+
+
 
 
 
@@ -1030,3 +1153,57 @@ class Solution {
 
 
 # [22. 括号生成](https://leetcode-cn.com/problems/generate-parentheses/)（中等）
+
+数字 n 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 有效的 括号组合。
+
+ 
+
+示例 1：
+
+```
+输入：n = 3
+输出：["((()))","(()())","(())()","()(())","()()()"]
+```
+
+示例 2：
+
+```
+输入：n = 1
+输出：["()"]
+```
+
+
+提示：
+
+1 <= n <= 8
+
+```java
+class Solution {
+    
+    private List<String> result = new ArrayList<>();
+    
+    
+    public List<String> generateParenthesis(int n) {
+		char[] path = new char[2 * n];
+        backtrack(n, 0, 0, 0, path);
+        return result;
+    }
+    
+    private void backtrack(int n, int leftUsed, int rightUsed, int k, char[] path) {
+    	if (k == 2 * n) {
+            result.add(String.valueOf(path));
+        	return;
+        }
+        if (leftUsed < n) {
+            path[k] = '(';
+            backtrack(n, leftUsed + 1, rightUsed, k + 1, path);
+        }
+        if (leftUsed > rightUsed && rightUsed < n) {
+            path[k] = ')';
+            backtrack(n, leftUsed, rightUsed + 1, k + 1, path);
+        }
+    }
+    
+}
+```
+
