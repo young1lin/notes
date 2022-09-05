@@ -842,3 +842,165 @@ Trie
 # [面试题 17.17. 多次搜索](https://leetcode-cn.com/problems/multi-search-lcci/)（中等） 标准AC自动机，不过写AC自动机太复杂，Trie树搞定
 
 # [212. 单词搜索 II](https://leetcode-cn.com/problems/word-search-ii/)（困难）
+
+
+
+# 字符串匹配
+
+## 单模式串匹配算法：在主串中查找一个模式串
+
+- **BF 算法**
+- **RK 算法**
+- BM 算法
+- KMP 算法
+
+### BF 算法，暴力匹配算法、朴素字符串匹配算法
+
+如果模式串长度为 m，主串长度为 n，那么在主串中就会有 n-m+1 个长度为 m 的子串，我们只需要暴力地对比这 n-m+1 个子串与模式串，就可以找出主串与模式串匹配的子串。
+
+```java
+int bf(char[] a, int n, char[] b, int m) {
+    for (int i = 0; i <= n - m; ++i) {
+        int j = 0;
+        while (j < m) {
+            if (a[i + j] != b[j]) {
+                break;
+            }
+            j++;
+        }
+        if (j == m) {
+            return i;
+        } 
+    }
+    return -1;
+}
+```
+
+### RK 算法，Rabin-Karp 算法
+
+通过哈希算法对主串中的 n-m+1 个子串分别求哈希值，然后逐个与模式串的哈希值比较。如果某个子串的哈希值与模式串的哈希值相等，那么就说明这个子串和模式串匹配了。
+
+1. 无冲突
+2. H1->h2
+
+## 多模式串匹配算法：在主串中查找多个模式串
+
+- **Trie 树**
+- AC自动机
+
+### Trie 树
+
+```java
+public class Trie {
+    
+    public class TrieNode {
+        
+        public char data;
+    	
+        public TrieNode[] children = new TrieNode[26];
+        
+        public boolean isEndingChar = false;
+        
+        public TrieNode (char data) {
+            this.data = data;
+        }
+        
+    }
+    
+    private TrieNode root = new TrieNode('/');
+    
+    public void insert (char[] text) {
+    	TrieNode p = root;
+        for (int i = 0, i < text.length; i++) {
+            int index = text[i] - 'a';
+            if (p.children[index] == null) {
+                TrieNode newNode = new TrieNode(text[i]);
+            	p.children[index] = newNode;
+            }
+            p = p.children[index];
+        }
+        p.isEndingChar = true;
+    }
+    
+    /**
+     *  字符串查找（完全匹配，就是普通的查找）
+     */
+    public boolean find(char[] target) {
+        TrieNode p = root;
+        for (int i = 0; i < target.length; i++) {
+            int index = target[i] - 'a';
+            if (p.children[index] == null) {
+                // 不存在 target
+                return false;
+            }
+            p = p.children[index];
+        }
+        // 不能完全匹配，只是前缀
+        if (p.isEndingChar == false) {
+            return false;
+        }
+        // 找到 target
+        else {
+            return true;
+        }
+    }
+    
+    /**
+     * 多模式串匹配
+     * 例如敏感词过滤系统，字符串集合包含 how, hi, her, hello, so, see 这几个字符串，
+     * 频繁地查询某个长字符串中，比如 abdhellosayhiok，是否包含字符串集合中的字符串？
+     */
+    public void match(char[] mainstr) {
+        for (int i = 0; i < mainstr.length; i++) {
+            TrieNode p = root;
+            for (int j = i; j < mainstr.length; j++) {
+                int index = mainstr[j] - 'a';
+                if (p.children[index] == null) {
+                    break;
+                }
+                p = p.children[index];
+                if (p.isEndingChar) {
+                    System.out.println("matched, mainstr index ["+ i + "," + j +"].");
+                }
+            }
+        }
+    }
+    
+    /**
+     * 前缀匹配，例如 he*** 来匹配
+     */
+    public void prefixMatch(char[] prefix) {
+        TrieNode p = root;
+        for (int i = 0; i < prefix.length; i++) {
+            int index = prefix[i] - 'a';
+            if (p.children[index] == null) {
+                // 没有前缀匹配的字符串
+                return;
+            }
+            p = p.children[index];
+        }
+        List<Character> path = new ArrayList<>();
+        traveTree(p, prefix, path);
+    }
+    
+    private void travelTree(TrieNode p, char[] prefix, List<Character> path) {
+        if (p.isEndingChar) {
+            StringBuilder resultString = new StringBuilder();
+            resultString.append(prefix);
+            resultString.append(path);
+            System.out.println(resultString.toString());
+        }
+        path.add(p.data);
+        for (int i = 0; i < p.children.length; i++) {
+            if (p.children[i] != null) {
+                traveTree(p.children[i], prefix, path);
+            }
+        }
+        path.remove(path.size() - 1);
+    }
+    
+}
+```
+
+
+
