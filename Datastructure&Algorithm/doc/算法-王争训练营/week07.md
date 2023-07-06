@@ -168,7 +168,7 @@ public class EightQueen {
 			i--;
 			j++;
 		}
-		// 检查坐上对角线是否有冲突
+		// 检查左上对角线是否有冲突
 		i = row - 1;
 		j = col - 1;
 		while (i >= 0 && j >= 0) {
