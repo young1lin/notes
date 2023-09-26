@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Data-Processing/Data-Warehouse/docs/知识分享-数据仓库-详细内容.md",
+                "file": "PrepareForInterview/每日一题/动态规划（重点）.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Data-Processing/Data-Warehouse/docs/知识分享-数据仓库-详细内容.md",
+                "file": "PrepareForInterview/每日一题/动态规划（重点）.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,16 +102,16 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Data-Processing/Data-Warehouse/docs/知识分享-数据仓库-详细内容.md"
+                "file": "PrepareForInterview/每日一题/动态规划（重点）.md"
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -124,31 +124,40 @@
   },
   "active": "afb3f0adda1a749b",
   "lastOpenFiles": [
-    "Data-Processing/Data-Warehouse/docs/数据仓库.md",
-    "Data Analysis/doc/谁说菜鸟不会数据分析.md",
-    "AI/MachineLearning/DeepLearning/识图.md",
-    "AI/MachineLearning/DeepLearning/PyTorch.md",
-    "AI/AIGC.md",
-    "AI/MachineLearning/MachineLearning.md",
-    "English/doc/马斯瑞英语课堂/26.md",
-    "PrepareForInterview/非技术面试准备内容.md",
-    "README.md",
-    "PrepareForInterview/Java_工程师_张三_zh.md",
-    "PrepareForInterview/每日一题/BFS.md",
-    "PrepareForInterview/每日一题/贪心.md",
-    "PrepareForInterview/每日一题/其他题目.md",
-    "PrepareForInterview/每日一题/回溯.md",
-    "PrepareForInterview/每日一题/滑动窗口（非重点）.md",
-    "PrepareForInterview/每日一题/二分查找.md",
-    "PrepareForInterview/每日一题/动态规划（重点）.md",
-    "PrepareForInterview/每日一题/递归.md",
-    "PrepareForInterview/每日一题/并查集.md",
     "PrepareForInterview/每日一题.md",
-    "PrepareForInterview/刷题/递归.md",
-    "PrepareForInterview/每日一题/DFS.md",
+    "PrepareForInterview/杭州的大公司.md",
+    "PrepareForInterview/非技术面试准备内容.md",
+    "PrepareForInterview/Java_工程师_张三_zh.md",
+    "PrepareForInterview/很久以前的面试总结/面试问题简单汇总.md",
+    "PrepareForInterview/很久以前的面试总结",
+    "README.md",
+    "PrepareForInterview/很久以前的面试总结/最近面试总结.md",
+    "PrepareForInterview/很久以前的面试总结/造火箭+面试简单指南.md",
+    "Netty/doc/Netty 实战-2-关键组件介绍.md",
+    "English/basic/小王子.md",
+    "English/doc/How to Speak and Write Correctly/Chapter 1.md",
+    "Jackson/Jackson序列化.md",
+    "JVM/JVM 参数解释.md",
+    "JVM/JVM-G1垃圾收集器.png",
+    "OS/doc/Linux.md",
+    "Spring/resources/Building+a+REST+API+with+Spring.pdf",
+    "Spring/resources/SpringCore-1.md",
+    "Spring/images/引导类的层次结构final.png",
+    "Spring/images/ContextRefreshedEvent.png",
+    "Spring/images/ConfigurationClassPostProcessor继承关系.png",
+    "Spring/images/AnnotationConfigServletWebApplicationContextContext.png",
+    "Spring/doc/Spring内建对象.md",
+    "Spring/doc/Spring介绍.md",
+    "Spring/doc/Spring源码深度解析问题.md",
+    "Spring/doc/Spring Boot 思维导图.md",
+    "Spring/doc/Spring Boot 编程思想-缺陷.md",
+    "Spring/doc/Spring Boot 编程思想-3.md",
+    "Spring/doc/Spring Boot 编程思想-2.md",
+    "Spring/doc/Spring Boot 编程思想-1.md",
+    "Spring/doc/Spring 源码深度解析-循环依赖.md",
+    "Spring/doc/Spring 源码深度解析-AOP.md",
+    "Spring/doc/Spring 源码深度解析-JMS.md",
     "PrepareForInterview/每日一题",
-    "PrepareForInterview/刷题/二分查找.md",
-    "PrepareForInterview/最近面试总结.md",
     "PrepareForInterview/刷题/贪心",
     "PrepareForInterview/刷题/动态规划（重点）",
     "PrepareForInterview/刷题/滑动窗口",
@@ -156,19 +165,10 @@
     "PrepareForInterview/刷题/递归",
     "PrepareForInterview/刷题/二分查找",
     "PrepareForInterview/刷题",
-    "PrepareForInterview/面试问题简单汇总.md",
-    "PrepareForInterview/造火箭+面试简单指南.md",
     "MediaLearning/video/douyu.png",
     "MediaLearning/video/va_program.jpg",
-    "AI",
-    "AI/MachineLearning/DeepLearning",
     "Film/images/电影发行过程.png",
     "Film/images/库里肖夫效应实验.jpeg",
-    "Film/images/正反打.png",
-    "Java8/image/Java8Date.png",
-    "Other/image/汉五珠铜钱.png",
-    "MediaLearning/video/JS-Color.png",
-    "MediaLearning/video/opencv.webp",
-    "MediaLearning/video/本地推流.png"
+    "Film/images/正反打.png"
   ]
 }

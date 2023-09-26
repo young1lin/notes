@@ -6,5 +6,13 @@
       ],
       "key": "J"
     }
+  ],
+  "outline:open": [
+    {
+      "modifiers": [
+        "Mod"
+      ],
+      "key": "'"
+    }
   ]
 }
