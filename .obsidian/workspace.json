@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "PrepareForInterview/刷题/递归.md",
+                "file": "PrepareForInterview/每日一题/BFS.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "PrepareForInterview/刷题/递归.md",
+                "file": "PrepareForInterview/每日一题/BFS.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "PrepareForInterview/刷题/递归.md"
+                "file": "PrepareForInterview/每日一题/BFS.md"
               }
             }
           }
@@ -122,10 +122,21 @@
       "markdown-importer:打开 Markdown 格式转换器": false
     }
   },
-  "active": "02c782feb46d1add",
+  "active": "afb3f0adda1a749b",
   "lastOpenFiles": [
+    "PrepareForInterview/每日一题/贪心.md",
+    "PrepareForInterview/每日一题/其他题目.md",
+    "PrepareForInterview/每日一题/回溯.md",
+    "PrepareForInterview/每日一题/滑动窗口（非重点）.md",
+    "PrepareForInterview/每日一题/二分查找.md",
+    "PrepareForInterview/每日一题/动态规划（重点）.md",
+    "PrepareForInterview/每日一题/递归.md",
+    "PrepareForInterview/每日一题/并查集.md",
+    "PrepareForInterview/每日一题.md",
     "PrepareForInterview/刷题/递归.md",
-    "PrepareForInterview/刷题/递归.md",
+    "PrepareForInterview/每日一题/DFS.md",
+    "PrepareForInterview/每日一题/BFS.md",
+    "PrepareForInterview/每日一题",
     "PrepareForInterview/刷题/二分查找.md",
     "PrepareForInterview/最近面试总结.md",
     "PrepareForInterview/刷题/贪心",
@@ -150,18 +161,6 @@
     "AI/MachineLearning/DeepLearning/PyTorch.md",
     "OS/doc/Linux.md",
     "AI/MachineLearning/DeepLearning",
-    "AI/MachineLearning",
-    "OS/doc/深入理解计算机系统.md",
-    "MediaLearning/FFmpeg Zero To Hero.md",
-    "OS/doc/操作系统-清华大学-Mooc.md",
-    "使用 Jstack诊断cpu使用过高/README.md",
-    "Architecture/doc/N 层架构.md",
-    "Architecture/doc/整洁架构.md",
-    "Architecture/doc/六边形架构.md",
-    "Docker/Docker Start.md",
-    "Domain Driven Design/DDD GeekTime/doc/DDD.md",
-    "English/doc/Ali Abdaal/How-To-Learn-Anything-Faster.md",
-    "English/doc/英语语法新思维/初级/动词.md",
     "Film/images/电影发行过程.png",
     "Film/images/库里肖夫效应实验.jpeg",
     "Film/images/正反打.png",
