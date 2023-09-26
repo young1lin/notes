@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "PrepareForInterview/每日一题/BFS.md",
+                "file": "Data-Processing/Data-Warehouse/docs/知识分享-数据仓库-详细内容.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "PrepareForInterview/每日一题/BFS.md",
+                "file": "Data-Processing/Data-Warehouse/docs/知识分享-数据仓库-详细内容.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "PrepareForInterview/每日一题/BFS.md"
+                "file": "Data-Processing/Data-Warehouse/docs/知识分享-数据仓库-详细内容.md"
               }
             }
           }
@@ -124,6 +124,17 @@
   },
   "active": "afb3f0adda1a749b",
   "lastOpenFiles": [
+    "Data-Processing/Data-Warehouse/docs/数据仓库.md",
+    "Data Analysis/doc/谁说菜鸟不会数据分析.md",
+    "AI/MachineLearning/DeepLearning/识图.md",
+    "AI/MachineLearning/DeepLearning/PyTorch.md",
+    "AI/AIGC.md",
+    "AI/MachineLearning/MachineLearning.md",
+    "English/doc/马斯瑞英语课堂/26.md",
+    "PrepareForInterview/非技术面试准备内容.md",
+    "README.md",
+    "PrepareForInterview/Java_工程师_张三_zh.md",
+    "PrepareForInterview/每日一题/BFS.md",
     "PrepareForInterview/每日一题/贪心.md",
     "PrepareForInterview/每日一题/其他题目.md",
     "PrepareForInterview/每日一题/回溯.md",
@@ -135,7 +146,6 @@
     "PrepareForInterview/每日一题.md",
     "PrepareForInterview/刷题/递归.md",
     "PrepareForInterview/每日一题/DFS.md",
-    "PrepareForInterview/每日一题/BFS.md",
     "PrepareForInterview/每日一题",
     "PrepareForInterview/刷题/二分查找.md",
     "PrepareForInterview/最近面试总结.md",
@@ -148,18 +158,9 @@
     "PrepareForInterview/刷题",
     "PrepareForInterview/面试问题简单汇总.md",
     "PrepareForInterview/造火箭+面试简单指南.md",
-    "README.md",
-    "PrepareForInterview/非技术面试准备内容.md",
-    "PrepareForInterview/Java_工程师_张三_zh.md",
-    "MediaLearning/video/音视频内容.md",
     "MediaLearning/video/douyu.png",
     "MediaLearning/video/va_program.jpg",
-    "AI/AIGC.md",
-    "AI/MachineLearning/MachineLearning.md",
     "AI",
-    "AI/MachineLearning/DeepLearning/识图.md",
-    "AI/MachineLearning/DeepLearning/PyTorch.md",
-    "OS/doc/Linux.md",
     "AI/MachineLearning/DeepLearning",
     "Film/images/电影发行过程.png",
     "Film/images/库里肖夫效应实验.jpeg",
