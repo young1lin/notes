@@ -1,1 +1,4 @@
-这是一个普通的 Repository，做普通的事情，看普通的书，做个积极的人，鼓励他人的人。
+> 关于简历编写建议[在这](./PrepareForInterview/Java_工程师_张三_zh.md)
+
+
+> 关于非技术面试前准备[在这](./PrepareForInterview/非技术面试准备内容.md)

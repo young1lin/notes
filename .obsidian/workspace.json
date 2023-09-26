@@ -1,0 +1,174 @@
+{
+  "main": {
+    "id": "c8d46e951d8f3c45",
+    "type": "split",
+    "children": [
+      {
+        "id": "416af5124c4019a9",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "afb3f0adda1a749b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "PrepareForInterview/刷题/递归.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "3d0094e5e01844e6",
+    "type": "split",
+    "children": [
+      {
+        "id": "7fb56ca71dac5347",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "02c782feb46d1add",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "5cb7de9904a7ccfd",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "76f0bbe4bae45674",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "3b30faa76d06d9a6",
+    "type": "split",
+    "children": [
+      {
+        "id": "5b9126dafd01636b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "7a6cb718f18a309d",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "PrepareForInterview/刷题/递归.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "bf7ab82c5fa95a1e",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "PrepareForInterview/刷题/递归.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "command-palette:打开命令面板": false,
+      "markdown-importer:打开 Markdown 格式转换器": false
+    }
+  },
+  "active": "02c782feb46d1add",
+  "lastOpenFiles": [
+    "PrepareForInterview/刷题/递归.md",
+    "PrepareForInterview/刷题/递归.md",
+    "PrepareForInterview/刷题/二分查找.md",
+    "PrepareForInterview/最近面试总结.md",
+    "PrepareForInterview/刷题/贪心",
+    "PrepareForInterview/刷题/动态规划（重点）",
+    "PrepareForInterview/刷题/滑动窗口",
+    "PrepareForInterview/刷题/回溯",
+    "PrepareForInterview/刷题/递归",
+    "PrepareForInterview/刷题/二分查找",
+    "PrepareForInterview/刷题",
+    "PrepareForInterview/面试问题简单汇总.md",
+    "PrepareForInterview/造火箭+面试简单指南.md",
+    "README.md",
+    "PrepareForInterview/非技术面试准备内容.md",
+    "PrepareForInterview/Java_工程师_张三_zh.md",
+    "MediaLearning/video/音视频内容.md",
+    "MediaLearning/video/douyu.png",
+    "MediaLearning/video/va_program.jpg",
+    "AI/AIGC.md",
+    "AI/MachineLearning/MachineLearning.md",
+    "AI",
+    "AI/MachineLearning/DeepLearning/识图.md",
+    "AI/MachineLearning/DeepLearning/PyTorch.md",
+    "OS/doc/Linux.md",
+    "AI/MachineLearning/DeepLearning",
+    "AI/MachineLearning",
+    "OS/doc/深入理解计算机系统.md",
+    "MediaLearning/FFmpeg Zero To Hero.md",
+    "OS/doc/操作系统-清华大学-Mooc.md",
+    "使用 Jstack诊断cpu使用过高/README.md",
+    "Architecture/doc/N 层架构.md",
+    "Architecture/doc/整洁架构.md",
+    "Architecture/doc/六边形架构.md",
+    "Docker/Docker Start.md",
+    "Domain Driven Design/DDD GeekTime/doc/DDD.md",
+    "English/doc/Ali Abdaal/How-To-Learn-Anything-Faster.md",
+    "English/doc/英语语法新思维/初级/动词.md",
+    "Film/images/电影发行过程.png",
+    "Film/images/库里肖夫效应实验.jpeg",
+    "Film/images/正反打.png",
+    "Java8/image/Java8Date.png",
+    "Other/image/汉五珠铜钱.png",
+    "MediaLearning/video/JS-Color.png",
+    "MediaLearning/video/opencv.webp",
+    "MediaLearning/video/本地推流.png"
+  ]
+}
