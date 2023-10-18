@@ -13,13 +13,62 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "PrepareForInterview/每日一题/动态规划（重点）.md",
+                "file": "English/doc/TalkAboutChinaInEnglish/FlashCard/Fisrt.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "0259732ed9160e01",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "English/doc/TalkAboutChinaInEnglish/DietaryCulture/Northeast.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "99caa72bbc2a8d6a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "README.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "e878636345e89dec",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "PrepareForInterview/Java_工程师_张三_zh.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "a68bf4768bfbc20a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "English/doc/TalkAboutChinaInEnglish/FlashCard/Fisrt.md",
                 "mode": "source",
                 "source": false
               }
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -85,7 +134,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "PrepareForInterview/每日一题/动态规划（重点）.md",
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +151,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "PrepareForInterview/每日一题/动态规划（重点）.md"
+                "file": "README.md"
               }
             }
           }
@@ -122,53 +171,53 @@
       "markdown-importer:打开 Markdown 格式转换器": false
     }
   },
-  "active": "afb3f0adda1a749b",
+  "active": "99caa72bbc2a8d6a",
   "lastOpenFiles": [
-    "PrepareForInterview/每日一题.md",
-    "PrepareForInterview/杭州的大公司.md",
-    "PrepareForInterview/非技术面试准备内容.md",
     "PrepareForInterview/Java_工程师_张三_zh.md",
-    "PrepareForInterview/很久以前的面试总结/面试问题简单汇总.md",
-    "PrepareForInterview/很久以前的面试总结",
     "README.md",
-    "PrepareForInterview/很久以前的面试总结/最近面试总结.md",
-    "PrepareForInterview/很久以前的面试总结/造火箭+面试简单指南.md",
-    "Netty/doc/Netty 实战-2-关键组件介绍.md",
-    "English/basic/小王子.md",
+    "English/doc/TalkAboutChinaInEnglish/DietaryCulture/Northeast.md",
+    "English/doc/TalkAboutChinaInEnglish/FlashCard/Fisrt.md",
+    "PrepareForInterview/非技术面试准备内容.md",
+    "PrepareForInterview/每日一题/每日一题.md",
+    "Architecture/画图.md",
+    "AI/Model/DifussionModels.md",
+    "AI/Model/resource",
+    "AI/Model/resource/diffusion-models-class-main/unit4/README.md",
+    "AI/Model/resource/diffusion-models-class-main/unit4/02_diffusion_for_audio.ipynb",
+    "AI/Model/resource/diffusion-models-class-main/unit4/01_ddim_inversion.ipynb",
+    "AI/Model/resource/diffusion-models-class-main/unit4",
+    "AI/Model/resource/diffusion-models-class-main/unit3/text_encoder_noborder.png",
+    "AI/Model/resource/diffusion-models-class-main/unit3/sd_unet_color.png",
+    "AI/Model/resource/diffusion-models-class-main/unit3/sd_demo_images.jpg",
+    "AI/Model/resource/diffusion-models-class-main/unit3/README.md",
+    "AI/Model/resource/diffusion-models-class-main/unit3/cfg_example_0_1_2_10.jpeg",
+    "AI/Model/resource/diffusion-models-class-main/unit3/01_stable_diffusion_introduction.ipynb",
+    "AI/Model/resource/diffusion-models-class-main/unit3",
+    "AI/Model/resource/diffusion-models-class-main/unit2/guidance_eg.png",
+    "AI/Model/resource/diffusion-models-class-main/unit2/README.md",
+    "AI/Model/resource/diffusion-models-class-main/unit2/finetune_model.py",
+    "AI/Model/resource/diffusion-models-class-main/unit2/conditional_digit_generation.png",
+    "AI/Model/resource/diffusion-models-class-main/unit2/02_class_conditioned_diffusion_model_example.ipynb",
+    "AI/Model/resource/diffusion-models-class-main/unit2/01_finetuning_and_guidance.ipynb",
+    "AI/Model/resource/diffusion-models-class-main/unit2",
+    "AI/Model/resource/diffusion-models-class-main/unit1/README.md",
+    "AI/Model/resource/diffusion-models-class-main/hackathon/README.md",
+    "AI/Model/resource/diffusion-models-class-main/README.md",
+    "AI/MachineLearning/DeepLearning/PyTorch.md",
+    "AI/MachineLearning/DeepLearning/识图.md",
+    "AI/MachineLearning/GAN.md",
+    "AI/MachineLearning/DeepLearning/SupervisedLearningAndUnsuperwisedLearning.md",
+    "AI/MachineLearning/未命名.md",
+    "AI/AIGC.md",
+    "AI/MachineLearning/MachineLearning.md",
+    "English/doc/TalkAboutChinaInEnglish/DietaryCulture/Beijing-Tianjing region.md",
+    "a.md",
+    "a tool with a deep bowl-shaped end that is used to dig out and move a soft substance or powder.md",
     "English/doc/How to Speak and Write Correctly/Chapter 1.md",
-    "Jackson/Jackson序列化.md",
-    "JVM/JVM 参数解释.md",
+    "English/doc/Ali Abdaal/How-To-Learn-Anything-Faster.md",
     "JVM/JVM-G1垃圾收集器.png",
-    "OS/doc/Linux.md",
-    "Spring/resources/Building+a+REST+API+with+Spring.pdf",
-    "Spring/resources/SpringCore-1.md",
+    "English/basic/名词的公式.png",
     "Spring/images/引导类的层次结构final.png",
-    "Spring/images/ContextRefreshedEvent.png",
-    "Spring/images/ConfigurationClassPostProcessor继承关系.png",
-    "Spring/images/AnnotationConfigServletWebApplicationContextContext.png",
-    "Spring/doc/Spring内建对象.md",
-    "Spring/doc/Spring介绍.md",
-    "Spring/doc/Spring源码深度解析问题.md",
-    "Spring/doc/Spring Boot 思维导图.md",
-    "Spring/doc/Spring Boot 编程思想-缺陷.md",
-    "Spring/doc/Spring Boot 编程思想-3.md",
-    "Spring/doc/Spring Boot 编程思想-2.md",
-    "Spring/doc/Spring Boot 编程思想-1.md",
-    "Spring/doc/Spring 源码深度解析-循环依赖.md",
-    "Spring/doc/Spring 源码深度解析-AOP.md",
-    "Spring/doc/Spring 源码深度解析-JMS.md",
-    "PrepareForInterview/每日一题",
-    "PrepareForInterview/刷题/贪心",
-    "PrepareForInterview/刷题/动态规划（重点）",
-    "PrepareForInterview/刷题/滑动窗口",
-    "PrepareForInterview/刷题/回溯",
-    "PrepareForInterview/刷题/递归",
-    "PrepareForInterview/刷题/二分查找",
-    "PrepareForInterview/刷题",
-    "MediaLearning/video/douyu.png",
-    "MediaLearning/video/va_program.jpg",
-    "Film/images/电影发行过程.png",
-    "Film/images/库里肖夫效应实验.jpeg",
-    "Film/images/正反打.png"
+    "Spring/images/ContextRefreshedEvent.png"
   ]
 }
