@@ -1,0 +1,5 @@
+I'm currently 3000 feet above the ground with no parachute. But you know what? I don't give a fuck. 
+
+Every day, hundreds of millions of people suffer from giving too many fucks. They spend their lives in prison by meaningless anxiety and uneccessary concerns. But it doesn't have to be that way. In this video, I'm going to  walk you through the five levels of non fuck giving. Each level demonstrating more non-fuckery than the last. You will learn step by step how to face your fears, how to stop worrying what other people think, and how to archieve the eternal bliss of fuckless life.
+
+But it's not enough to simply learn how to not give a fuck,  you have to live it. You have to embody your non fuckery. So to illustrate each of these life lessons, I flew out to Atlanta and met with a fan named Garrett. Now Garrett had specifically told me that he gave too many fucks in his life, and so I enlisted his best friend Alex. And together, we paused him through five life-changing challenges. That purged him of all necessary fuck-giving. In the beginning, he was meek and shy,
