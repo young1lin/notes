@@ -23,7 +23,7 @@ One example of this is "**retrieval augmented** generation", a technique that co
     - 英文解释: A state of extreme excitement or agitation.
     - 中文解释：极度兴奋或激动的状态。
     - 样例句子：The crowd was at fever pitch as the championship game went into overtime.
-2. **Quadrupled** [ˈkwɑː.drʌ.pəld]
+2. **Quadrupled** [ˈkwɑː.diarʌ.pəld]
     
     - 英文解释: Increased by four times in number or amount.
     - 中文解释：数量或金额增加了四倍。
