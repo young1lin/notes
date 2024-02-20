@@ -56,7 +56,7 @@
 ### 安装 Python
 
 1. 进入这里 https://www.python.org/downloads/windows/    当然，你要是 MacOS 的可以去下 MacOS 的版本。
-2. 下载 3.10.x 版本的，我装的就是避免版本不一致导致无畏的错误，Python Minor version change 也是会删代码的，不会给已废弃的标识。
+2. 下载 3.10.x 版本的，我装的就是避免版本不一致导致无谓的错误，Python Minor version change 也是会删代码的，不会给已废弃的标识。
 3. 一步步确认安装就行了。
 4. 一定要把其他版本的 Python 删干净了！！会有一堆的问题。并且环境变量检查一下是不是其他版本的环境变量已经没有了。
 ### 安装必要依赖
@@ -108,7 +108,7 @@ uvicorn main:app --reload --port 7001
 
 ### 安装 NodeJs
 
-必须要大于 v16 版本，不然后续会报错，如果安装过大于 v16 版本，跳过此步骤。
+必须要大于 v16 版本，不然后续会报错，如果已经安装了大于 v16 版本的 NodeJs，跳过此步骤。
 
 下载 https://nodejs.cn/download/
 
