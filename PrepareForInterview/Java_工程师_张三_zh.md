@@ -110,11 +110,11 @@
 - 多花点心思在简历和面试上，你的努力是**一定**会有回报的。尤其是格式化简历的时候，**一定要把简历弄得工整漂亮些**。
 ### 压轴大招！！！
 
-究极大招，使用 ChatGPT，模型用最新的，我用的是 GPT4。如果你想免费用 GPT，注册个账号，3.5 就能免费用了，也是可以的。
+究极大招，使用 ChatGPT 或者 Claude 3，Youtube 搜索 resume ChatGPT 一堆视频讲解如何优化简历视频的内容。
 
-如果你有些钱，且愿意花钱精进你的简历，请用 ChatGPT，并且 prompt 选择[这里](https://github.com/PlexPt/awesome-chatgpt-prompts-zh)的，搜索简历即可。
+如果你不差钱，愿意花钱精进你的简历，请用 Claude 付费版或者 ChatGPT 升级版。
 
-准备好 514 元，根据[这里](https://www.bilibili.com/read/cv25932153/)的步骤，一步步注册，使用 ChatGPT，获取你自己的密钥。然后根据[这里](https://github.com/Chanzhaoyu/chatgpt-web)的页面，套壳你自己的 ChatGPT-Web。
+开通两者的付费 pro 版本，准备好 514 元，根据[这里](https://www.bilibili.com/read/cv25932153/)的步骤，一步步注册，使用 ChatGPT，获取你自己的密钥。然后根据[这里](https://github.com/Chanzhaoyu/chatgpt-web)的页面，套壳你自己的 ChatGPT-Web。
 
 成品如下
 
