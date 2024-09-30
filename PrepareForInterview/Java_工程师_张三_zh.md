@@ -91,19 +91,11 @@
 - 多花点心思在简历和面试上，你的努力是**一定**会有回报的。尤其是格式化简历的时候，**一定要把简历弄得工整漂亮些**。
 ### 压轴大招！！！
 
-<<<<<<< HEAD
 究极大招，使用 [ChatGPT](https://chat.openai.com/)、[Claude](https://claude.ai/chats) 或者[通义千问](https://tongyi.aliyun.com/)，模型用最新的。
-=======
-究极大招，使用 ChatGPT 或者 Claude 3，Youtube 搜索 resume ChatGPT 一堆视频讲解如何优化简历视频的内容。
->>>>>>> 9420821724a55759c19616c6a9aae6abde8c59a2
 
-如果你不差钱，愿意花钱精进你的简历，请用 Claude 付费版或者 ChatGPT 升级版。
+如果你有些钱，且愿意花钱精进你的简历，请用 ChatGPT，并且 prompt 选择[这里](https://github.com/PlexPt/awesome-chatgpt-prompts-zh)的，搜索简历即可。
 
-<<<<<<< HEAD
 通过这个[链接](https://bewildcard.com/i/MLDMOKCG)可以购买国外的虚拟信用卡，里面有教程教你怎么购买 ChatGPT Plus，或者根据[这里](https://github.com/Chanzhaoyu/chatgpt-web)的页面，套壳你自己的 ChatGPT-Web。
-=======
-开通两者的付费 pro 版本，准备好 514 元，根据[这里](https://www.bilibili.com/read/cv25932153/)的步骤，一步步注册，使用 ChatGPT，获取你自己的密钥。然后根据[这里](https://github.com/Chanzhaoyu/chatgpt-web)的页面，套壳你自己的 ChatGPT-Web。
->>>>>>> 9420821724a55759c19616c6a9aae6abde8c59a2
 
 成品如下
 
