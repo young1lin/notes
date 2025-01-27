@@ -61,6 +61,10 @@
 - 掌握实施相关：Linux 常用指令
 - 了解 HDFS、Zookeeper、Netty、Spring Cloud Netflix、Docker、DDD
 
+# 其他简历模板
+1. https://rxresu.me/
+![image.png](https://s2.loli.net/2025/01/27/rLsTGthx1CH2gA9.png)
+
 # 简历之外
 作为简历的补充，可以根据自己的见识自行定义简历。
 
