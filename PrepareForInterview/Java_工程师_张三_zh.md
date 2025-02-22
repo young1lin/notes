@@ -62,12 +62,12 @@
 - 了解 HDFS、Zookeeper、Netty、Spring Cloud Netflix、Docker、DDD
 
 # 其他简历模板
-1. https://rxresu.me/
+## [Reactive-Resume 官网](https://rxresu.me/)
 ![image.png](https://s2.loli.net/2025/01/27/rLsTGthx1CH2gA9.png)
-
+## [Talencat](https://talencat.com/)
+![image.png](https://s2.loli.net/2025/02/22/Ayw8hxtzOgBIQnr.png)
 # 简历之外
 作为简历的补充，可以根据自己的见识自行定义简历。
-
 ## 注意事项
 1. **PDF、PDF、PDF**，一定要是 PDF 格式。<font color="red">注意，如果用的是 Typora 输出的 PDF</font>，在比较老的机器上是显示乱码的，可以找个在线 Markdown 转 PDF 网站。
 2. **一定要 Review 自己简历转成 PDF 格式的内容**。如果你自己都觉得不好看，那就是真的不好看，得持续重构。
