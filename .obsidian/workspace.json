@@ -8,43 +8,7 @@
         "type": "tabs",
         "children": [
           {
-            "id": "afb3f0adda1a749b",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "English/doc/TalkAboutChinaInEnglish/FlashCard/Fisrt.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "0259732ed9160e01",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "English/doc/TalkAboutChinaInEnglish/DietaryCulture/Northeast.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "99caa72bbc2a8d6a",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "README.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "e878636345e89dec",
+            "id": "ccce5ac86560617f",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -52,23 +16,55 @@
                 "file": "PrepareForInterview/Java_工程师_张三_zh.md",
                 "mode": "source",
                 "source": false
-              }
+              },
+              "icon": "lucide-file",
+              "title": "Java_工程师_张三_zh"
             }
           },
           {
-            "id": "a68bf4768bfbc20a",
+            "id": "a4fbbd2631d7fa45",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "English/doc/TalkAboutChinaInEnglish/FlashCard/Fisrt.md",
+                "file": "Datastructure&Algorithm/doc/算法-王争训练营/week08.md",
                 "mode": "source",
                 "source": false
-              }
+              },
+              "icon": "lucide-file",
+              "title": "week08"
+            }
+          },
+          {
+            "id": "fd260fbbe866198b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "MediaLearning/ffmpeg-basic.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ffmpeg-basic"
+            }
+          },
+          {
+            "id": "6b8db5d1e76c3373",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "AI/Screenshot-To-Code.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Screenshot-To-Code"
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -87,8 +83,11 @@
             "state": {
               "type": "file-explorer",
               "state": {
-                "sortOrder": "alphabetical"
-              }
+                "sortOrder": "byModifiedTime",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
             }
           },
           {
@@ -103,7 +102,9 @@
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical"
-              }
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
             }
           },
           {
@@ -111,7 +112,9 @@
             "type": "leaf",
             "state": {
               "type": "bookmarks",
-              "state": {}
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
             }
           }
         ]
@@ -134,7 +137,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
+                "file": "Blog/职业倦怠.pdf",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -142,7 +145,9 @@
                 "searchQuery": "",
                 "backlinkCollapsed": false,
                 "unlinkedCollapsed": true
-              }
+              },
+              "icon": "links-coming-in",
+              "title": "职业倦怠 的反向链接列表"
             }
           },
           {
@@ -151,8 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "README.md"
-              }
+                "file": "Datastructure&Algorithm/doc/算法-王争训练营/week08.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "week08 的大纲"
             }
           }
         ],
@@ -171,53 +181,54 @@
       "markdown-importer:打开 Markdown 格式转换器": false
     }
   },
-  "active": "99caa72bbc2a8d6a",
+  "active": "a4fbbd2631d7fa45",
   "lastOpenFiles": [
-    "a.md",
-    "README.md",
-    "a tool with a deep bowl-shaped end that is used to dig out and move a soft substance or powder.md",
-    "English/doc/TalkAboutChinaInEnglish/DietaryCulture/Northeast.md",
-    "English/doc/TalkAboutChinaInEnglish/FlashCard/Fisrt.md",
     "PrepareForInterview/Java_工程师_张三_zh.md",
-    "PrepareForInterview/非技术面试准备内容.md",
-    "PrepareForInterview/每日一题/每日一题.md",
-    "Architecture/画图.md",
-    "AI/Model/DifussionModels.md",
-    "AI/Model/resource",
-    "AI/Model/resource/diffusion-models-class-main/unit4/README.md",
-    "AI/Model/resource/diffusion-models-class-main/unit4/02_diffusion_for_audio.ipynb",
-    "AI/Model/resource/diffusion-models-class-main/unit4/01_ddim_inversion.ipynb",
-    "AI/Model/resource/diffusion-models-class-main/unit4",
-    "AI/Model/resource/diffusion-models-class-main/unit3/text_encoder_noborder.png",
-    "AI/Model/resource/diffusion-models-class-main/unit3/sd_unet_color.png",
-    "AI/Model/resource/diffusion-models-class-main/unit3/sd_demo_images.jpg",
-    "AI/Model/resource/diffusion-models-class-main/unit3/README.md",
-    "AI/Model/resource/diffusion-models-class-main/unit3/cfg_example_0_1_2_10.jpeg",
-    "AI/Model/resource/diffusion-models-class-main/unit3/01_stable_diffusion_introduction.ipynb",
-    "AI/Model/resource/diffusion-models-class-main/unit3",
-    "AI/Model/resource/diffusion-models-class-main/unit2/guidance_eg.png",
-    "AI/Model/resource/diffusion-models-class-main/unit2/README.md",
-    "AI/Model/resource/diffusion-models-class-main/unit2/finetune_model.py",
-    "AI/Model/resource/diffusion-models-class-main/unit2/conditional_digit_generation.png",
-    "AI/Model/resource/diffusion-models-class-main/unit2/02_class_conditioned_diffusion_model_example.ipynb",
-    "AI/Model/resource/diffusion-models-class-main/unit2/01_finetuning_and_guidance.ipynb",
-    "AI/Model/resource/diffusion-models-class-main/unit2",
-    "AI/Model/resource/diffusion-models-class-main/unit1/README.md",
-    "AI/Model/resource/diffusion-models-class-main/hackathon/README.md",
-    "AI/Model/resource/diffusion-models-class-main/README.md",
-    "AI/MachineLearning/DeepLearning/PyTorch.md",
-    "AI/MachineLearning/DeepLearning/识图.md",
-    "AI/MachineLearning/GAN.md",
-    "AI/MachineLearning/DeepLearning/SupervisedLearningAndUnsuperwisedLearning.md",
-    "AI/MachineLearning/未命名.md",
-    "AI/AIGC.md",
-    "AI/MachineLearning/MachineLearning.md",
-    "English/doc/TalkAboutChinaInEnglish/DietaryCulture/Beijing-Tianjing region.md",
-    "English/doc/How to Speak and Write Correctly/Chapter 1.md",
-    "English/doc/Ali Abdaal/How-To-Learn-Anything-Faster.md",
-    "JVM/JVM-G1垃圾收集器.png",
+    "Java调优/Java高手-代码篇.pdf",
+    "English/doc/马斯瑞英语课堂/26.md",
+    "English/doc/马斯瑞英语课堂/7.md",
+    "English/doc/马斯瑞英语课堂/9.md",
     "English/basic/名词的公式.png",
-    "Spring/images/引导类的层次结构final.png",
-    "Spring/images/ContextRefreshedEvent.png"
+    "English/basic/小王子.md",
+    "Film/images/电影发行过程.png",
+    "Film/images/正反打.png",
+    "Film/images/库里肖夫效应实验.jpeg",
+    "Java8/image/Java8Date.png",
+    "JVM/JVM 参数解释.md",
+    "JVM/JVM-G1垃圾收集器.png",
+    "MediaLearning/audio/傅里叶变换.md",
+    "MediaLearning/audio/音频.md",
+    "Netty/doc/Netty 实战-5-EventLoop.md",
+    "Netty/doc/Netty 实战-11-使用 UDP 广播事件.md",
+    "Netty/doc/Netty 实战-9-预置的 ChannelHandler和编解码器.md",
+    "Netty/doc/Netty 实战-3-ByteBuf.md",
+    "Netty/doc/Netty 实战可能存在的错误.md",
+    "Netty/doc/Netty 实战-1-简单介绍及实战.md",
+    "Netty/doc/Netty 实战-6-BootStrap.md",
+    "Netty/doc/Netty 实战-7-单元测试.md",
+    "Netty/doc/Netty 实战-10-网络协议.md",
+    "Network/TCP-Protocol.md",
+    "Spring/images/AbstractAutoProxyCreator 的 postProcessAfterInitialization.png",
+    "Spring/images/AnnotationAwareAspectJAutoProxyCreator.png",
+    "Spring/images/AnnotationConfigServletWebApplicationContextContext.png",
+    "Spring/images/ConfigurationClassPostProcessor继承关系.png",
+    "Tomcat/resources/Tomcat.The.Definitive.Guide.2nd.Edition.OReilly.Oct.2007.pdf",
+    "Datastructure&Algorithm/doc/算法-王争训练营/week08.md",
+    "AI/Screenshot-To-Code.md",
+    "README.md",
+    "Git/Git 使用.md",
+    "职业倦怠.pdf",
+    "PrepareForInterview/杭州的大公司.md",
+    "PrepareForInterview/每日一题/动态规划（重点）.md",
+    "未命名 1.canvas",
+    "未命名.canvas",
+    "Blog/二进制协议.md",
+    "Blog/职业倦怠.pdf",
+    "Datastructure&Algorithm/xzg-algorithm/acm-mode/target/classes/me/young1lin/algorithm/acm/od/StringSplit.class",
+    "Datastructure&Algorithm/xzg-algorithm/acm-mode/target/classes/me/young1lin/algorithm/acm/od/SecurityPassword.class",
+    "Datastructure&Algorithm/xzg-algorithm/acm-mode/src/main/java/me/young1lin/algorithm/acm/od/SecurityPassword.java",
+    "Datastructure&Algorithm/xzg-algorithm/acm-mode/target/classes/me/young1lin/algorithm/acm/od/ShootGame.class",
+    "Datastructure&Algorithm/xzg-algorithm/acm-mode/target/classes/me/young1lin/algorithm/acm/od",
+    "Datastructure&Algorithm/xzg-algorithm/acm-mode/target/classes/me/young1lin/algorithm/acm"
   ]
 }

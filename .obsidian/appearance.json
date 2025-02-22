@@ -1,6 +1,6 @@
 {
-  "baseFontSize": 16,
+  "baseFontSize": 17,
   "theme": "obsidian",
-  "cssTheme": "Obsidian gruvbox",
-  "accentColor": ""
+  "cssTheme": "Blue Topaz",
+  "accentColor": "#5097fb"
 }
