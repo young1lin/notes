@@ -23,6 +23,7 @@
     </build>
     <modules>
         <module>xzg-algorithm-week-01</module>
-        <module>xzg-algorithm-week-02</module>
+<!--        <module>xzg-algorithm-week-02</module>-->
+        <module>acm-mode</module>
     </modules>
 </project>

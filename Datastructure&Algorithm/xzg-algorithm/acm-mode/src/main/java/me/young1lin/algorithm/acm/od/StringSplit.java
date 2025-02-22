@@ -1,4 +1,4 @@
-package me.young1lin.algorithm.od;
+package me.young1lin.algorithm.acm.od;
 
 import java.util.Scanner;
 
@@ -29,7 +29,7 @@ import java.util.Scanner;
  * 链接：https://leetcode.cn/circle/discuss/niKSMZ/
  * 来源：力扣（LeetCode）
  * 著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
- * 
+ *
  * @author young1lin
  * @version 1.0
  * @since 2024/8/22
@@ -42,7 +42,7 @@ public class StringSplit {
         String originStr = scanner.next();
         int firstIndex = findFirstSplitor(originStr);
         String first = originStr.substring(0, firstIndex);
-        String other = originStr.substring(firstIndex, originStr.length());
+        String other = originStr.substring(firstIndex);
         // 12abc-abCABc-4aB@
         other = other.replaceAll("-", "");
         // 第一个不用分割

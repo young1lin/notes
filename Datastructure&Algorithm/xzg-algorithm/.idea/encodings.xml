@@ -3,5 +3,6 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/acm-mode/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/acm-mode/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/xzg-algorithm-week-01/src/main/java/me/young1lin/xzg/algorithm/week01/CanJump.java" charset="GBK" />
   </component>
 </project>

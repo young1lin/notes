@@ -2,9 +2,13 @@
 
 首先你得有显卡，如果是笔记本，买个外置的显卡坞用雷电三的线接到你的笔记本，当然你的笔记本必须支持雷电三协议，USB4.0 也是支持的。最好是新显卡，二手显卡不太可靠。
 
+一定要买大显存的！！大模型最少都是要 16GB 显存的显卡，不要买低于这个值的，显存越大越好！！
+
+![image.png](https://s2.loli.net/2024/01/08/dUz6lOngeAksKYZ.png)
+
 安装列表
 1. Python 3.8+
-3. [Pytorch](https://pytorch.org/get-started/previous-versions/) 我装的是 torch==2.0.1+cu118
+3. [Pytorch](https://pytorch.org/get-started/previous-versions/) 我装的是 `torch==2.0.1+cu118`
 4. [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit-archive) 确定好 Pytorch 版本，下载安装对应的 CUDA 版本，上面的是 11.8
 5. cuDNN v8.6.0（选择是否安装，如果不用 PaddlePaddle 相关的可以不装）
 
@@ -120,3 +124,31 @@ tensor([[[[[ 1.0841e+37,  2.6886e+36,  2.7101e+36,  2.4155e-38,  9.7725e+21],
        device='cuda:0')
        
 ```
+
+# Transformer 
+## 什么是 Transformer
+
+## HuggingFace
+## 魔搭社区
+
+# 大模型应用
+
+## 文生图（扩散模型）
+
+### Stable Diffusion
+### Stable Diffusion 2
+
+### DALLE-3
+## 语音转文本
+### Whisper
+## 文本转语音 TTS
+
+### PaddleSpeech
+
+### Bark TTS
+
+## 视频生成
+
+### Wav2Lip
+
+

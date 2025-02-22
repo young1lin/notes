@@ -23,8 +23,6 @@
 12. 复制好手机号后，刷新 sms 页面，复制验证码到 OpenAI 页面即可。
 13. 现在就已经验证好手机号，生成一个 API key。如下图所示
 ![image.png](https://s2.loli.net/2023/11/27/qG6dZ9xPCi5c8Na.png)
-
-
 # 申请虚拟信用卡
 
 1. 进入正规的官网 https://www.nobepay.com 
