@@ -11,11 +11,11 @@
   "templates": false,
   "note-composer": true,
   "command-palette": true,
-  "slash-command": false,
+  "slash-command": true,
   "editor-status": false,
   "markdown-importer": true,
-  "zk-prefixer": false,
-  "random-note": false,
+  "zk-prefixer": true,
+  "random-note": true,
   "outline": true,
   "word-count": true,
   "slides": false,
@@ -27,5 +27,5 @@
   "canvas": true,
   "properties": false,
   "bookmarks": true,
-  "webviewer": false
+  "webviewer": true
 }

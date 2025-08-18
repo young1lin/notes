@@ -8,31 +8,17 @@
         "type": "tabs",
         "children": [
           {
-            "id": "ccce5ac86560617f",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "PrepareForInterview/Java_工程师_张三_zh.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Java_工程师_张三_zh"
-            }
-          },
-          {
             "id": "a4fbbd2631d7fa45",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Datastructure&Algorithm/doc/算法-王争训练营/week08.md",
+                "file": "Blog/10元拥有你自己的 幻兽帕鲁 服务端.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "week08"
+              "title": "10元拥有你自己的 幻兽帕鲁 服务端"
             }
           },
           {
@@ -41,30 +27,44 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MediaLearning/ffmpeg-basic.md",
+                "file": "English/doc/英语语法新思维/初级/名词.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ffmpeg-basic"
+              "title": "名词"
             }
           },
           {
-            "id": "6b8db5d1e76c3373",
+            "id": "93a525ec7e8eb671",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "AI/Screenshot-To-Code.md",
+                "file": "English/doc/马斯瑞英语课堂/39.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Screenshot-To-Code"
+              "title": "39"
+            }
+          },
+          {
+            "id": "d965584dee983cc3",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "README.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "README"
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -83,7 +83,7 @@
             "state": {
               "type": "file-explorer",
               "state": {
-                "sortOrder": "byModifiedTime",
+                "sortOrder": "alphabetical",
                 "autoReveal": false
               },
               "icon": "lucide-folder-closed",
@@ -96,7 +96,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "MCP",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -117,7 +117,8 @@
               "title": "书签"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -156,13 +157,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Datastructure&Algorithm/doc/算法-王争训练营/week08.md",
+                "file": "README.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "week08 的大纲"
+              "title": "README 的大纲"
             }
           }
         ],
@@ -174,62 +175,64 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "zk-prefixer:创建时间戳笔记": false,
+      "random-note:开始漫游笔记": false,
       "switcher:打开快速切换": false,
       "graph:查看关系图谱": false,
       "canvas:新建白板": false,
       "command-palette:打开命令面板": false,
-      "markdown-importer:打开 Markdown 格式转换器": false
+      "markdown-importer:打开 Markdown 格式转换器": false,
+      "asciidoctor-editor:New asciidoc file": false
     }
   },
-  "active": "02c782feb46d1add",
+  "active": "5cb7de9904a7ccfd",
   "lastOpenFiles": [
-    "AI/MachineLearning/DeepLearning/识图.md",
-    "PrepareForInterview/Java_工程师_张三_zh.md",
-    "Java调优/Java高手-代码篇.pdf",
-    "English/doc/马斯瑞英语课堂/26.md",
-    "English/doc/马斯瑞英语课堂/7.md",
-    "English/doc/马斯瑞英语课堂/9.md",
-    "English/basic/名词的公式.png",
-    "English/basic/小王子.md",
-    "Film/images/电影发行过程.png",
+    "职业倦怠.pdf",
+    "Users/linyoung/Library/Application.md",
+    "Blog/逆行人生.md",
+    "Film/电影概论-Mooc.md",
+    "Java8/image/Java8Date.png",
     "Film/images/正反打.png",
     "Film/images/库里肖夫效应实验.jpeg",
-    "Java8/image/Java8Date.png",
-    "JVM/JVM 参数解释.md",
-    "JVM/JVM-G1垃圾收集器.png",
-    "MediaLearning/audio/傅里叶变换.md",
-    "MediaLearning/audio/音频.md",
-    "Netty/doc/Netty 实战-5-EventLoop.md",
-    "Netty/doc/Netty 实战-11-使用 UDP 广播事件.md",
-    "Netty/doc/Netty 实战-9-预置的 ChannelHandler和编解码器.md",
-    "Netty/doc/Netty 实战-3-ByteBuf.md",
-    "Netty/doc/Netty 实战可能存在的错误.md",
-    "Netty/doc/Netty 实战-1-简单介绍及实战.md",
-    "Netty/doc/Netty 实战-6-BootStrap.md",
-    "Netty/doc/Netty 实战-7-单元测试.md",
-    "Netty/doc/Netty 实战-10-网络协议.md",
-    "Network/TCP-Protocol.md",
-    "Spring/images/AbstractAutoProxyCreator 的 postProcessAfterInitialization.png",
-    "Spring/images/AnnotationAwareAspectJAutoProxyCreator.png",
-    "Spring/images/AnnotationConfigServletWebApplicationContextContext.png",
+    "Film/images/电影发行过程.png",
+    "English/doc/The-Economist/Will-China-save-the-planet-or-destroy-it.md",
+    "English/doc/The-Economist/Will-TikTok-still-exist-in-America.md",
+    "English/doc/The-Black-Box-Method-How-to-Learn-Hard-Concepts-Quickly.md",
+    "English/doc/The-Psychology-of-Money.md",
+    "English/doc/The-Economist/Growing-numbers-of-Chinese-are-escaping-urban-life-for-rural-peace.md",
+    "English/doc/The-Economist/Generative AI is a marvel. Is it also built on theft.md",
+    "English/doc/The-Economist/China's high-stakes struggle to defy demographic disaster.md",
+    "English/doc/The-Economist/Bidenomics-is-an-unfinished-revolution-What-would-four-more-years-mean.md",
+    "English/doc/The-Economist/AI-models-will-become-smaller-and-faster.md",
+    "English/doc/The-Economist/A new book rebukes the luxury beliefs of America's upper class.md",
+    "English/doc/The-Economist/2024-04/Would you really die for your country.md",
+    "English/doc/The-Economist/2024-04/Why a stronger dollar is dangerous.md",
+    "English/doc/The-Economist/2024-04/How to handle populists- a CEO's survival guide.md",
+    "English/doc/The-Economist/2024-04/Generation Z is unprecedntedly rich.md",
+    "Inspirational.md",
+    "Spring/resources/SpringCore-1.md",
+    "Spring/resources/Building+a+REST+API+with+Spring.pdf",
+    "Spring/images/InfrastructureAdvisorAutoProxyCreator.png",
+    "Spring/images/ContextRefreshedEvent.png",
     "Spring/images/ConfigurationClassPostProcessor继承关系.png",
+    "Spring/images/AnnotationAwareAspectJAutoProxyCreator.png",
+    "Spring/images/AbstractAutoProxyCreator 的 postProcessAfterInitialization.png",
+    "Spring/images/引导类的层次结构final.png",
+    "Spring/doc/Spring源码深度解析问题.md",
+    "Spring/doc/Spring内建对象.md",
+    "Spring/doc/Spring介绍.md",
+    "Spring/doc/Spring Boot 思维导图.md",
+    "Spring/doc/Spring Boot 编程思想-缺陷.md",
+    "Spring/doc/Spring Boot 编程思想-2.md",
+    "English/doc/The-Economist/2024-05",
+    "English/doc/The-Economist/2024-04",
+    "Users/linyoung/Library",
+    "Users/linyoung",
+    "Users",
     "Tomcat/resources/Tomcat.The.Definitive.Guide.2nd.Edition.OReilly.Oct.2007.pdf",
-    "Datastructure&Algorithm/doc/算法-王争训练营/week08.md",
-    "AI/Screenshot-To-Code.md",
-    "README.md",
-    "Git/Git 使用.md",
-    "职业倦怠.pdf",
-    "PrepareForInterview/杭州的大公司.md",
-    "PrepareForInterview/每日一题/动态规划（重点）.md",
-    "未命名 1.canvas",
+    "new_name.adoc",
+    "Java调优/Java高手-代码篇.pdf",
     "未命名.canvas",
-    "Blog/二进制协议.md",
-    "Blog/职业倦怠.pdf",
-    "Datastructure&Algorithm/xzg-algorithm/acm-mode/target/classes/me/young1lin/algorithm/acm/od/StringSplit.class",
-    "Datastructure&Algorithm/xzg-algorithm/acm-mode/target/classes/me/young1lin/algorithm/acm/od/SecurityPassword.class",
-    "Datastructure&Algorithm/xzg-algorithm/acm-mode/src/main/java/me/young1lin/algorithm/acm/od/SecurityPassword.java",
-    "Datastructure&Algorithm/xzg-algorithm/acm-mode/target/classes/me/young1lin/algorithm/acm/od/ShootGame.class",
-    "Datastructure&Algorithm/xzg-algorithm/acm-mode/target/classes/me/young1lin/algorithm/acm/od",
-    "Datastructure&Algorithm/xzg-algorithm/acm-mode/target/classes/me/young1lin/algorithm/acm"
+    "未命名 1.canvas"
   ]
 }

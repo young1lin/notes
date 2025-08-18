@@ -1,0 +1,21 @@
+rebuke 斥责
+
+"Troubled" is both a #memoir回忆录 and analysis of the **muddled**<sup>混乱的，糊涂的</sup> thinking on college **campuses**<sup>校园</sup>.
+
+While applying to Yale University in 2014, Robo Henderson visited New Haven for the first time. He stayed with a friend of a friend, whose cat was called Learned Claw(an **obscure, pretentious allusion**<sup>晦涩的。自命不凡的暗示/矫揉造作的典故</sup> to an American judge of the mid-20th century who went by the name of Learned Hand). Mr Henderson did not get the reference. When he arrived at Yale more cultural mysteries awaited. Everyone raved about "The West Wing", a television show he had never watched, and "Hamilton", a musical he could not afford to see.
+
+More Yale students come from families in the top 1% of income than from the bottom 60%. Mr Henderson was among the **less-affluent minority**.<sup>不太富裕的少数裔</sup> He had been removed from his drug-addicted mother when he was three years old and lived with nine different foster families before his eighth birthday. Scared, insecure and angry, he sson began to drink, take drugs and get into fights.
+
+At the age of 17, as his **peers**<sup>同龄人，同行</sup> started going to prison, he signed up to the armed foreces **on a whim**<sup>一时兴起</sup>. Mr Henderson **thrived**<sup>蓬勃发展/茁壮成长</sup> in the structured, disciplined system and spent seven years in the US Air Force. It became clear he was highly intelligent, so he was encouraged to apply to college through the GI Bil.(He has recently finished a **doctorate** at Cambridge University.)
+
+"Troubled" is the **compelling**<sup>引人注目的</sup> story of his **chaotic**<sup>[keɪˈɑtɪk]混乱的</sup> childhood, his time at Yale and what is all made him think about divisions in America. As a result of his experience, Mr Henderson has #coined创造 the concept of "luxury beliefs", which he describes as "a set of beliefs that #confer授予 status on the upper class at very little cost, while inflicting costs upon the lower classes".
+
+In the past, people displayed their membership of the upper class either by doing things "like golf or **beagling**"<sup>[ˈbiːɡ.lɪŋ]猎兔犬赛跑</sup> that no working person would have time to do, or through their material **accoutrements**. But today, leisure time and luxury goods are more accessible to everyone, so it has become harder for the elites to separate themselves **from the hoi polloi**. Their solution? "The affluent have decoupled social status from goods and reattached it to beliefs."
+
+Mr Henderson gives the example of support for defuding the police. The idea gained **traction** in the wake of George Floyd's murder in 2020 and has been  championed by many affluent people. However, it is an unpopular policy among poor people - exactly those who the well-meaning college kids say they are trying to help - and leads to higher **homicide** rates.
+
+"Troubled" is more than a fascinating memoir, as it analyses the controversial belief systems that have gripped American unicersities. But is dose so without being a angry culture-war screed. Mr Henderson makes no statement of political affiliation. Lots of waht he writes is simply common sense. It is what much of middle America believes.
+
+Mr Henderson exposes the stupidity of what passes for **orthodoxy**, such as the way the luxury-belief class claims that the unhappiness associated with substance abuse or obesity, for instance, "primarily **stems** from the negative social judgments they elicit, rather than the behaviours decisions, and attitudes of marginalised and deprived kids" in a way "that they would never accept for themseleves or their own children". One classmate argues that **monogamy** is "outdated" but admits that she was raised by two parents and intends to have monogamous marriage herself.
+
+Youngsters today are fond of talking about "lived experience": the idea that an individual enjoys authority on particular subjects owing to their indetity, history and perspective. Mr Henderson's background gives hime the **legitimacy** to raise his concerns, but that dose not mean his peers are paying attention. When he tries to speak with his Yale classmates, no one wants to listen. Readers, however, will be **rapt**. 

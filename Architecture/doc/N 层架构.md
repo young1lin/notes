@@ -22,7 +22,7 @@ Web 应用是非常常见的三层应用程序。表现层由 HTML，CSS 和 Jav
 
 ![三层 Web 应用架构升级版.png](https://i.loli.net/2020/12/27/nBFY97ITvU6qJfm.png)
 
-# 丰富互联网应用程序（Rich Internet Applications - RIA）
+# 富互联网应用程序（Rich Internet Applications - RIA）
 
 在第一代Web应用程序中，许多 HTML 以及部分 CSS 和 JavaScript 是由Web服务器上运行的脚本生成的。当浏览器请求Web服务器上的某个页面时，将在Web服务器上执行脚本，该脚本为该页面生成HTML，CSS和JavaScript。
 
