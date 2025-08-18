@@ -1,0 +1,23 @@
+version: '3.4'
+services:
+  weaviate:
+    image: semitechnologies/weaviate:1.30.2
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      ENABLE_MODULES: 'multi2vec-bind'
+      BIND_INFERENCE_API: 'http://multi2vec-bind:8080'
+      CLUSTER_HOSTNAME: 'node1'
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+  multi2vec-bind:
+    image: semitechnologies/multi2vec-bind:imagebind
+    environment:
+      ENABLE_CUDA: '0'
+    mem_limit: 12g
+volumes:
+  weaviate_data:

@@ -1,0 +1,88 @@
+actor:
+  actor_id: Primary key. Unique identifier for each actor.
+  first_name: Actor's first name.
+  last_name: Actor's last name.
+  last_update: Timestamp of the last update to this record.
+address:
+  address: Street address.
+  address2: Additional address info (optional).
+  address_id: Primary key. Unique identifier for each address record.
+  city_id: Foreign key to the city table.
+  district: District or state name.
+  last_update: Timestamp of the last update to this record.
+  location: Geographic location (geometry type).
+  phone: Contact phone number.
+  postal_code: Postal or ZIP code.
+category:
+  category_id: Primary key. Unique identifier for each category.
+  last_update: Timestamp of the last update to this record.
+  name: Category name (e.g., Action, Comedy).
+city:
+  city: Name of the city.
+  city_id: Primary key. Unique identifier for each city.
+  country_id: Foreign key to the country table.
+  last_update: Timestamp of the last update to this record.
+country:
+  country: Name of the country.
+  country_id: Primary key. Unique identifier for each country.
+  last_update: Timestamp of the last update to this record.
+customer:
+  active: Indicator if the customer is active (1) or inactive (0).
+  address_id: Foreign key to the address table.
+  create_date: Date when the customer account was created.
+  customer_id: Primary key. Unique identifier for each customer.
+  email: Customer's email address.
+  first_name: Customer's first name.
+  last_name: Customer's last name.
+  last_update: Timestamp of the last update to this record.
+  store_id: Foreign key to the store where the customer is registered.
+film:
+  description: Brief description or synopsis of the film.
+  film_id: Primary key. Unique identifier for each film.
+  language_id: Foreign key to the language table.
+  last_update: Timestamp of the last update to this record.
+  length: Length of the film in minutes.
+  original_language_id: Foreign key to the original language, if applicable.
+  rating: MPAA rating (e.g., G, PG-13).
+  release_year: Year the film was released.
+  rental_duration: Default rental period (in days).
+  rental_rate: Cost to rent the film.
+  replacement_cost: Cost to replace the film.
+  title: Title of the film.
+inventory:
+  film_id: Foreign key to the film available in inventory.
+  inventory_id: Primary key. Unique identifier for each inventory item.
+  last_update: Timestamp of the last update to this record.
+  store_id: Foreign key to the store where inventory is held.
+payment:
+  amount: Payment amount in USD.
+  customer_id: Foreign key to the customer who made the payment.
+  last_update: Timestamp of the last update to this record.
+  payment_date: Date and time when the payment was made.
+  payment_id: Primary key. Unique identifier for each payment transaction.
+  rental_id: Foreign key to the rental for which the payment was made.
+  staff_id: Foreign key to the staff member who processed the payment.
+rental:
+  customer_id: Foreign key to the customer renting the film.
+  inventory_id: Foreign key to the inventory item rented.
+  last_update: Timestamp of the last update to this record.
+  rental_date: Date and time when the rental started.
+  rental_id: Primary key. Unique identifier for each rental transaction.
+  return_date: Date and time when the film was returned.
+  staff_id: Foreign key to the staff member who processed the rental.
+staff:
+  active: Indicator if the staff is currently employed (1) or not (0).
+  address_id: Foreign key to the address table.
+  email: Staff email address.
+  first_name: Staff's first name.
+  last_name: Staff's last name.
+  last_update: Timestamp of the last update to this record.
+  picture: Binary image data for staff photo.
+  staff_id: Primary key. Unique identifier for each staff member.
+  store_id: Foreign key to the store where staff works.
+  username: Login username for staff.
+store:
+  address_id: Foreign key to the address table.
+  last_update: Timestamp of the last update to this record.
+  manager_staff_id: Foreign key to the staff member managing the store.
+  store_id: Primary key. Unique identifier for each store.

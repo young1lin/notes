@@ -1,0 +1,226 @@
+{
+    "version": "1.0",
+    "game_info": {
+        "title": "灭神纪 猢狲",
+        "developer": "咖哥AI",
+        "genre": ["动作冒险", "角色扮演"],
+        "base_on": "西游记",
+        "release_status": "开发中"
+    },
+    "total_entries": 100,
+    "categories": ["combat", "scene", "story", "ability", "character", "item"],
+    "data": [
+        {
+            "id": "COMBAT_001",
+            "title": "灵猴形态战斗展示",
+            "category": "combat",
+            "description": "悟空施展灵猴变身之术，身形骤然变小，动作灵敏。浑身金色毛发闪耀，从巨型BOSS的攻击间隙穿梭自如，展现出极致的速度与灵活性。每次攻击都精准命中敌人的弱点。",
+            "combat_details": {
+                "main_character": "孙悟空",
+                "form": "灵猴形态",
+                "opponent": "巨型山精",
+                "combat_style": ["敏捷战斗", "空中机动", "弱点打击"],
+                "abilities_used": ["灵猴变身", "筋斗云", "金箍棒技"],
+                "difficulty": "高"
+            },
+            "scene_info": {
+                "location": "黑风山",
+                "time_of_day": "黎明",
+                "weather": "晴朗",
+                "environment": "山地",
+                "special_effects": ["金光", "灵气", "残影"]
+            },
+            "visual_elements": {
+                "color_scheme": ["金色", "褐色", "绿色"],
+                "key_visuals": ["金色毛发", "灵动身影", "山石环境"],
+                "particle_effects": ["金光溢散", "灵气流转", "残影迷离"]
+            },
+            "gameplay_tags": [
+                "变身战斗",
+                "BOSS战",
+                "特殊形态",
+                "机动性",
+                "连击系统"
+            ],
+            "related_media": {
+                "image_path": "./images/combat/combat_001.jpg",
+                "video_path": "./videos/combat/combat_001.mp4",
+                "thumbnail_path": "./thumbnails/combat/combat_001.jpg"
+            }
+        },
+        {
+            "id": "COMBAT_002",
+            "title": "雪山白骨精之战",
+            "category": "combat",
+            "description": "在皑皑白雪覆盖的山巅，悟空与白骨精展开激烈对决。寒风呼啸中，白骨精的身影若隐若现，冰晶在空气中折射出诡异的光芒。悟空需要在极寒环境中保持战斗状态，同时防范白骨精的诡计。",
+            "combat_details": {
+                "main_character": "孙悟空",
+                "form": "标准形态",
+                "opponent": "白骨精",
+                "combat_style": ["技巧战斗", "环境应对", "陷阱识破"],
+                "abilities_used": ["金箍棒法", "火眼金睛", "腾云术"],
+                "difficulty": "中高"
+            },
+            "scene_info": {
+                "location": "雪山绝顶",
+                "time_of_day": "傍晚",
+                "weather": "暴雪",
+                "environment": "雪地",
+                "special_effects": ["雪花", "冰晶", "寒气"]
+            },
+            "visual_elements": {
+                "color_scheme": ["白色", "蓝色", "金色"],
+                "key_visuals": ["飞扬雪花", "白骨精影", "金箍棒光芒"],
+                "particle_effects": ["雪花飘散", "冰晶折射", "寒气缭绕"]
+            },
+            "gameplay_tags": [
+                "BOSS战",
+                "环境挑战",
+                "视觉欺骗",
+                "技能连招",
+                "剧情战斗"
+            ],
+            "related_media": {
+                "image_path": "./images/combat/combat_002.jpg",
+                "video_path": "./videos/combat/combat_002.mp4",
+                "thumbnail_path": "./thumbnails/combat/combat_002.jpg"
+            }
+        },
+        {
+            "id": "SCENE_001",
+            "title": "水帘洞全景",
+            "category": "scene",
+            "description": "巍峨的花果山中，瀑布如银河倾泻，水帘洞若隐若现其中。洞外青松翠柏，灵气缭绕，仙鹤时而飞过，灵猴在枝头嬉戏。洞内摆设齐整，宝物陈列，展现出一派仙家气象。",
+            "scene_info": {
+                "location": "花果山",
+                "time_of_day": "正午",
+                "weather": "晴朗",
+                "environment": "山水",
+                "special_effects": ["瀑布", "晨雾", "阳光"]
+            },
+            "visual_elements": {
+                "color_scheme": ["青色", "白色", "金色"],
+                "key_visuals": ["瀑布", "灵猴", "仙鹤"],
+                "particle_effects": ["水雾", "阳光散射", "灵气"]
+            },
+            "gameplay_elements": {
+                "interactive_objects": ["宝物", "法器", "机关"],
+                "hidden_secrets": ["密道", "藏宝图", "修炼场所"],
+                "npc_locations": ["灵猴群", "仙鹤", "山精"]
+            },
+            "lore_significance": {
+                "story_connections": ["悟空修炼处", "齐天大圣封号地", "七十二变修炼地"],
+                "historical_events": ["大闹天宫起源", "成为猴王", "习得七十二变"]
+            },
+            "related_media": {
+                "image_path": "./images/scenes/scene_001.jpg",
+                "video_path": "./videos/scenes/scene_001.mp4",
+                "thumbnail_path": "./thumbnails/scenes/scene_001.jpg"
+            }
+        },
+        {
+            "id": "ABILITY_001",
+            "title": "火眼金睛",
+            "category": "ability",
+            "description": "悟空双眼绽放金光，能够看破一切虚妄幻象。此技能不仅能识破敌人的伪装，还能发现隐藏的宝物和机关。金光闪烁时，整个画面会呈现出特殊的视觉效果。",
+            "ability_details": {
+                "type": "被动技能",
+                "activation": "长按R键",
+                "cooldown": "30秒",
+                "energy_cost": "20点",
+                "upgrades": [
+                    "距离提升",
+                    "持续时间延长",
+                    "能量消耗降低"
+                ]
+            },
+            "gameplay_mechanics": {
+                "primary_use": ["识破伪装", "寻找宝物", "解谜辅助"],
+                "combat_applications": [
+                    "防止被幻术迷惑",
+                    "寻找BOSS弱点",
+                    "预判敌人位置"
+                ],
+                "combination_effects": [
+                    "与七十二变配合使用",
+                    "与金箍棒法相连招",
+                    "破解特殊机关"
+                ]
+            },
+            "visual_effects": {
+                "color_scheme": ["金色", "红色"],
+                "key_visuals": ["金光", "火焰", "波纹"],
+                "particle_effects": ["金光闪耀", "火焰缭绕", "波纹扩散"]
+            },
+            "related_media": {
+                "image_path": "./images/abilities/ability_001.jpg",
+                "video_path": "./videos/abilities/ability_001.mp4",
+                "thumbnail_path": "./thumbnails/abilities/ability_001.jpg"
+            }
+        },
+        {
+            "id": "STORY_001",
+            "title": "初入花果山",
+            "category": "story",
+            "description": "这一章节讲述了悟空初到花果山时的故事。从一块仙石中跳出的他，天生神力，好奇心强，很快就与山中的灵猴们打成一片。通过自己的智慧和能力，他逐渐赢得了猴群的认可和尊重。",
+            "story_elements": {
+                "chapter": "序章",
+                "location": ["花果山", "水帘洞"],
+                "key_characters": ["孙悟空", "老猴王", "猴群"],
+                "themes": ["成长", "领导力", "自我认知"]
+            },
+            "narrative_details": {
+                "plot_points": [
+                    "仙石迸裂",
+                    "结识猴群",
+                    "展现能力",
+                    "成为猴王"
+                ],
+                "character_development": {
+                    "main_character": "从懵懂到领袖",
+                    "supporting_cast": "从怀疑到信服"
+                },
+                "emotional_beats": [
+                    "初生的惊奇",
+                    "融入的喜悦",
+                    "责任的觉醒"
+                ]
+            },
+            "gameplay_integration": {
+                "tutorial_elements": [
+                    "基础移动",
+                    "跳跃技巧",
+                    "简单战斗"
+                ],
+                "collectibles": [
+                    "神秘符文",
+                    "古老典籍",
+                    "猴王信物"
+                ],
+                "challenges": [
+                    "通过峡谷",
+                    "攀爬高峰",
+                    "战胜挑战者"
+                ]
+            },
+            "related_media": {
+                "image_path": "./images/story/story_001.jpg",
+                "video_path": "./videos/story/story_001.mp4",
+                "thumbnail_path": "./thumbnails/story/story_001.jpg"
+            }
+        }
+    ],
+    "metadata": {
+        "creation_date": "2024-12-03",
+        "last_updated": "2024-12-03",
+        "language": "zh-CN",
+        "tags_count": {
+            "combat": 40,
+            "scene": 20,
+            "story": 15,
+            "ability": 15,
+            "character": 5,
+            "item": 5
+        }
+    }
+}

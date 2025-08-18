@@ -1,0 +1,11 @@
+{
+  "gameTitle": "西游记",
+  "basicInfo": { "engine": "虚幻引擎5", "releaseDate": "2024-08-20", "genre": "动作角色扮演", "platforms": ["PC", "PS5", "Xbox Series X/S"], "supportedLanguages": ["简体中文", "繁体中文", "英语", "日语", "韩语"] },
+  "mainCharacter": { "name": "孙悟空", "backstory": "混沌初开之时，盘古开天辟地，天地灵气凝结成仙石，其中孕育出一只石猴。这只石猴拜师菩提老祖，修得一身本领，后被赐名孙悟空。", "abilities": ["七十二变", "筋斗云", "火眼金睛", "金刚不坏之身"], "weapons": ["如意金箍棒", "法器", "神通符咒"], "combatStyle": "基于变身系统的高速格斗，结合中国传统神话元素的技能组合" },
+  "supportCharacters": [
+    { "name": "白龙马", "identity": "八部天龙之一", "background": "原为西海龙王三太子敖烈，因冒犯天条被贬为马，后随唐僧西行取经，成为孙悟空的伙伴", "abilities": ["水遁", "腾云驾雾", "变化"] },
+    { "name": "红孩儿", "identity": "圣婴大王", "background": "牛魔王与铁扇公主之子，修炼火焰三昧，掌握三昧真火", "abilities": ["三昧真火", "火眼", "战斗形态"] },
+    { "name": "六耳猕猴", "identity": "孙悟空分身", "background": "天地间与美猴王最像的存在，有着与孙悟空相似的能力", "abilities": ["七十二变", "法术", "分身术"] }
+  ],
+  "gameFeatures": { "worldSetting": "基于西游记神话背景，融合虚构的玄幻世界", "combatSystem": "独特的变身战斗系统，结合高难度动作玩法", "progression": "技能树发展系统，解锁新的战斗技能和变身形态", "exploration": "开放式地图探索，丰富的支线任务和隐藏剧情", "graphics": "采用虚幻引擎5, 实现高质量画面表现和实时光线追踪" }
+}

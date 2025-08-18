@@ -1,0 +1,146 @@
+[
+  {
+    "question": "List all actors with their IDs and names.",
+    "sql": "SELECT actor_id, first_name, last_name FROM actor;"
+  },
+  {
+    "question": "Add a new actor named 'John Doe'.",
+    "sql": "INSERT INTO actor (first_name, last_name) VALUES ('John', 'Doe');"
+  },
+  {
+    "question": "Update the last name of actor with ID 1 to 'Smith'.",
+    "sql": "UPDATE actor SET last_name = 'Smith' WHERE actor_id = 1;"
+  },
+  {
+    "question": "Delete the actor with ID 2.",
+    "sql": "DELETE FROM actor WHERE actor_id = 2;"
+  },
+  {
+    "question": "Show all films and their descriptions.",
+    "sql": "SELECT film_id, title, description FROM film;"
+  },
+  {
+    "question": "Insert a new film titled 'New Movie' in language 1.",
+    "sql": "INSERT INTO film (title, language_id) VALUES ('New Movie', 1);"
+  },
+  {
+    "question": "Change the rating of film ID 3 to 'PG-13'.",
+    "sql": "UPDATE film SET rating = 'PG-13' WHERE film_id = 3;"
+  },
+  {
+    "question": "Remove the film with ID 4.",
+    "sql": "DELETE FROM film WHERE film_id = 4;"
+  },
+  {
+    "question": "Retrieve all categories.",
+    "sql": "SELECT category_id, name FROM category;"
+  },
+  {
+    "question": "Add a new category 'Horror'.",
+    "sql": "INSERT INTO category (name) VALUES ('Horror');"
+  },
+  {
+    "question": "Rename category ID 5 to 'Thriller'.",
+    "sql": "UPDATE category SET name = 'Thriller' WHERE category_id = 5;"
+  },
+  {
+    "question": "Delete category with ID 6.",
+    "sql": "DELETE FROM category WHERE category_id = 6;"
+  },
+  {
+    "question": "List all customers with their store and email.",
+    "sql": "SELECT customer_id, store_id, email FROM customer;"
+  },
+  {
+    "question": "Create a new customer for store 1 named 'Alice Brown'.",
+    "sql": "INSERT INTO customer (store_id, first_name, last_name, create_date, address_id, active) VALUES (1, 'Alice', 'Brown', NOW(), 1, 1);"
+  },
+  {
+    "question": "Update email of customer ID 10 to 'newemail@example.com'.",
+    "sql": "UPDATE customer SET email = 'newemail@example.com' WHERE customer_id = 10;"
+  },
+  {
+    "question": "Remove customer with ID 11.",
+    "sql": "DELETE FROM customer WHERE customer_id = 11;"
+  },
+  {
+    "question": "Show inventory items for film ID 5.",
+    "sql": "SELECT inventory_id, film_id, store_id FROM inventory WHERE film_id = 5;"
+  },
+  {
+    "question": "Add a new inventory item for film 5 in store 2.",
+    "sql": "INSERT INTO inventory (film_id, store_id) VALUES (5, 2);"
+  },
+  {
+    "question": "Update the store of inventory ID 20 to store 3.",
+    "sql": "UPDATE inventory SET store_id = 3 WHERE inventory_id = 20;"
+  },
+  {
+    "question": "Delete inventory record with ID 21.",
+    "sql": "DELETE FROM inventory WHERE inventory_id = 21;"
+  },
+  {
+    "question": "List recent rentals with rental date and customer.",
+    "sql": "SELECT rental_id, rental_date, customer_id FROM rental ORDER BY rental_date DESC LIMIT 10;"
+  },
+  {
+    "question": "Record a new rental for inventory 15 by customer 5.",
+    "sql": "INSERT INTO rental (rental_date, inventory_id, customer_id, staff_id) VALUES (NOW(), 15, 5, 1);"
+  },
+  {
+    "question": "Update return date for rental ID 3 to current time.",
+    "sql": "UPDATE rental SET return_date = NOW() WHERE rental_id = 3;"
+  },
+  {
+    "question": "Remove the rental record with ID 4.",
+    "sql": "DELETE FROM rental WHERE rental_id = 4;"
+  },
+  {
+    "question": "Show all payments with amount and date.",
+    "sql": "SELECT payment_id, customer_id, amount, payment_date FROM payment;"
+  },
+  {
+    "question": "Add a payment of 9.99 for rental 3 by customer 5.",
+    "sql": "INSERT INTO payment (customer_id, staff_id, rental_id, amount, payment_date) VALUES (5, 1, 3, 9.99, NOW());"
+  },
+  {
+    "question": "Change payment amount of payment ID 6 to 12.50.",
+    "sql": "UPDATE payment SET amount = 12.50 WHERE payment_id = 6;"
+  },
+  {
+    "question": "Delete payment record with ID 7.",
+    "sql": "DELETE FROM payment WHERE payment_id = 7;"
+  },
+  {
+    "question": "List all staff with names and email.",
+    "sql": "SELECT staff_id, first_name, last_name, email FROM staff;"
+  },
+  {
+    "question": "Hire a new staff member 'Bob Lee' at store 1.",
+    "sql": "INSERT INTO staff (first_name, last_name, address_id, store_id, active, username) VALUES ('Bob', 'Lee', 1, 1, 1, 'boblee');"
+  },
+  {
+    "question": "Deactivate staff with ID 2.",
+    "sql": "UPDATE staff SET active = 0 WHERE staff_id = 2;"
+  },
+  {
+    "question": "Remove staff member with ID 3.",
+    "sql": "DELETE FROM staff WHERE staff_id = 3;"
+  },
+  {
+    "question": "Show all stores with manager and address.",
+    "sql": "SELECT store_id, manager_staff_id, address_id FROM store;"
+  },
+  {
+    "question": "Open a new store with manager 2 at address 3.",
+    "sql": "INSERT INTO store (manager_staff_id, address_id) VALUES (2, 3);"
+  },
+  {
+    "question": "Change manager of store ID 2 to staff ID 4.",
+    "sql": "UPDATE store SET manager_staff_id = 4 WHERE store_id = 2;"
+  },
+  {
+    "question": "Close (delete) store with ID 3.",
+    "sql": "DELETE FROM store WHERE store_id = 3;"
+  }
+]
