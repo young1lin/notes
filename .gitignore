@@ -55,6 +55,7 @@ __pycache__/
 *.ipynb.*.*
 *.ipynb.*.*.*
 *.ipynb.*.*.*.*
+.claude/
 
 # Java
 *.class
@@ -69,7 +70,11 @@ __pycache__/
 *.bak
 *.swp
 *.swo
+.DS_Store
 *.DS_Store
+.AppleDouble
+.LSOverride
+cleanup_script.sh
 *.project
 *.classpath
 *.settings/
@@ -132,3 +137,16 @@ public/dist/
 *.d.ts
 *.d.ts.map
 *.tsconfig.tsbuildinfo
+
+# Obsidian local state and installed plugin bundles
+# Keep shareable vault settings (for example app/core/community plugin lists),
+# but ignore machine-specific workspace state and downloaded plugin files.
+.obsidian/workspace
+.obsidian/workspace.json
+.obsidian/graph.json
+.obsidian/types.json
+.obsidian/webviewer.json
+.obsidian/plugins/*/data.json
+.obsidian/plugins/*/main.js
+.obsidian/plugins/*/styles.css
+.obsidian/plugins/*/manifest.json
