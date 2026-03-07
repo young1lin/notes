@@ -1,0 +1,3 @@
+[submodule "AI/Coding/cc-tutorial"]
+	path = AI/Coding/cc-tutorial
+	url = https://github.com/young1lin/cc-tutorial.git
