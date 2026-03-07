@@ -1,6 +1,6 @@
 The wonder-technology faces accusations of copyright infringement.
 
-The footbollers lookk realistic at first sight but, on closer inspection, something is wrong. Their faces are **contorted**, their **limbs** are bending in alarming directions, the ball is sightly egg-shaped. Strangest of all, running across one footballer's left leg is the ghostly trace of watermark: Getty Images.
+The footbollers look realistic at first sight but, on closer inspection, something is wrong. Their faces are **contorted**, their **limbs** are bending in alarming directions, the ball is sightly egg-shaped. Strangest of all, running across one footballer's left leg is the ghostly trace of watermark: Getty Images.
 
 Generative artificial(AI) has caused a creative explosion of new writing, music, images and video. The internet is alive with AI-made content, while markets fizz with AI-inspired investment. OpenAI, which makes perhaps the most advanced generative-AI models, is valued at nearly $90bn; Microsoft, its partner, has become the world's most valuable comapny, with a market capitalisation of $3.2trn.
 
