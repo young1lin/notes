@@ -32,7 +32,7 @@ https://www\.meiguodizhi\.com/
 
 https://hero\-sms\.com/
 
-![image\.png](Images_attachments/image%201.png)
+![image\.png](./image%201.png)
 
 # 中转站
 
@@ -177,7 +177,7 @@ https://universalbus\.cn/?s=GTrtxZe34V
 
 注：下午两点到六点是高峰期，额度三倍消耗，基于 Token 计费的额度，并且现在（2026\-06\-05）好像抢不到 Coding Plan。
 
-![BigmodelPoster \(3\)\.png](Images_attachments/BigmodelPoster%20%283%29.png)
+![BigmodelPoster \(3\)\.png](./BigmodelPoster%20%283%29.png)
 
 ## Kimi 
 
@@ -197,7 +197,7 @@ https://platform\.moonshot\.cn/docs/guide/agent\-support\#%E9%85%8D%E7%BD%AE%E7%
 
 注：我用的 Composer2，由 Kimi\-2\.5 加 Cursor 自己的数据强化学习训练的模型，很蠢，很蠢，很蠢，你必须每个指令都说非常非常非常清楚。
 
-![image\.png](Images_attachments/image.png)
+![image\.png](./image.png)
 
 ## MiniMax（不要用来编码，不要用来编码，不要用来编码）
 
@@ -235,7 +235,7 @@ https://platform\.stepfun\.com/step\-plan
 
 https://platform\.stepfun\.com/docs/zh/step\-plan/integrations/claude\-code
 
-![85785e50e9c75fcc5ef82a12b052c7b8\.jpg](Images_attachments/85785e50e9c75fcc5ef82a12b052c7b8.jpg)
+![85785e50e9c75fcc5ef82a12b052c7b8\.jpg](./85785e50e9c75fcc5ef82a12b052c7b8.jpg)
 
 
 
